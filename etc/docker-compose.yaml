@@ -1,0 +1,67 @@
+version: '3.7'
+
+services:
+
+  openldap:
+    image: docker.io/osixia/openldap:1.5.0
+    restart: always
+    ports:
+      - "3389:389"
+      - "6636:636"
+    command: [--copy-service]
+    volumes:
+    - ./openldap/ldap-example-users.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-example-users.ldif:bind
+    networks:
+      - sso
+
+  psql_sso:
+    image: registry.redhat.io/rhel8/postgresql-12:1-72.1626836556
+    restart: always
+    ports:
+      - "4432:4432"
+    environment:
+      PGPORT: 4432
+      POSTGRESQL_USER: sso
+      POSTGRESQL_PASSWORD: sso
+      POSTGRESQL_DATABASE: sso
+      POSTGRESQL_MAX_PREPARED_TRANSACTIONS: 10
+      SCRIPT_DIR: /opt/sql
+    volumes:
+      - ./sso/db/sso-psql.conf:/opt/app-root/src/postgresql-cfg/sso-psql.conf:bind
+    networks:
+      - sso
+
+  sso:
+    image: registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-36
+    restart: always
+    ports:
+      - "4443:8443"
+      - "4080:8080"
+    environment:
+      SSO_POSTGRESQL_SERVICE_HOST: psql_sso
+      SSO_POSTGRESQL_SERVICE_PORT: 4432
+      DB_SERVICE_PREFIX_MAPPING: "sso-postgresql=DB"
+      DB_JNDI: "java:jboss/datasources/KeycloakDS"
+      DB_USERNAME: sso
+      DB_PASSWORD: sso
+      DB_DATABASE: sso
+      TX_DATABASE_PREFIX_MAPPING: "sso-postgresql=DB"
+      DB_MIN_POOL_SIZE: 5
+      DB_MAX_POOL_SIZE: 10
+      SSO_ADMIN_USERNAME: master
+      SSO_ADMIN_PASSWORD: master
+      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/kie-realm.json
+    volumes:
+      - ./sso/kie-realm.json:/opt/kie-realm.json
+    depends_on:
+      - psql_sso
+      - openldap
+    networks:
+      - sso
+
+
+networks:
+  default:
+    driver: bridge
+  sso:
+    driver: bridge

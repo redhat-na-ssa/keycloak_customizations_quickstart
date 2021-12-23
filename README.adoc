@@ -1,0 +1,11 @@
+. Start application pod with all linux containers:
++
+-----
+$ docker-compose -f etc/docker-compose.yaml up -d
+-----
+
+. View all users and roles in openldap:
++
+-----
+$ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
+-----
