@@ -1,3 +1,6 @@
+
+== Procedure
+
 . Start application pod with all linux containers:
 +
 -----
@@ -9,3 +12,7 @@ $ docker-compose -f etc/docker-compose.yaml up -d
 -----
 $ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
 -----
+
+== Reference
+
+. https://github.com/keycloak/keycloak/tree/main/examples/ldap
