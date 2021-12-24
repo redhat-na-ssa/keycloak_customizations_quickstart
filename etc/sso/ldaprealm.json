@@ -22,6 +22,8 @@
       "adminUrl": "/ldap-portal",
       "secret": "password",
       "fullScopeAllowed": true,
+      "directAccessGrantsEnabled":true,
+      "publicClient":false,
       "protocolMappers": [
         {
           "protocolMapper" : "oidc-usermodel-property-mapper",

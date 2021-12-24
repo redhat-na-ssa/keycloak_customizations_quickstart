@@ -13,6 +13,54 @@ $ docker-compose -f etc/docker-compose.yaml up -d
 $ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
 -----
 
+
+. Set local env variables:
++
+-----
+RHSSO_HOST=localhost
+RHSSO_URL=http://$RHSSO_HOST:4080
+REALM_ID=ldap-demo
+SSO_CLIENT_ID=ldap-app
+SSO_CLIENT_CREDENTIALS=4a0e88a7-e3fc-4b88-b5a4-7f77fc38e52a
+retrieve_token_url="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/token"
+-----
+
+. Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
++
+-----
+TKN=$(curl -X POST "$retrieve_token_url" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=$SSO_CLIENT_ID" \
+            -d "client_secret=$SSO_CLIENT_CREDENTIALS" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+
+$ echo $TKN
+-----
+
+. By setting _fullScopeAllowed=true_ in SSO client, all roles assocated with an authenticated user will be included in the access token.
++
+These roles can be visualized as follows:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.roles
+
+[
+  "interviewer",
+  "kie-server",
+  "user"
+]
+-----
+
+. Invoke backend-oidc service:
++
+-----
+$ curl -v -H "Authorization: Bearer $TKN" \
+       -X GET $BACKEND_ROUTE/hello
+-----
+
 == Reference
 
 . https://github.com/keycloak/keycloak/tree/main/examples/ldap

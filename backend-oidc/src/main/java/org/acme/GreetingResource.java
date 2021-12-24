@@ -21,7 +21,7 @@ public class GreetingResource {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    @RolesAllowed("user")
+    @RolesAllowed("ldap-user")
     @NoCache
     public String hello() {
         String userName = securityIdentity.getPrincipal().getName();
