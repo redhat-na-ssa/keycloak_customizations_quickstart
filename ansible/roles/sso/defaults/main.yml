@@ -1,0 +1,18 @@
+---
+
+# rhsso operator
+sso_operator_subscription_template: subscription.yml
+sso_operator_packagemanifest: rhsso-operator
+sso_operator_deployment_name: rhsso-operator
+sso_operator_subscription_name: rhsso-operator
+sso_operator_subscription_channel: alpha
+sso_operator_subscription_automatic_installplan_approval: false
+sso_operator_subscription_starting_csv: ""
+sso_operator_csv_prefix: rhsso-operator
+
+keycloak_cr_template: keycloak-cr.yml
+keycloak_route_template: keycloak-route.yml
+
+sepsisdetection_theme_extension: https://github.com/redhat-naps-da/himss_interoperability_showcase_2021/releases/download/0.0.1/sepsisdetection-theme-0.0.1.jar
+
+undeploy_sso: false
