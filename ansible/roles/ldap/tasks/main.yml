@@ -10,6 +10,20 @@
 - name: "OpenLDPA container needs to run as root; subsequently provide anyuid privledges"
   shell: "oc adm policy add-scc-to-user anyuid -z {{ application_name }} -n {{ namespace_ldap }}"
 
+- name: "copy {{ users_seed_ldif }} file to work directory"
+  template:
+    src: "{{ resources_dir }}/{{ users_seed_ldif }}"
+    dest: "{{ work_dir }}/{{ users_seed_ldif }}"
+
+- name: create {{ application_name }} configmap
+  oc_configmap:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    name: "{{ application_name }}"
+    namespace: "{{ namespace }}"
+    from_file:
+      dir: "{{ work_dir }}"
+
 - name: "copy ldap template"
   template:
     src: "{{ resources_dir }}/ldap_app.yml"

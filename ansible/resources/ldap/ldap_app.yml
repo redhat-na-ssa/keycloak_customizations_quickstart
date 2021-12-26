@@ -64,6 +64,10 @@ items:
               - MKNOD
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
+          volumeMounts:
+          - name: users
+            mountPath: /container/service/slapd/assets/config/bootstrap/ldif/custom/{{ users_seed_ldif }}
+            subPath: {{ users_seed_ldif }}
         dnsPolicy: ClusterFirst
         restartPolicy: Always
         schedulerName: default-scheduler
@@ -71,3 +75,8 @@ items:
         terminationGracePeriodSeconds: 30
         serviceAccount: {{ application_name }}
         serviceAccountName: {{ application_name }}
+        volumes:
+        - configMap:
+            name: {{ application_name }}
+          name: users
+

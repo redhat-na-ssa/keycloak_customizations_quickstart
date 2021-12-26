@@ -13,7 +13,7 @@
       "bearerOnly": true
     },
     {
-      "clientId": "{{ sso_client_id }}",
+      "clientId": "{{ sso_clientId }}",
       "enabled": true,
       "baseUrl": "/ldap-portal",
       "redirectUris": [

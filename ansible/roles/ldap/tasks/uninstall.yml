@@ -23,3 +23,10 @@
     name: "{{ application_name }}"
     namespace: "{{ namespace_ldap }}"
 
+- name: delete {{ application_name }} configmap 
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ application_name }}"
+    namespace: "{{ namespace_ldap }}"
+    kind: ConfigMap

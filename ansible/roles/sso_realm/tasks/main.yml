@@ -48,7 +48,6 @@
     sso_admin_user: "{{ sso_admin_credentials.ansible_module_results.decoded[\"ADMIN_USERNAME\"] }}"
     sso_admin_password: "{{ sso_admin_credentials.ansible_module_results.decoded[\"ADMIN_PASSWORD\"] }}"
     sso_url: "https://{{ sso_route_cmd.stdout }}"
-    sepsis_ui_route_url: "https://{{ sepsisdetection_ui_app_name }}-{{ project_name }}.{{ ocp_domain }}"
 
 - name: get admin token
   uri:

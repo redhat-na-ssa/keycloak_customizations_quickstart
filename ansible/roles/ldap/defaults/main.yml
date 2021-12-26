@@ -1,4 +1,6 @@
 ---
 
 application_name: ldap
+users_seed_ldif: ldap-example-users.ldif
+
 undeploy_idm: false
