@@ -1,0 +1,4 @@
+---
+
+app_image_url: quay.io/redhat_naps_da/frontend-oidc
+app_image_tag: 0.0.1
