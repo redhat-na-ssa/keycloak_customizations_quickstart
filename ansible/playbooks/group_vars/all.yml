@@ -12,16 +12,18 @@ openshift_cli: oc
 # The OCP user that will own all resources in the generated OCP namespace
 project_admin: user1
 
-# Name of the OCP project to deploy this application to
-project_name: "{{ project_admin }}-services"
 #################################################
 
 
 
 
 #############    LDAP    #######################
+
+ldap_service_name: ldap-service
+ldap_app_name: ldap
+
 namespace_ldap: rhi-idm
-ldap_connection_url: ldap://openldap:389
+ldap_connection_url: "ldap://{{ ldap_service_name }}:389"
 ldap_bind_dn: cn=admin,dc=example,dc=org
 ldap_bind_credential: admin
 #################################################
@@ -43,3 +45,10 @@ sso_realm_id: "{{ project_admin }}-ldap"
 sso_clientId: ldap-app
 #################################################
 
+#########     services    ##############
+# Name of the OCP project to deploy this application to
+project_name: "{{ project_admin }}-services"
+
+backend_app_name: backend-oidc
+backend_url: "http://{{ backend_app_name }}:8080"
+#########################################

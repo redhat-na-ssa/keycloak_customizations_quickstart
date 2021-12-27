@@ -1,4 +1,13 @@
 ---
 
-app_image_url: quay.io/redhat_naps_da/frontend-oidc
-app_image_tag: 0.0.1
+application_name: frontend
+application_template: app.yml
+
+service_image: quay.io/redhat_naps_da/frontend-oidc
+service_image_tag: 0.0.4
+
+application_properties: application.properties
+application_configmap: "{{ application_name }}"
+application_configmap_key: "{{ application_properties }}"
+
+binary_imagestream_template: binary-imagestream.yml

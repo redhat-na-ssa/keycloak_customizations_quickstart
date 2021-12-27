@@ -7,9 +7,9 @@ items:
   kind: Service
   metadata:
     labels:
-      app: {{ application_name }}
+      app: {{ ldap_service_name }}
       expose: "true"
-    name: {{ application_name }}
+    name: {{ ldap_service_name }}
   spec:
     ports:
       - name: ldap

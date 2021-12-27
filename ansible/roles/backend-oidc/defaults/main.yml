@@ -4,7 +4,7 @@ application_name: backend-oidc
 application_template: app.yml
 
 service_image: quay.io/redhat_naps_da/backend-oidc
-service_image_tag: 0.0.1
+service_image_tag: 0.0.2
 
 application_properties: application.properties
 application_configmap: "{{ application_name }}"

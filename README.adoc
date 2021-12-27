@@ -14,7 +14,11 @@ $ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=exampl
 -----
 
 
-. Set local env variables:
+=== Environment Variables
+
+Set the following environment variables with values similar to the following:
+
+. If testing locally deployed application (via docker-compose):
 +
 -----
 RHSSO_HOST=localhost
@@ -26,6 +30,19 @@ retrieve_token_url="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/tok
 BACKEND_ROUTE=http://localhost:8080
 FRONTEND_ROUTE=http://localhost:7080
 -----
+
+. If testing environment deployed to OpenShift:
++
+-----
+RHSSO_HOST=sso-rhi-idm.apps.den.ratwater.xyz
+RHSSO_URL=https://$RHSSO_HOST
+REALM_ID=user1-ldap
+SSO_CLIENT_ID=ldap-app
+SSO_CLIENT_CREDENTIALS=4b338a9d-a673-4a5f-b799-c77e1c48ec7c
+retrieve_token_url="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/token"
+FRONTEND_ROUTE=https://frontend-user1-services.apps.den.ratwater.xyz
+-----
+
 
 . Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
 +
@@ -56,7 +73,7 @@ $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.ro
 ]
 -----
 
-. Invoke backend-oidc service directly:
+. If testing locally, invoke backend-oidc service directly:
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
@@ -69,6 +86,11 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
        -X GET $FRONTEND_ROUTE/frontend
+
+
+
+< HTTP/1.1 200 OK
+Hello jbrown with roles: ldap-user ldap-admin
 -----
 
 == Reference

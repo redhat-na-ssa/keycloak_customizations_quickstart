@@ -15,7 +15,7 @@ import io.smallrye.mutiny.Uni;
 public interface IBackend {
 
     @GET
-    @Path("/headers")
+    @Path("/secured")
     @Produces(MediaType.TEXT_PLAIN)
     Uni<String> invokeBackend();
     
