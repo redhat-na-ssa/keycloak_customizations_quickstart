@@ -1,37 +1,19 @@
+:scrollbar:
+:data-uri:
+:toc2:
+:linkattrs
 
-== Procedure
+= RH-SSO / LDAP Quickstart
 
-. Start application pod with all linux containers:
-+
------
-$ docker-compose -f etc/docker-compose.yaml up -d
------
+:numbered:
 
-. View all users and roles in openldap:
-+
------
-$ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
------
-
-=== Set _audience_ on imported users
-
-Reference:
-
-link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloak - Audience Support]
-
-. Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
-. From the drop-down, select and add all _Available Roles_ from the following SSO clients:
-
-.. _account_
-.. _broker_
-.. _realm-management_
+== Local Environment
+This quickstart includes a _docker-compose_ facilitate development and testing in your local environment.
 
 
 === Environment Variables
 
-Set the following environment variables with values similar to the following:
-
-. If testing locally deployed application (via docker-compose):
+. Set the following environment variables with values similar to the following:
 +
 -----
 RHSSO_HOST=localhost
@@ -44,21 +26,40 @@ BACKEND_ROUTE=http://localhost:8080
 FRONTEND_ROUTE=http://localhost:7080
 -----
 
-. If testing environment deployed to OpenShift:
+=== Startup
+
+. Start application pod with all linux containers:
 +
 -----
-RHSSO_HOST=sso-rhi-idm.apps.den.ratwater.xyz
-RHSSO_URL=https://$RHSSO_HOST
-REALM_ID=user1-ldap
-SSO_CLIENT_ID=ldap-app
-SSO_CLIENT_CREDENTIALS=4b338a9d-a673-4a5f-b799-c77e1c48ec7c
-retrieve_token_url="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/token"
-FRONTEND_ROUTE=https://frontend-user1-services.apps.den.ratwater.xyz
-API_GW_URL=https://apicast-gw-user1-services.apps.den.ratwater.xyz
+$ docker-compose -f etc/docker-compose.yaml up -d
 -----
 
+. The docker-compose starts the following containers: 
 
-=== Smoke Test services
+.. *openldap*
++
+Provisioned with test users and roles
+
+.. *RH-SSO*
++
+Provisioned with a realm configured to connect to openldap
+
+.. *Frontend* service
++
+Quarkus based app that exposes REST API and invokes _backend_ service
+
+.. *Backend* service
++
+Quarkus based app that exposes REST API secured using RBAC
+
+
+=== Smoke Test
+. View all users and roles in openldap:
++
+-----
+$ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
+-----
+
 . Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
 +
 -----
@@ -87,13 +88,104 @@ $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.ro
 ]
 -----
 
-. If testing locally, invoke backend-oidc service directly:
+. Invoke backend-oidc service directly:
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
        -H "Accept: text/plain" \
        -X GET $BACKEND_ROUTE/backend/secured
 -----
+
+. Invoke frontend service: 
++
+-----
+$ curl -v -H "Authorization: Bearer $TKN" \
+       -X GET $FRONTEND_ROUTE/frontend
+
+
+
+< HTTP/1.1 200 OK
+Hello jbrown with roles: ldap-user ldap-admin
+-----
+
+
+== OpenShift
+This quickstart includes _ansible_ to deploy to an OpenShift environment.
+
+
+=== Environment Variables
+
+
+. Set the following environment variables with values similar to the following:
++
+-----
+RHSSO_HOST=sso-rhi-idm.apps.den.ratwater.xyz
+RHSSO_URL=https://$RHSSO_HOST
+REALM_ID=user1-ldap
+SSO_CLIENT_ID=ldap-app
+SSO_CLIENT_CREDENTIALS=4b338a9d-a673-4a5f-b799-c77e1c48ec7c
+retrieve_token_url="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/token"
+FRONTEND_ROUTE=https://frontend-user1-services.apps.den.ratwater.xyz
+API_GW_URL=https://apicast-gw-user1-services.apps.den.ratwater.xyz
+-----
+
+=== Pre-reqs:
+
+
+=== Startup
+
+
+. Change directory into the _ansible_ directory of this project: 
++
+-----
+$ cd ansible
+-----
+
+. Execute _ansible_playbook_
++
+-----
+$ ansible-playbook playbooks/install.yml
+-----
+
+. The playbook provisions the following in OpenShift:
+
+.. *rhi_idm* namespace:
+... *openldap*
+... *RH-SSO*
+
+.. *user1-services* namespace: 
+... *frontend* service
+... *backend* service
+
+=== Smoke Test
+. Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
++
+-----
+TKN=$(curl -X POST "$retrieve_token_url" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=$SSO_CLIENT_ID" \
+            -d "client_secret=$SSO_CLIENT_CREDENTIALS" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+
+$ echo $TKN
+-----
+
+. By setting _fullScopeAllowed=true_ in SSO client, all roles assocated with an authenticated user will be included in the access token.
++
+These roles can be visualized as follows:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.roles
+
+[
+  "ldap-user",
+  "ldap-admin"
+]
+-----
+
 
 . Invoke frontend service: 
 +
@@ -149,9 +241,25 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 Hello jbrown with roles: ldap-user ldap-admin
 -----
 
+=== Set _audience_ on imported users
+
+Reference:
+
+link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloak - Audience Support]
+
+. Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
+. From the drop-down, select and add all _Available Roles_ from the following SSO clients:
+
+.. _account_
+.. _broker_
+.. _realm-management_
+
+
 
 
 == Reference
+
+. link:https://docs.google.com/presentation/d/1PQu6XKFLgEy6O5Tm_OeiFfY88PVHX7hHAypHZJRP8ew/edit#slide=id.g775d9c5cf4_0_717[slidedeck]
 
 . https://github.com/keycloak/keycloak/tree/main/examples/ldap
 
