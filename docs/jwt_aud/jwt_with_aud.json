@@ -1,0 +1,63 @@
+{
+  "exp": 1640650325,
+  "iat": 1640650025,
+  "jti": "83cde328-999a-429b-bcdd-bc4c820e848a",
+  "iss": "https://sso-sso.apps.den.ratwater.xyz/auth/realms/spaceAPIGWs",
+  "aud": [
+    "realm-management",
+    "broker",
+    "account"
+  ],
+  "sub": "6c101515-9cef-4c8a-bac6-789299485bac",
+  "typ": "Bearer",
+  "azp": "ddf5f300",
+  "session_state": "1958b193-1d45-46ae-a838-ebabe328dd3d",
+  "acr": "1",
+  "realm_access": {
+    "roles": [
+      "admin"
+    ]
+  },
+  "resource_access": {
+    "realm-management": {
+      "roles": [
+        "view-identity-providers",
+        "view-realm",
+        "manage-identity-providers",
+        "impersonation",
+        "realm-admin",
+        "create-client",
+        "manage-users",
+        "query-realms",
+        "view-authorization",
+        "query-clients",
+        "query-users",
+        "manage-events",
+        "manage-realm",
+        "view-events",
+        "view-users",
+        "view-clients",
+        "manage-authorization",
+        "manage-clients",
+        "query-groups"
+      ]
+    },
+    "broker": {
+      "roles": [
+        "read-token"
+      ]
+    },
+    "account": {
+      "roles": [
+        "manage-account",
+        "manage-account-links",
+        "view-profile"
+      ]
+    }
+  },
+  "scope": "email profile",
+  "sid": "1958b193-1d45-46ae-a838-ebabe328dd3d",
+  "email_verified": false,
+  "preferred_username": "ssorealmadmin",
+  "email": "ssorealmadmin@openshift.opentlc.com"
+}

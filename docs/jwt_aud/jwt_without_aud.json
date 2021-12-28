@@ -1,0 +1,25 @@
+{
+  "exp": 1640649958,
+  "iat": 1640649658,
+  "jti": "dd8e32cb-6d8e-4c55-abc9-3287ce2f1a01",
+  "iss": "https://sso-rhi-idm.apps.den.ratwater.xyz/auth/realms/user1-ldap",
+  "sub": "3a5d0d30-f373-4b05-b6e1-683a46fc9782",
+  "typ": "Bearer",
+  "azp": "ddf5f300",
+  "session_state": "34c13c5d-a310-440b-bb59-b68b9495beda",
+  "acr": "1",
+  "realm_access": {
+    "roles": [
+      "ldap-user",
+      "ldap-admin"
+    ]
+  },
+  "scope": "profile email",
+  "sid": "34c13c5d-a310-440b-bb59-b68b9495beda",
+  "email_verified": false,
+  "name": "James Brown",
+  "preferred_username": "jbrown",
+  "given_name": "James",
+  "family_name": "Brown",
+  "email": "jbrown@keycloak.org"
+}
