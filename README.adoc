@@ -241,11 +241,30 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 Hello jbrown with roles: ldap-user ldap-admin
 -----
 
-=== Set _audience_ on imported users
+=== JWT claims used by 3scale API GW
 
-Reference:
 
-link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloak - Audience Support]
+API GW extracts the value of the _azp_ or _aud_ claim and uses it as the Client ID that identifies the application in 3scale to authorize the call through the Service Management API. 
+In practice, the _azp_ claim contains the SSO clientId that issued the access token.
+That should be sufficient.
+Unfortunately, as per link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006], the gateway also requires the _aud_ claim to be populated (it doesn't need to be accurate).
+
+If any of the JWT validation or the authorization checks fail, APIcast returns an Authenication failed error. 
+Otherwise, APIcast proxies the request to the API backend. 
+The Authorization header remains in the request, so the API backend can also use the JWT token to check the user and client identity. 
+
+
+==== Reference:
+
+. link:https://datatracker.ietf.org/doc/html/rfc7519.html#section-4.1.3[Audience Claim as described in JWT specification]
+. link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloak - Audience Support]
+. link:https://www.pingidentity.com/en/company/blog/posts/2019/oauth2-access-token-multiple-resources-usage-strategies.html[Ping Identity: OAuth2 Token Usage Strategies for Multiple Resources]
+. link:https://chat.google.com/room/AAAAdbt0MpQ/bO6zL3tUBcs[chat]
+. link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.11/html/administering_the_api_gateway/openid-connect#apicast-oidc-integration[3scale API GW: JWT verification & parsing]
+. link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006: "aud" claim is required in APIcast JWT validation]
+. link:https://issues.redhat.com/browse/THREESCALE-3952[THREESCALE-3952: Claims verification in APIcast]
+
+==== Procedure
 
 . Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
 . From the drop-down, select and add all _Available Roles_ from the following SSO clients:
@@ -254,6 +273,12 @@ link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloa
 .. _broker_
 .. _realm-management_
 
+. issues:
++
+-----
+2021/12/27 23:42:23 [debug] 28#28: *13 oidc.lua:191: verify(): [jwt] failed verification for token, reason: 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
+2021/12/27 23:42:23 [debug] 28#28: *13 proxy.lua:287: rewrite(): oauth failed with 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
+-----
 
 
 
@@ -263,9 +288,3 @@ link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloa
 
 . https://github.com/keycloak/keycloak/tree/main/examples/ldap
 
-. issues:
-+
------
-2021/12/27 23:42:23 [debug] 28#28: *13 oidc.lua:191: verify(): [jwt] failed verification for token, reason: 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
-2021/12/27 23:42:23 [debug] 28#28: *13 proxy.lua:287: rewrite(): oauth failed with 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
------
