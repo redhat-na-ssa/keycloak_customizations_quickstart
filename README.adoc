@@ -1,15 +1,57 @@
 :scrollbar:
 :data-uri:
 :toc2:
-:linkattrs
+:linkattrs:
 
 = RH-SSO / LDAP Quickstart
 
+The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based security where the system of record of user and role data is in an LDAP server.
+
+In addition, this quickstart can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
+
 :numbered:
 
-== Local Environment
-This quickstart includes a _docker-compose_ facilitate development and testing in your local environment.
+== Demo Architecture
 
+image::docs/images/quickstart_deployment.png[]
+
+
+This quickstart includes both _docker-compose_ (for a local deployment) as well as ansible (for deployment to OpenShift).
+In both cases, the following containers are deployed (as per the above diagram) : 
+
+.. *openldap*
++
+System of record of user and role data.
+
+.. *RH-SSO*
++
+Provisioned with a realm enabled with _User Federation_ to openldap.
+
+.. *Frontend* service
++
+Quarkus based app that exposes REST API and invokes _backend_ service (with _Authorization_ header propogated to _backend_ service).
+
+.. *Backend* service
++
+Quarkus based app that exposes REST API secured using RBAC.
+
+Once provisioned, you'll use the _curl_ utility to smoke test as per the following: 
+
+image::docs/images/quickstart_data_flow.png[]
+
+
+== Local Environment
+This quickstart includes a _docker-compose_ to facilitate development and testing in your local environment.
+
+=== Pre-reqs
+
+. _docker_ or _podman_
+
+. _docker-compose_
+
+. _curl_ utility
+
+. _ldapsearch_
 
 === Environment Variables
 
@@ -33,24 +75,6 @@ FRONTEND_ROUTE=http://localhost:7080
 -----
 $ docker-compose -f etc/docker-compose.yaml up -d
 -----
-
-. The docker-compose starts the following containers: 
-
-.. *openldap*
-+
-Provisioned with test users and roles
-
-.. *RH-SSO*
-+
-Provisioned with a realm configured to connect to openldap
-
-.. *Frontend* service
-+
-Quarkus based app that exposes REST API and invokes _backend_ service
-
-.. *Backend* service
-+
-Quarkus based app that exposes REST API secured using RBAC
 
 
 === Smoke Test
@@ -112,6 +136,17 @@ Hello jbrown with roles: ldap-user ldap-admin
 == OpenShift
 This quickstart includes _ansible_ to deploy to an OpenShift environment.
 
+
+=== Pre-reqs:
+. _OpenShift_ cluster ( >= v 4.6 )
++
+The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of this quickstart.
+
+. _oc utiltiy_
+
+. _curl_ utility
+
+. _ldapsearch_
 
 === Environment Variables
 
@@ -199,6 +234,7 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 Hello jbrown with roles: ldap-user ldap-admin
 -----
 
+== API Gateway security using LDAP backed OIDC
 
 === Smoke Test API Gateway
 . Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
