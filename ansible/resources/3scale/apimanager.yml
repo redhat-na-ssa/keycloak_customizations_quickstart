@@ -1,0 +1,37 @@
+apiVersion: apps.3scale.net/v1alpha1
+kind: APIManager
+metadata:
+  name: apimgr
+spec:
+  apicast:
+    managementAPI: status
+    openSSLVerify: false
+    productionSpec:
+      replicas: 1
+    registryURL: http://apicast-staging:8090/policies
+    responseCodes: true
+    stagingSpec:
+      replicas: 1
+  appLabel: 3scale-api-management
+  backend:
+    cronSpec:
+      replicas: 1
+    listenerSpec:
+      replicas: 1
+    workerSpec:
+      replicas: 1
+  imageStreamTagImportInsecure: false
+  resourceRequirementsEnabled: true
+  system:
+    appSpec:
+      replicas: 1
+    sidekiqSpec:
+      replicas: 1
+    sphinxSpec: {}
+  tenantName: 3scale
+  wildcardDomain: apps.den.ratwater.xyz
+  zync:
+    appSpec:
+      replicas: 1
+    queSpec:
+      replicas: 1

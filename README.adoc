@@ -164,8 +164,6 @@ FRONTEND_ROUTE=https://frontend-user1-services.apps.den.ratwater.xyz
 API_GW_URL=https://apicast-gw-user1-services.apps.den.ratwater.xyz
 -----
 
-=== Pre-reqs:
-
 
 === Startup
 
@@ -235,6 +233,19 @@ Hello jbrown with roles: ldap-user ldap-admin
 -----
 
 == API Gateway security using LDAP backed OIDC
+This quickstart can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
+
+=== Pre-reqs:
+
+. _3scale API Manager and Tenant_ (version 2.11)
++
+Your OpenShift cluster should have the 3scale API _Manager_ and _Tenant_ installed (preferrably via the 3scale Operator).
+
+. _oc utiltiy_
+
+. _curl_ utility
+
+. _ldapsearch_
 
 === Smoke Test API Gateway
 . Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
@@ -323,4 +334,6 @@ The Authorization header remains in the request, so the API backend can also use
 . link:https://docs.google.com/presentation/d/1PQu6XKFLgEy6O5Tm_OeiFfY88PVHX7hHAypHZJRP8ew/edit#slide=id.g775d9c5cf4_0_717[slidedeck]
 
 . https://github.com/keycloak/keycloak/tree/main/examples/ldap
+
+. link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.10/html/operating_3scale/provision-threescale-services-via-operator[3scale Config & Provision of 3scale via Operator]
 
