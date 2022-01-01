@@ -1,15 +1,15 @@
 apiVersion: capabilities.3scale.net/v1beta1
 kind: Backend
 metadata:
-  name: quarkus-backend
+  name: {{ backend_name }}
 spec:
   metrics:
     hits:
       description: Number of API hits
       friendlyName: Hits
       unit: hit
-  name: quarkus-backend
-  privateBaseURL: http://backend-oidc.user1-services:8080
+  name: {{ backend_name }}
+  privateBaseURL: {{ backend_url }}
   providerAccountRef:
-    name: spaceprod-tenant-secret
-  systemName: quarkus-backend
+    name: {{ tenant_name }}-tenant-secret
+  systemName: {{ backend_name }}

@@ -53,11 +53,14 @@ sso_clientId: ldap-app
 project_name: "{{ project_admin }}-services"
 
 backend_app_name: backend-oidc
-backend_url: "http://{{ backend_app_name }}:8080"
+backend_url: "http://{{ backend_app_name }}.{{ project_name }}:8080"
 #########################################
 
 
 
 #########     3scale      ##############
 apimanager_namespace: rhi-3scale
+apigw_namespace: "{{ project_name }}"
+
+delete_tenant: false
 ########################################

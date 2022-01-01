@@ -1,17 +1,28 @@
 ---
 
-- name: delete tenant
+- name: "delete backend {{ backend_name }}"
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ backend_name }}"
+    namespace: "{{ apimanager_namespace }}"
+    kind: backend
+
+
+- name: "delete tenant {{ tenant_name }}"
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
     state: absent
     name: "{{ tenant_name }}"
     namespace: "{{ apimanager_namespace }}"
     kind: tenant
+  when: delete_tenant|bool == true
 
-- name: delete deployment config
+- name: delete tenant secret
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
     state: absent
     name: "{{ tenant_name }}-admin-secret"
     namespace: "{{ apimanager_namespace }}"
     kind: secret
+  when: delete_tenant|bool == true
