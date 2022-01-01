@@ -45,6 +45,9 @@ sso_realm_id: "{{ project_admin }}-ldap"
 sso_clientId: ldap-app
 #################################################
 
+
+
+
 #########     services    ##############
 # Name of the OCP project to deploy this application to
 project_name: "{{ project_admin }}-services"
@@ -52,3 +55,9 @@ project_name: "{{ project_admin }}-services"
 backend_app_name: backend-oidc
 backend_url: "http://{{ backend_app_name }}:8080"
 #########################################
+
+
+
+#########     3scale      ##############
+apimanager_namespace: rhi-3scale
+########################################

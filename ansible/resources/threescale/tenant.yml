@@ -1,0 +1,19 @@
+apiVersion: capabilities.3scale.net/v1alpha1
+kind: Tenant
+metadata:
+  annotations:
+  name: {{ tenant_name }}
+spec:
+  email: {{ tenant_admin_email }}
+  masterCredentialsRef:
+    name: system-seed
+    namespace: {{ apimanager_namespace }}
+  organizationName: {{ tenant_name }}
+  passwordCredentialsRef:
+    name: {{ tenant_name }}-admin-secret
+    namespace: {{ apimanager_namespace }}
+  systemMasterUrl: https://master.{{ ocp_domain }}
+  tenantSecretRef:
+    name: {{ tenant_name }}-tenant-secret
+    namespace: {{ apimanager_namespace }}
+  username: admin

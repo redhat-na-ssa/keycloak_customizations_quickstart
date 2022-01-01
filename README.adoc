@@ -337,3 +337,6 @@ The Authorization header remains in the request, so the API backend can also use
 
 . link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.10/html/operating_3scale/provision-threescale-services-via-operator[3scale Config & Provision of 3scale via Operator]
 
+-----
+$ ansible-playbook playbooks/threescale.yml -e tenant_admin_email=<change me>
+-----

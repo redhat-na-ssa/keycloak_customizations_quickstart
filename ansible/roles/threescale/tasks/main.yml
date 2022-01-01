@@ -1,0 +1,31 @@
+---
+
+########    Tenant    #############
+
+- name: "copy template files to {{ work_dir }}"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ work_dir }}/{{ item.path }}"
+  with_filetree: "{{ resources_dir }}"
+
+- name: "tenant secret {{ tenant_name }}-admin-secret"
+  oc_secret:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ apimanager_namespace }}"
+    name: "{{ tenant_name }}-admin-secret"
+    type: generic
+    from_literal:
+      admin_password: admin
+
+- name: "create tenant {{ tenant_name }}"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ apimanager_namespace }}"
+    name: "{{ tenant_name }}"
+    kind: tenant
+    files:
+      - "{{ work_dir }}/tenant.yml"
+
+###########################################################

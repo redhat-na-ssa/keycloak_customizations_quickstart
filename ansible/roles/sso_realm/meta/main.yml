@@ -8,10 +8,3 @@ dependencies:
       ACTION is none or
       ACTION|trim() == "" or
       ACTION|trim() == "install"
-  - role: openshift_domain
-    when: >
-      ACTION is not defined or
-      ACTION is none or
-      ACTION|trim() == "" or
-      ACTION|trim() == "install" or
-      ACTION|trim() == "reset"
