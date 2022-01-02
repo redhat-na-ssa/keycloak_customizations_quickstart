@@ -237,15 +237,24 @@ This quickstart can further be used to investigate details of the JSON Web Token
 
 === Pre-reqs:
 
-. _3scale API Manager and Tenant_ (version 2.11)
+. _3scale API Manager (version 2.11)
 +
-Your OpenShift cluster should have the 3scale API _Manager_ and _Tenant_ installed (preferrably via the 3scale Operator).
+Your OpenShift cluster should have the 3scale API _Manager_ via the 3scale Operator.
 
 . _oc utiltiy_
 
 . _curl_ utility
 
 . _ldapsearch_
+
+=== Provision
+
+. Provision an API tenant, backend and product:
++
+-----
+$ ansible-playbook playbooks/threescale.yml -e tenant_admin_email=<change_me>
+-----
+
 
 === Smoke Test API Gateway
 . Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
@@ -337,6 +346,13 @@ The Authorization header remains in the request, so the API backend can also use
 
 . link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.10/html/operating_3scale/provision-threescale-services-via-operator[3scale Config & Provision of 3scale via Operator]
 
+== Future
+
+. link:https://www.keycloak.org/docs/latest/server_admin/#_sssd[SSSD and FreeIPA Identity Management integration]
+. Investigaate link:https://www.keycloak.org/docs-api/15.0/javadocs/org/keycloak/storage/ldap/mappers/membership/LDAPGroupMapperMode.html[LDAPGroupMapperMode]; ie:
++
 -----
-$ ansible-playbook playbooks/threescale.yml -e tenant_admin_email=<change me>
+$ cat ansible/resources/sso_realm/realm.json | jq '.userFederationMappers[]|select(.federationMapperType=="role-ldap-mapper")'.config.mode
+"LDAP_ONLY"
+"LDAP_ONLY"
 -----
