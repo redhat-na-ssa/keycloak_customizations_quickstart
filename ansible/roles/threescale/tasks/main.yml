@@ -1,5 +1,10 @@
 ---
 
+- name: set threescale facts
+  set_fact:
+    api_gw_url: "https://{{ apigw_hostname_subcontext }}.{{ ocp_domain }}"
+    sso_confidential_realm_url: "https://sso-{{ namespace_sso }}.{{ ocp_domain }}"
+
 - name: "copy 3scale related template files to {{ work_dir }}"
   template:
     src: "{{ item.src }}"
@@ -53,5 +58,19 @@
     kind: backend
     files:
       - "{{ work_dir }}/backend.yml"
+
+###################################
+
+
+########    product    #############
+- name: "create product {{ api_product_name }}"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ apimanager_namespace }}"
+    name: "{{ api_product_name }}"
+    kind: product
+    files:
+      - "{{ work_dir }}/product.yml"
 
 ###################################

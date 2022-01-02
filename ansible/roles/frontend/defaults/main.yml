@@ -1,6 +1,6 @@
 ---
 
-application_name: frontend
+application_name: "{{ frontend_app_name }}"
 application_template: app.yml
 
 service_image: quay.io/redhat_naps_da/frontend-oidc

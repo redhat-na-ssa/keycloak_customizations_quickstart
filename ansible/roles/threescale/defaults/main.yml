@@ -5,3 +5,6 @@ tenant_name: test
 tenant_admin_email: 
 
 backend_name: quarkus-backend
+
+api_product_name: test-product
+app_plan_name: test-app-plan

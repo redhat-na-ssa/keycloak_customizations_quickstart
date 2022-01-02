@@ -1,5 +1,14 @@
 ---
 
+- name: "delete product {{ api_product_name }}"
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ api_product_name }}"
+    namespace: "{{ apimanager_namespace }}"
+    kind: product
+
+
 - name: "delete backend {{ backend_name }}"
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
