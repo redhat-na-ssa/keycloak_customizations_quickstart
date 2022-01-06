@@ -39,9 +39,9 @@
   vars:
     json_template: '\{\{.status.tenantId\}\}'
   register: result
-  until: result.stdout >= "1"
+  until: result.stdout | int >= 1
   retries: 10
-  delay: 30
+  delay: 15
   changed_when: false
 
 ###################################
@@ -59,6 +59,16 @@
     files:
       - "{{ work_dir }}/backend.yml"
 
+- name: "wait until {{ backend_name }} backend is up and running"
+  shell: "{{ openshift_cli }} get backend {{ backend_name }} -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
+  vars:
+    json_template: '\{\{.status.backendId\}\}'
+  register: result
+  until: result.stdout | int >= 1
+  retries: 10
+  delay: 10
+  changed_when: false
+
 ###################################
 
 
@@ -72,5 +82,15 @@
     kind: product
     files:
       - "{{ work_dir }}/product.yml"
+
+- name: "wait until {{ api_product_name }} product is up and running"
+  shell: "{{ openshift_cli }} get product {{ api_product_name }} -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
+  vars:
+    json_template: '\{\{.status.productId\}\}'
+  register: result
+  until: result.stdout | int >= 1
+  retries: 10
+  delay: 10
+  changed_when: false
 
 ###################################

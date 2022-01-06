@@ -21,8 +21,6 @@ spec:
   backendUsages:
     {{ backend_name }}:
       path: /
-  providerAccountRef:
-    name: {{ tenant_name }}-tenant-secret
   applicationPlans:
     {{ app_plan_name }}:
       appsRequireApproval: true
@@ -31,5 +29,7 @@ spec:
     enabled: true
     name: apicast
     version: builtin  
+  providerAccountRef:
+    name: {{ tenant_name }}-tenant-secret
 
     

@@ -53,7 +53,8 @@ sso_clientId: ldap-app
 project_name: "{{ project_admin }}-services"
 
 frontend_app_name: frontend
-frontend_url: "http://{{ frontend_app_name }}.{{ project_name }}:8080"
+#frontend_url: "http://{{ frontend_app_name }}.{{ project_name }}:8080"
+frontend_url: https://api.example.com
 
 backend_app_name: backend-oidc
 backend_url: "http://{{ backend_app_name }}.{{ project_name }}:8080"
@@ -66,5 +67,6 @@ apimanager_namespace: rhi-3scale
 apigw_namespace: "{{ project_name }}"
 apigw_hostname_subcontext: "gw-{{ apigw_namespace }}"
 
+tenant_name: jeff
 delete_tenant: false
 ########################################
