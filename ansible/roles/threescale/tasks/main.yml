@@ -24,15 +24,15 @@
     from_literal:
       admin_password: admin
 
-- name: "create tenant {{ tenant_name }}"
-  oc_obj:
-    state: present
-    oc_binary: "{{ openshift_cli }}"
-    namespace: "{{ apimanager_namespace }}"
-    name: "{{ tenant_name }}"
-    kind: tenant
-    files:
-      - "{{ work_dir }}/tenant.yml"
+#- name: "create tenant {{ tenant_name }}"
+#  oc_obj:
+#    state: present
+#    oc_binary: "{{ openshift_cli }}"
+#    namespace: "{{ apimanager_namespace }}"
+#    name: "{{ tenant_name }}"
+#    kind: tenant
+#    files:
+#      - "{{ work_dir }}/tenant.yml"
 
 - name: "wait until {{ tenant_name }} tenant is up and running"
   shell: "{{ openshift_cli }} get tenant {{ tenant_name }} -o template --template={{ json_template }} -n {{ apimanager_namespace }}"

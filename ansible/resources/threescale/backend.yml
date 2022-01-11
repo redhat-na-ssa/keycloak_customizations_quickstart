@@ -10,6 +10,6 @@ spec:
       unit: hit
   name: {{ backend_name }}
   privateBaseURL: {{ frontend_url }}
-  providerAccountRef:
-    name: {{ tenant_name }}-tenant-secret
   systemName: {{ backend_name }}
+#  providerAccountRef:
+#    name: {{ tenant_name }}-tenant-secret
