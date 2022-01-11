@@ -9,6 +9,18 @@ The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based sec
 
 In addition, this quickstart can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
 
+=== Demo Highlights
+
+. _User Federation_ capabilities of RH-SSO.
++
+In particular, the _WRITABLE_ strategy is used to replicate any change that's made to federated users back to the LDAP directory.
+
+. _org.eclipse.microprofile.rest.client.propagateHeaders_ system property
++
+Quarkus provides a convenient approach to specify request headers that should be propogated to downstream RESTful services via the REST client. 
+
+. The _aud_ claim of an _access token_ is required by the _apicast_ gateway of 3scale.
+
 :numbered:
 
 == Demo Architecture
@@ -34,6 +46,9 @@ Quarkus based app that exposes REST API and invokes _backend_ service (with _Aut
 .. *Backend* service
 +
 Quarkus based app that exposes REST API secured using RBAC.
+The service is enabled with a _keycloak adapter_.
+At start-up, this _keycloak adapter_ acquires the SSO public key.
+When a request is sent to this service, the _access token_ in the request is validated using this SSO public key. 
 
 Once provisioned, you'll use the _curl_ utility to smoke test as per the following: 
 
@@ -120,7 +135,7 @@ $ curl -v -H "Authorization: Bearer $TKN" \
        -X GET $BACKEND_ROUTE/backend/secured
 -----
 
-. Invoke frontend service: 
+. Invoke frontend service (which subsequently invokes the downstream _backend-oidc_ service with _propogated_ request headers): 
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
@@ -130,6 +145,48 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 
 < HTTP/1.1 200 OK
 Hello jbrown with roles: ldap-user ldap-admin
+-----
+
+=== Test _WRITEABLE_ strategy
+The User Federation configs found in the demo specify a _WRITABLE_ strategy for synchronizing federated user data between RH-SSO and LDAP.  Details regarding the various synchronization strategies supported in RH-SSO can be found in the section _Integrating with LDAP and Active Directory_ of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
+
+. In the _ldap-demo_ realm, add a new realm role called:  _new_role_ 
++
+Roles -> Add Role -> Role Name -> _new_role_
+
+. Assocate the _new_role_ role with the _jbrown_ user:
++
+Users -> _jbrown_ -> Role Mappings -> Assigned Roles -> _new_role_
++
+image::docs/images/new_role_added.png[]
+
+. Execute the following to verify that the new role was synced to the remote ldap: 
++
+-----
+$ ldapsearch -x \
+             -h localhost \
+             -p 3389 \
+             -b cn=new_role,ou=RealmRoles,dc=example,dc=org \
+             -D "cn=admin,dc=example,dc=org" \
+             -w admin
+-----
+
+
+. The response should include the following:app-name:
++
+-----
+
+...
+
+# new_role, RealmRoles, example.org
+dn: cn=new_role,ou=RealmRoles,dc=example,dc=org
+objectClass: groupOfNames
+cn: new_role
+member: cn=empty-membership-placeholder
+member: uid=jbrown,ou=People,dc=example,dc=org
+
+...
+
 -----
 
 
@@ -235,6 +292,8 @@ Hello jbrown with roles: ldap-user ldap-admin
 == API Gateway security using LDAP backed OIDC
 This quickstart can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
 
+image::docs/images/user_fed_gw.png[]
+
 === Pre-reqs:
 
 . _3scale API Manager and Tenant_ (version 2.11)
@@ -290,16 +349,32 @@ Hello jbrown with roles: ldap-user ldap-admin
 
 === JWT claims used by 3scale API GW
 
+API GW extracts the value of the _azp_ or _aud_ claim of the access token and uses it as the Client ID that identifies the application in 3scale to authorize the call through the 3scale _Service Management API_. 
 
-API GW extracts the value of the _azp_ or _aud_ claim and uses it as the Client ID that identifies the application in 3scale to authorize the call through the Service Management API. 
 In practice, the _azp_ claim contains the SSO clientId that issued the access token.
 That should be sufficient.
-Unfortunately, as per link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006], the gateway also requires the _aud_ claim to be populated (it doesn't need to be accurate).
+Unfortunately, as per link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006], the gateway also requires the _aud_ claim to be populated (the contents of which do not need to be accurate).
 
-If any of the JWT validation or the authorization checks fail, APIcast returns an Authenication failed error. 
-Otherwise, APIcast proxies the request to the API backend. 
-The Authorization header remains in the request, so the API backend can also use the JWT token to check the user and client identity. 
+Otherwise, the following is an example failure in _apicast_: 
 
+-----
+2021/12/27 23:42:23 [debug] 28#28: *13 oidc.lua:191: verify(): [jwt] failed verification for token, reason: 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
+2021/12/27 23:42:23 [debug] 28#28: *13 proxy.lua:287: rewrite(): oauth failed with 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
+-----
+
+
+==== Manual Fix
+
+The sso realm configuration of this demo does by default generate access tokens whose _aud_ claim is populated.  So all is good.  
+
+. Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
+. From the drop-down, select and add all _Available Roles_ from the following SSO clients:
+
+.. _account_
+.. _broker_
+.. _realm-management_
+
+Please refer to chapter 5 of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] for more details and background regarding the _audience_ claim of a Keycloak generated _access token_.
 
 ==== Reference:
 
@@ -310,24 +385,6 @@ The Authorization header remains in the request, so the API backend can also use
 . link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.11/html/administering_the_api_gateway/openid-connect#apicast-oidc-integration[3scale API GW: JWT verification & parsing]
 . link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006: "aud" claim is required in APIcast JWT validation]
 . link:https://issues.redhat.com/browse/THREESCALE-3952[THREESCALE-3952: Claims verification in APIcast]
-
-==== Procedure
-
-. Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
-. From the drop-down, select and add all _Available Roles_ from the following SSO clients:
-
-.. _account_
-.. _broker_
-.. _realm-management_
-
-. issues:
-+
------
-2021/12/27 23:42:23 [debug] 28#28: *13 oidc.lua:191: verify(): [jwt] failed verification for token, reason: 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
-2021/12/27 23:42:23 [debug] 28#28: *13 proxy.lua:287: rewrite(): oauth failed with 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
------
-
-
 
 == Reference
 
