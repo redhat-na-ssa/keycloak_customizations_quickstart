@@ -2,18 +2,18 @@ apiVersion: capabilities.3scale.net/v1alpha1
 kind: Tenant
 metadata:
   annotations:
-  name: spaceprod
+  name: adprod
 spec:
   email: admin@example.com
   masterCredentialsRef:
     name: system-seed
     namespace: rhi-3scale
-  organizationName: spaceprod
+  organizationName: adprod
   passwordCredentialsRef:
-    name: spaceprod-admin-secret
+    name: adprod-admin-secret
     namespace: rhi-3scale
   systemMasterUrl: https://master.apps.den.ratwater.xyz
   tenantSecretRef:
-    name: spaceprod-tenant-secret
+    name: adprod-tenant-secret
     namespace: rhi-3scale
   username: admin
