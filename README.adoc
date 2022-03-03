@@ -311,7 +311,9 @@ Your OpenShift cluster should have the 3scale API _Manager_ and _Tenant_ install
 === Additional Environment Variables
 
 -----
-API_GW_URL=https://apicast-gw-user1-services.$OCP_DOMAIAN
+API_SSO_CLIENT_ID=fdef27f3                                              # auto-generated in RH-SSO by zync
+API_SSO_CLIENT_CRED=3713c0cc8ed5ae952ebc40665e7ce6a7                    # auto-generated in RH-SSO by zync
+API_GW_URL=https://apicast-gw-user1-services.$OCP_DOMAIN
 -----
 
 === Smoke Test API Gateway
@@ -323,24 +325,11 @@ TKN=$(curl -X POST "$retrieve_token_url" \
             -d "username=jbrown" \
             -d "password=password" \
             -d "grant_type=password" \
-            -d "client_id=ddf5f300" \
-            -d "client_secret=78a89c22da1bc7fb8bd14dd1f6fc1cdb" \
+            -d "client_id=$API_SSO_CLIENT_ID" \
+            -d "client_secret=$API_SSO_CLIENT_CRED" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 
 $ echo $TKN
------
-
-. By setting _fullScopeAllowed=true_ in SSO client, all roles assocated with an authenticated user will be included in the access token.
-+
-These roles can be visualized as follows:
-+
------
-$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.roles
-
-[
-  "ldap-user",
-  "ldap-admin"
-]
 -----
 
 . Invoke frontend service: 
@@ -363,17 +352,34 @@ In practice, the _azp_ claim contains the SSO clientId that issued the access to
 That should be sufficient.
 Unfortunately, as per link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006], the gateway also requires the _aud_ claim to be populated (the contents of which do not need to be accurate).
 
-Otherwise, the following is an example failure in _apicast_: 
+Otherwise, the following is an example failure in _apicast_ (when apicast logLevel: debug): 
 
 -----
 2021/12/27 23:42:23 [debug] 28#28: *13 oidc.lua:191: verify(): [jwt] failed verification for token, reason: 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
 2021/12/27 23:42:23 [debug] 28#28: *13 proxy.lua:287: rewrite(): oauth failed with 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
 -----
 
+==== Determine value of _aud_ field in access token:
+
+. Execute:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .aud
+
+[
+  "realm-management",
+  "broker",
+  "account"
+]
+-----
+
+. If the above returns _null_ then proceed to the next section to manually populate the _aud_ field of the access token:
+
 
 ==== Manual Fix
 
-The sso realm configuration of this demo does by default generate access tokens whose _aud_ claim is populated.  So all is good.  
+The sso realm configuration of this demo should by default generate access tokens whose _aud_ claim is populated.  So all is good.  
+If not, then execute the following:
 
 . Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
 . From the drop-down, select and add all _Available Roles_ from the following SSO clients:
