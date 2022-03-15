@@ -3,6 +3,7 @@ version: '3.7'
 services:
 
   openldap:
+    container_name: openldap
     image: docker.io/osixia/openldap:1.5.0
     restart: always
     ports:
@@ -15,6 +16,7 @@ services:
       - sso
 
   psql_sso:
+    container_name: psql_sso
     image: registry.redhat.io/rhel8/postgresql-12:1-72.1626836556
     restart: always
     ports:
@@ -32,24 +34,19 @@ services:
       - sso
 
   sso:
-    image: registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-36
+    container_name: sso
+    image: quay.io/jbride/keycloak:17.0.0-psql
     restart: always
     ports:
       - "4443:8443"
       - "4080:8080"
+    command: [start-dev]
     environment:
-      SSO_POSTGRESQL_SERVICE_HOST: psql_sso
-      SSO_POSTGRESQL_SERVICE_PORT: 4432
-      DB_SERVICE_PREFIX_MAPPING: "sso-postgresql=DB"
-      DB_JNDI: "java:jboss/datasources/KeycloakDS"
-      DB_USERNAME: sso
-      DB_PASSWORD: sso
-      DB_DATABASE: sso
-      TX_DATABASE_PREFIX_MAPPING: "sso-postgresql=DB"
-      DB_MIN_POOL_SIZE: 5
-      DB_MAX_POOL_SIZE: 10
-      SSO_ADMIN_USERNAME: master
-      SSO_ADMIN_PASSWORD: master
+      KEYCLOAK_ADMIN: master
+      KEYCLOAK_ADMIN_PASSWORD: master
+      KC_DB_URL: 'jdbc:postgresql://psql_sso:4432/sso'
+      KC_DB_USERNAME: sso
+      KC_DB_PASSWORD: sso
       JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/ldaprealm.json
     volumes:
       - ./sso/ldaprealm.json:/opt/ldaprealm.json:bind

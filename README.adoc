@@ -311,8 +311,8 @@ Your OpenShift cluster should have the 3scale API _Manager_ and _Tenant_ install
 === Additional Environment Variables
 
 -----
-API_SSO_CLIENT_ID=fdef27f3                                              # auto-generated in RH-SSO by zync
-API_SSO_CLIENT_CRED=3713c0cc8ed5ae952ebc40665e7ce6a7                    # auto-generated in RH-SSO by zync
+API_SSO_CLIENT_ID=0171daa2                                              # auto-generated in RH-SSO by zync
+API_SSO_CLIENT_CRED=ec37f4b50fc6d78fa43b61111029b99d                    # auto-generated in RH-SSO by zync
 API_GW_URL=https://apicast-gw-user1-services.$OCP_DOMAIN
 -----
 
