@@ -129,6 +129,28 @@
       ]
     }
   ],
+  "identityProviders": [
+    {    
+      "alias": "github",
+      "internalId": "cc685e38-f5a3-42bc-8a79-d0c0b007406e",
+      "providerId": "github",
+      "enabled": true,
+      "updateProfileFirstLoginMode": "on",
+      "trustEmail": false,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "syncMode": "IMPORT",
+        "clientSecret": "changeme",
+        "clientId": "c6a9ddf147769e61b462",
+        "useJwksUrl": "true"
+      }    
+    }    
+  ],
+  "identityProviderMappers": [],
   "userFederationProviders": [
     {
       "displayName": "ldap-apacheds",

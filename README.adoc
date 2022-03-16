@@ -409,6 +409,33 @@ Please refer to chapter 5 of link:https://smile.amazon.com/Keycloak-Management-A
 . link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006: "aud" claim is required in APIcast JWT validation]
 . link:https://issues.redhat.com/browse/THREESCALE-3952[THREESCALE-3952: Claims verification in APIcast]
 
+
+== External IDP Integration
+
+=== github OAuth App
+
+Create a new OAuth client in github
+
+. Authenticate into github and navigate to:  `Settings -> Developer settings`.
+. Click the `New OAuth App` button.
+. Populate the form with the following values:app-name:
+.. *Application name* : `external-idp-test`
+.. *Homepage URL*: `https://github.com/redhat-na-ssa/keycloak_ldap_quickstart`
+.. *Authorization callback URL*:  `http://localhost:8000`
+. Click `Register application`
+. In the details page of the new github OAuth App, copy both the `Client ID` as well as the `client secret`
++
+image::docs/images/external-idp-settings.png[]
+
+
+=== RH-SSO: github Identity Provider
+
+. Modify both the `Client Id` as well as the `Client Secret` with the values provided in the github OAuth App
++
+image::docs/images/rhsso_github_idp.png[]
+
+. Click `Save`
+
 == Reference
 
 . link:https://docs.google.com/presentation/d/1PQu6XKFLgEy6O5Tm_OeiFfY88PVHX7hHAypHZJRP8ew/edit#slide=id.g775d9c5cf4_0_717[slidedeck]
