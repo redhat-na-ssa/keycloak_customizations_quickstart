@@ -17,13 +17,18 @@
       "enabled": true,
       "baseUrl": "/ldap-portal",
       "redirectUris": [
-        "/ldap-portal/*"
+        "/ldap-portal/*",
+        "http://localhost:8000/*"
+      ],
+      "webOrigins":[
+        "+"
+
       ],
       "adminUrl": "/ldap-portal",
       "secret": "password",
       "fullScopeAllowed": true,
       "directAccessGrantsEnabled":true,
-      "publicClient":false,
+      "publicClient":true,
       "protocolMappers": [
         {
           "protocolMapper" : "oidc-usermodel-property-mapper",
