@@ -79,7 +79,7 @@ REALM_ID=ldap-demo
 SSO_CLIENT_ID=ldap-app
 SSO_CLIENT_CREDENTIALS=4a0e88a7-e3fc-4b88-b5a4-7f77fc38e52a
 retrieve_token_url="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
-BACKEND_ROUTE=http://localhost:8080
+BACKEND_ROUTE=http://localhost:6080
 FRONTEND_ROUTE=http://localhost:7080
 -----
 
@@ -114,7 +114,7 @@ $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" 
 -----
 
 
-. Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
+. Retrieve an OAuth2 _access token_ from the SSO client :
 +
 -----
 TKN=$(curl -X POST "$retrieve_token_url" \
@@ -163,8 +163,9 @@ Hello jbrown with roles: ldap-user ldap-admin
 -----
 
 === Test _WRITEABLE_ strategy
-The User Federation configs found in the demo specify a _WRITABLE_ strategy for synchronizing federated user data between RH-SSO and LDAP.  Details regarding the various synchronization strategies supported in RH-SSO can be found in the section _Integrating with LDAP and Active Directory_ of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
+The User Federation configs found in the demo specify a _READ_ONLY_ strategy for synchronizing federated user data between RH-SSO and LDAP.  Details regarding the various synchronization strategies supported in RH-SSO can be found in the section _Integrating with LDAP and Active Directory_ of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
 
+. In the _ldap-apacheds_ User Federation config, switch the _Edit Mode_ to:  `WRITEABLE`.
 . In the _ldap-demo_ realm, add a new realm role called:  _new_role_ 
 +
 Roles -> Add Role -> Role Name -> _new_role_
@@ -267,7 +268,7 @@ FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 
 
 === Smoke Test
-. Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
+. Retrieve an OAuth2 _access token_  :
 +
 -----
 TKN=$(curl -X POST "$retrieve_token_url" \
@@ -277,12 +278,15 @@ TKN=$(curl -X POST "$retrieve_token_url" \
             -d "grant_type=password" \
             -d "client_id=$SSO_CLIENT_ID" \
             -d "client_secret=$SSO_CLIENT_CREDENTIALS" \
+            -d "scope=openid" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 
 $ echo $TKN
 -----
++
+NOTE:  By setting a `scope=openid`, the OIDC _id_token_ is also included in the authentication response.
 
-. By setting _fullScopeAllowed=true_ in SSO client, all roles assocated with an authenticated user will be included in the access token.
+. By setting _fullScopeAllowed=true_ in SSO client, all roles assocated with an authenticated user will be included in the _access token_.
 +
 These roles can be visualized as follows:
 +

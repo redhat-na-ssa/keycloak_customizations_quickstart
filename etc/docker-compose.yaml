@@ -62,6 +62,40 @@ services:
     networks:
       - sso
 
+  backend-service:
+    container_name: backend-service
+    image: quay.io/redhat_naps_da/backend-oidc:0.0.2
+    restart: always
+    ports:
+      - "6080:6080"
+    environment:
+      QUARKUS_HTTP_PORT: 6080
+      QUARKUS_HTTP_SSL-PORT: 6443  
+    volumes:
+    - ./backend-service/application.properties:/deployments/config/application.properties:bind
+    depends_on:
+      - sso
+    networks:
+      - sso
+
+  frontend-service:
+    container_name: frontend-service
+    image: quay.io/redhat_naps_da/frontend-oidc:0.0.4
+    restart: always
+    ports:
+      - "7080:7080"
+    environment:
+      QUARKUS_HTTP_PORT: 7080
+      QUARKUS_HTTP_SSL-PORT: 7443  
+    volumes:
+    - ./frontend-service/application.properties:/deployments/config/application.properties:bind
+    depends_on:
+      - backend-service
+    networks:
+      - sso
+
+
+
   token-inspector:
     container_name: token-inspector
     image: quay.io/jbride/keycloak-token-inspector:0.0.1
