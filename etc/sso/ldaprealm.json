@@ -170,7 +170,7 @@
         "bindCredential" : "admin",
         "rdnLDAPAttribute" : "uid",
         "vendor" : "other",
-        "editMode" : "WRITABLE",
+        "editMode" : "READ_ONLY",
         "uuidLDAPAttribute" : "uid",
         "connectionUrl" : "ldap://openldap:389",
         "syncRegistrations" : "true",

@@ -35,7 +35,7 @@ services:
 
   sso:
     container_name: sso
-    image: quay.io/jbride/keycloak:17.0.0-1-psql
+    image: quay.io/jbride/keycloak:17.0.0-2-psql
     restart: always
     ports:
       - "4443:4443"

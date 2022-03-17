@@ -427,7 +427,7 @@ In this section, you will create a new OAuth client in github.
 . Populate the form with the following values:app-name:
 .. *Application name* : `external-idp-test`
 .. *Homepage URL*: `https://github.com/redhat-na-ssa/keycloak_ldap_quickstart`
-.. *Authorization callback URL*:  `http://localhost:8000`
+.. *Authorization callback URL*:  `http://sso.local:4080`
 . Click `Register application`
 . In the details page of the new github OAuth App, copy both the `Client ID` as well as the `client secret`
 +
@@ -452,6 +452,10 @@ This User Federation will need to be modified such that it prevents writing to t
 +
 image::docs/images/modify_ldap-apacheds.png[]
 . Click `Save`
+
+== TO-DO
+
+. link:https://stackoverflow.com/questions/42186537/resources-scopes-permissions-and-policies-in-keycloak[keycloak Authorization lab]
 
 == Reference
 
