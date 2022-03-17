@@ -106,9 +106,10 @@ services:
       KC_URL: 'http://sso.local:4080'
       KC_REALM_ID: ldap-demo
       KC_CLIENT_ID: ldap-app
-      SERVICE_URL: 'http://frontend:8080/frontend'
+      SERVICE_URL: 'http://localhost:7080/frontend'
     depends_on:
       - sso
+      - frontend-service
     networks:
       - sso
 
