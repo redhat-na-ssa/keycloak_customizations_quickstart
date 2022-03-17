@@ -35,19 +35,25 @@ services:
 
   sso:
     container_name: sso
-    image: quay.io/jbride/keycloak:17.0.0-psql
+    image: quay.io/jbride/keycloak:17.0.0-1-psql
     restart: always
     ports:
-      - "4443:8443"
-      - "4080:8080"
+      - "4443:4443"
+      - "4080:4080"
     command: [start-dev]
     environment:
+
+      # Add the following entry in your /etc/hosts:  127.0.0.1  sso.local
+      KC_HOSTNAME: sso.local:4080
+
       KEYCLOAK_ADMIN: master
       KEYCLOAK_ADMIN_PASSWORD: master
       KC_DB_URL: 'jdbc:postgresql://psql_sso:4432/sso'
       KC_DB_USERNAME: sso
       KC_DB_PASSWORD: sso
       JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/ldaprealm.json
+      KC_HTTP_PORT: 4080
+      KC_HTTPS_PORT: 4443
     volumes:
       - ./sso/ldaprealm.json:/opt/ldaprealm.json:bind
     depends_on:
@@ -56,6 +62,21 @@ services:
     networks:
       - sso
 
+  token-inspector:
+    container_name: token-inspector
+    image: quay.io/jbride/keycloak-token-inspector:0.0.1
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      KC_URL: 'http://sso.local:4080'
+      KC_REALM_ID: ldap-demo
+      KC_CLIENT_ID: ldap-app
+      SERVICE_URL: 'http://frontend:8080/frontend'
+    depends_on:
+      - sso
+    networks:
+      - sso
 
 networks:
   default:
