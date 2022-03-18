@@ -77,7 +77,7 @@ RHSSO_HOST=sso.local
 RHSSO_URL=http://$RHSSO_HOST:4080
 REALM_ID=ldap-demo
 SSO_CLIENT_ID=ldap-app
-retrieve_token_url="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 BACKEND_ROUTE=http://localhost:6080
 FRONTEND_ROUTE=http://localhost:7080
 -----
@@ -90,10 +90,24 @@ FRONTEND_ROUTE=http://localhost:7080
 
 === Startup
 
-. Start application pod with all linux containers:
+. Start all linux containers for this demo:
 +
 -----
 $ docker-compose -f etc/docker-compose.yaml up -d
+-----
+
+, The following containers should start:
++
+-----
+$ podman ps --format "{{.Image}}\t{{.Ports}}\t{{.Names}}"
+
+
+registry.redhat.io/rhel8/postgresql-12:1-72.1626836556  0.0.0.0:4432->4432/tcp                          psql_sso
+docker.io/osixia/openldap:1.5.0                         0.0.0.0:3389->389/tcp, 0.0.0.0:6636->636/tcp    openldap
+quay.io/jbride/keycloak:17.0.0-2-psql                   0.0.0.0:4080->4080/tcp, 0.0.0.0:4443->4443/tcp  sso
+quay.io/redhat_naps_da/backend-oidc:0.0.2               0.0.0.0:6080->6080/tcp                          backend-service
+quay.io/redhat_naps_da/frontend-oidc:0.0.4              0.0.0.0:7080->7080/tcp                          frontend-service
+quay.io/jbride/keycloak-token-inspector:0.0.1           0.0.0.0:8000->8000/tcp                          token-inspector
 -----
 
 
@@ -113,10 +127,10 @@ $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" 
 -----
 
 
-. Retrieve an OAuth2 _access token_ from the SSO client :
+. Retrieve an OAuth2 _access token_ using OAuth2 link:https://tools.ietf.org/html/rfc6749#section-4.3[Resource Owner Password Credentials] flow :
 +
 -----
-TKN=$(curl -X POST "$retrieve_token_url" \
+TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=jbrown" \
             -d "password=password" \
@@ -128,7 +142,7 @@ TKN=$(curl -X POST "$retrieve_token_url" \
 $ echo $TKN
 -----
 +
-NOTE:  By setting a `scope=openid`, the OIDC _id_token_ is also included in the authentication response.
+NOTE:  By setting a `scope=openid`, the OIDC _id_token_ is also included in the response.
 
 . By setting _fullScopeAllowed=true_ in SSO client, all roles assocated with an authenticated user will be included in the access token.
 +
@@ -143,12 +157,16 @@ $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.ro
 ]
 -----
 
-. Invoke backend-oidc service directly:
+. Invoke backend-oidc service directly by including access token in request:
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
        -H "Accept: text/plain" \
        -X GET $BACKEND_ROUTE/backend/secured
+
+
+< HTTP/1.1 200 OK
+Hello jbrown with roles: ldap-user ldap-admin
 -----
 
 . Invoke frontend service (which subsequently invokes the downstream _backend-oidc_ service with _propogated_ request headers): 
@@ -163,8 +181,56 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 Hello jbrown with roles: ldap-user ldap-admin
 -----
 
+=== Code Review Questions
+
+. Regarding the value of $ACCESS_TOKEN_URL, what alternative REST endpoint does RH-SSO provide to authenticate as per the OIDC specification ?
+.. What is included in the response when invoking that alternative OIDC endpoint ?
+.. Under what circumstances should this alternative OIDC endpoint get invoked ?
+
+. What is the configuration used in the _frontend-service_ to instruct it to propagate the _Authorization_ request header to the _backend-service_ ?
+
+. What URL does the _backend-service_ use to configure its _keycloak adapter_ at deployment time ?
+
+
+/////
+Answers:
+
+1) $RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/auth
+1.a) authorization code
+1.b) single page javascript apps configured to authenticate with RH-SSO using OIDC link:https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow[Authorization Code] flow
+
+2) org.eclipse.microprofile.rest.client.propagateHeaders=Authorization
+
+3) quarkus.oidc.auth-server-url=http://sso:4080/realms/ldap-demo
+/////
+
+
+=== Token Inspector webapp
+This lab includes a simple javascript based web app to view the details of OAuth2 and OIDC tokens.
+
+This web app was plagarized from the lab assets provided by the link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
+Subsequently, all credit for that web app goes to the author of that book.  Thank you!
+
+. Open a web browser and navigate to:  http://localhost:8000
+. Switch to the _Network_ tab of your _Web Developer Tools_ on that page.
++
+image::docs/images/browser_network_tools.png[]
+
+. Click the `Login` button at the top-left corner of the page
+. Notice the re-direction to the URL of the app's _SSO Realm_.  What are the request parameters?
+. in the RH-SSO login form, authenticate using the following credentials:
+.. *UserId* :  jbrown
+.. *Password* :  password
+. Notice the re-direction back to the _Token Inspector_ web app.
++
+In the request to the _/token_ endpoint, what are the request parameters and what is included in the response ?
+
 === User Federation: Test _WRITEABLE_ strategy
-The User Federation configs found in the demo specify a _READ_ONLY_ strategy for synchronizing federated user data between RH-SSO and LDAP.  Details regarding the various synchronization strategies supported in RH-SSO can be found in the section _Integrating with LDAP and Active Directory_ of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
+The User Federation configs found in the demo specify a _READ_ONLY_ strategy for synchronizing federated user data between RH-SSO and LDAP.  
+Details regarding the various synchronization strategies supported in RH-SSO can be found in the section _Integrating with LDAP and Active Directory_ of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
+
+In this section of the lab, you will modify the synchronization strategy to allow changes of users in RH-SSO to propogate to LDAP.
+
 
 . In the _ldap-apacheds_ User Federation config, switch the _Edit Mode_ to:  `WRITEABLE`.
 . In the _ldap-demo_ realm, add a new realm role called:  _new_role_ 
@@ -262,57 +328,18 @@ RHSSO_URL=https://$RHSSO_HOST
 RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
 REALM_ID=user1-ldap
 SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
-retrieve_token_url="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/token"
+ACCESS_TOKEN_URL="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/token"
 FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 -----
 
 
-=== Smoke Test
-. Retrieve an OAuth2 _access token_  :
-+
------
-TKN=$(curl -X POST "$retrieve_token_url" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "username=jbrown" \
-            -d "password=password" \
-            -d "grant_type=password" \
-            -d "client_id=$SSO_CLIENT_ID" \
-            -d "scope=openid" \
-            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+=== Testing 
 
-$ echo $TKN
------
-+
-NOTE:  By setting a `scope=openid`, the OIDC _id_token_ is also included in the authentication response.
-
-. By setting _fullScopeAllowed=true_ in SSO client, all roles assocated with an authenticated user will be included in the _access token_.
-+
-These roles can be visualized as follows:
-+
------
-$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.roles
-
-[
-  "ldap-user",
-  "ldap-admin"
-]
------
-
-
-. Invoke frontend service: 
-+
------
-$ curl -v -H "Authorization: Bearer $TKN" \
-       -X GET $FRONTEND_ROUTE/frontend
-
-
-
-< HTTP/1.1 200 OK
-Hello jbrown with roles: ldap-user ldap-admin
------
+All of the same tests conducted in your local environment can be executed in your OpenShift environment.
 
 == API Gateway security using LDAP backed OIDC
-This quickstart can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
+
+The quickstart in your OpenShift environment can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
 
 image::docs/images/user_fed_gw.png[]
 
@@ -338,7 +365,7 @@ API_GW_URL=https://apicast-gw-user1-services.$OCP_DOMAIN
 . Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
 +
 -----
-TKN=$(curl -X POST "$retrieve_token_url" \
+TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=jbrown" \
             -d "password=password" \
