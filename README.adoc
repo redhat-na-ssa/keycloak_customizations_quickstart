@@ -9,21 +9,29 @@ The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based sec
 
 In addition, this quickstart can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
 
-=== Demo Highlights
+:numbered:
 
-. _User Federation_ capabilities of RH-SSO.
+== Quickstart Highlights
+
+. Use of Quarkus based RH-SSO
 +
-In particular, the _WRITABLE_ strategy is used to replicate any change that's made to federated users back to the LDAP directory.
+Keycloak 17 is quarkus based.  In this quickstart, this version of keycloak is used and backed by a PostgreSQL database.
 
 . _org.eclipse.microprofile.rest.client.propagateHeaders_ system property
 +
-Quarkus provides a convenient approach to specify request headers that should be propogated to downstream RESTful services via the REST client. 
+Quarkus provides a convenient approach to specify request headers that should be propogated to downstream RESTful services via the REST client.
 
-. The _aud_ claim of an _access token_ is required by the _apicast_ gateway of 3scale.
+. _User Federation_ capabilities of RH-SSO.
++
+In particular, the _WRITABLE_ strategy can be used to replicate any changes made to federated user data in RH-SSO back to the LDAP directory.
 
-:numbered:
+. Exploration of Broker Federation using RH-SSO and Github
 
-== Demo Architecture
+. Exploration of the _aud_ claim of an Oauth2 _Access Token_.
++
+In particular, this token is required by the _apicast_ gateway of 3scale.
+
+== Architecture
 
 image::docs/images/quickstart_deployment.png[]
 
@@ -90,7 +98,7 @@ FRONTEND_ROUTE=http://localhost:7080
 
 === Startup
 
-. Start all linux containers for this demo:
+. Start all linux containers for this quickstart:
 +
 -----
 $ docker-compose -f etc/docker-compose.yaml up -d
@@ -120,7 +128,7 @@ $ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=exampl
 -----
 
 
-. View details of OIDC related REST API as exposed by RH-SSO:
+. Invoke _Discovery Endpoint_ of RH-SSO to view details of OIDC related REST APIs:
 +
 -----
 $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" | jq .
@@ -226,13 +234,25 @@ image::docs/images/browser_network_tools.png[]
 In the request to the _/token_ endpoint, what are the request parameters and what is included in the response ?
 
 === User Federation: Test _WRITEABLE_ strategy
-The User Federation configs found in the demo specify a _READ_ONLY_ strategy for synchronizing federated user data between RH-SSO and LDAP.  
+This quickstart includes _User Federation_ configs to synchronize user data between RH-SSO and OpenLDAP.
+
+This User Federation config specifies a _READ_ONLY_ strategy for synchronizing that user data:  user data will be pulled into RH-SSO but if/when that user data in RH-SSO changes, those changes will not be propogated back to OpenLDAP.
+
 Details regarding the various synchronization strategies supported in RH-SSO can be found in the section _Integrating with LDAP and Active Directory_ of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
 
-In this section of the lab, you will modify the synchronization strategy to allow changes of users in RH-SSO to propogate to LDAP.
+In this section of the lab, you will modify the synchronization strategy to allow changes of user data in RH-SSO to propogate to LDAP.
+
+==== Change synchronization to: Writable
+. Your SSO Realm includes a _User Federation_ config called:  `ldap-apacheds`.
+. Navigate to: `User Federation -> ldap-apacheds`
++
+image::docs/images/modify_ldap-apacheds.png[]
+
+. Switch the _Edit Mode_ to:  `WRITEABLE`.
+. Click `Save`
 
 
-. In the _ldap-apacheds_ User Federation config, switch the _Edit Mode_ to:  `WRITEABLE`.
+==== Test synchronization to LDAP
 . In the _ldap-demo_ realm, add a new realm role called:  _new_role_ 
 +
 Roles -> Add Role -> Role Name -> _new_role_
@@ -273,8 +293,71 @@ member: uid=jbrown,ou=People,dc=example,dc=org
 -----
 
 
+=== RH-SSO as an Identity Broker
+Keycloak can integrate w/ 3rd party identity providers using a set of open standard protocols.  In particular, Keycloak can act as an intermediary service for authenticating and replicating users from a targeted identity provider.
+
+In this section of the quickstart, _github_ will be used as that targeted identity provider and the protocol used to facilitate that integration will be OpenID Connect.
+
+=== Benefits
+Through identity brokering, you can provide a much better experience for users where they can leverage an existing account to authenticate and sign up in your realm.
+
+Once these users have been created and their information has been imported from the third-party provider, they become users of your realm and can enjoy all of the features provided by Keycloak and respect the security constraints imposed by your realm.
+
+=== github OAuth App
+
+In this section, you will create a new OAuth client in github.
+
+. Authenticate into github and navigate to:  `Settings -> Developer settings`.
+. Click the `New OAuth App` button.
+. Populate the form with the following values:app-name:
+.. *Application name* : `external-idp-test`
+.. *Homepage URL*: `https://github.com/redhat-na-ssa/keycloak_ldap_quickstart`
+.. *Authorization callback URL*:  `http://sso.local:4080`
+. Click `Register application`
+. In the details page of the new github OAuth App, copy both the `Client ID` as well as the `client secret`
++
+image::docs/images/external-idp-settings.png[]
+
+
+=== RH-SSO: github Identity Provider
+
+. Modify both the `Client Id` as well as the `Client Secret` with the values provided in the github OAuth App
++
+image::docs/images/rhsso_github_idp.png[]
+
+. Click `Save`
+
+
+
+==== github OAuth App
+
+In this section, you will create a new OAuth client in github.
+
+. Authenticate into github and navigate to:  `Settings -> Developer settings`.
+. Click the `New OAuth App` button.
+. Populate the form with the following values:app-name:
+.. *Application name* : `external-idp-test`
+.. *Homepage URL*: `https://github.com/redhat-na-ssa/keycloak_ldap_quickstart`
+.. *Authorization callback URL*:  `http://sso.local:4080`
+. Click `Register application`
+. In the details page of the new github OAuth App, copy both the `Client ID` as well as the `client secret`
++
+image::docs/images/external-idp-settings.png[]
+
+
+==== RH-SSO: github Identity Provider
+
+. Modify both the `Client Id` as well as the `Client Secret` with the values provided in the github OAuth App
++
+image::docs/images/rhsso_github_idp.png[]
+
+. Click `Save`
+
+
+
+
 == OpenShift
-This quickstart includes _ansible_ to deploy to an OpenShift environment.
+This quickstart includes _ansible_ to deploy to an OpenShift environment.  All of the same tests conducted in your local environment can be executed in your OpenShift environment.
 
 
 === Pre-reqs:
@@ -332,10 +415,13 @@ ACCESS_TOKEN_URL="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/token
 FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 -----
 
-
 === Testing 
 
 All of the same tests conducted in your local environment can be executed in your OpenShift environment.
+
+
+
+
 
 == API Gateway security using LDAP backed OIDC
 
@@ -424,7 +510,7 @@ $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .aud
 
 ==== Manual Fix
 
-The sso realm configuration of this demo should by default generate access tokens whose _aud_ claim is populated.  So all is good.  
+The sso realm configuration of this quickstart should by default generate access tokens whose _aud_ claim is populated.  So all is good.  
 If not, then execute the following:
 
 . Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
@@ -446,43 +532,6 @@ Please refer to chapter 5 of link:https://smile.amazon.com/Keycloak-Management-A
 . link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006: "aud" claim is required in APIcast JWT validation]
 . link:https://issues.redhat.com/browse/THREESCALE-3952[THREESCALE-3952: Claims verification in APIcast]
 
-
-== External IDP Integration
-
-=== github OAuth App
-
-In this section, you will create a new OAuth client in github.
-
-. Authenticate into github and navigate to:  `Settings -> Developer settings`.
-. Click the `New OAuth App` button.
-. Populate the form with the following values:app-name:
-.. *Application name* : `external-idp-test`
-.. *Homepage URL*: `https://github.com/redhat-na-ssa/keycloak_ldap_quickstart`
-.. *Authorization callback URL*:  `http://sso.local:4080`
-. Click `Register application`
-. In the details page of the new github OAuth App, copy both the `Client ID` as well as the `client secret`
-+
-image::docs/images/external-idp-settings.png[]
-
-
-=== RH-SSO: github Identity Provider
-
-. Modify both the `Client Id` as well as the `Client Secret` with the values provided in the github OAuth App
-+
-image::docs/images/rhsso_github_idp.png[]
-
-. Click `Save`
-
-=== Modify User Federation
-
-Your SSO Realm includes a pre-configured _User Federation_ called:  `ldap-apacheds`.
-This User Federation will need to be modified such that it prevents writing to the LDAP provider when a new user is sync'ed from an external OAuth Identity Provider.
-
-. Navigate to: `User Federation -> ldap-apacheds`
-. Change the value of `Edit Mode` to:  _READ_ONLY_
-+
-image::docs/images/modify_ldap-apacheds.png[]
-. Click `Save`
 
 == TO-DO
 
