@@ -23,7 +23,7 @@
       "secret": "password",
       "fullScopeAllowed": true,
       "directAccessGrantsEnabled":true,
-      "publicClient":false,
+      "publicClient":true,
       "protocolMappers": [
         {
           "protocolMapper" : "oidc-usermodel-property-mapper",

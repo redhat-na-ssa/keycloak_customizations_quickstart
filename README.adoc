@@ -104,7 +104,7 @@ FRONTEND_ROUTE=http://localhost:7080
 $ docker-compose -f etc/docker-compose.yaml up -d
 -----
 
-, The following containers should start:
+. The following containers should start:
 +
 -----
 $ podman ps --format "{{.Image}}\t{{.Ports}}\t{{.Names}}"
@@ -407,17 +407,43 @@ $ ansible-playbook playbooks/install.yml
 -----
 OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
 RHSSO_HOST=sso-rhi-idm.$OCP_DOMAIN
-RHSSO_URL=https://$RHSSO_HOST
+RHSSO_URL=https://$RHSSO_HOST/auth
 RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
 REALM_ID=user1-ldap
 SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
-ACCESS_TOKEN_URL="$RHSSO_URL/auth/realms/$REALM_ID/protocol/openid-connect/token"
+ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 -----
 
 === Testing 
 
 All of the same tests conducted in your local environment can be executed in your OpenShift environment.
+
+==== RH-SSO
+
+===== *Master* Realm
+
+You can also login directly to the custom SSO realm used in the demo.  Details as follows:
+
+.. *userId* : admin
+.. *password* : execute the following from the command line:
++
+-----
+$ echo -en "\n$(
+     oc get secret credential-rhsso -o json -n rhi-idm \
+     | jq .data.ADMIN_PASSWORD \
+     | sed 's/"//g' \
+     | base64 -d
+  )\n"
+-----
+
+.. *url:*
++
+Using the credentials listed above, log into the _master_ realm of the RH-SSO server at the following URL:
++
+-----
+$ echo -en "\n$RHSSO_URL\n"
+-----
 
 
 
