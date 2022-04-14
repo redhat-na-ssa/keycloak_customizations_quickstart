@@ -1,0 +1,60 @@
+= OSSM
+
+. Delete existing _frontend_ route:
++
+-----
+$ oc delete route frontend -n user1-services
+-----
+
+. Create route that targets istio ingress gateway:
++
+-----
+$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-route.yml |  oc apply -n admin1-istio-system -f -
+-----
+
+. Create gateway:
++
+-----
+$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-gw.yml |  oc apply -n user1-services -f -
+-----
+
+. Create virtual service:
++
+-----
+$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-vs.yml |  oc apply -n user1-services -f -
+-----
+
+. Retrieve token from RH-SSO:
++
+-----
+$ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=$SSO_CLIENT_ID" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+. Invoke frontend service via istio ingress gateway:
++
+-----
+$ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
+-----
+
+. Create RequestAuthentication:
++
+-----
+$ sed "s|%RHSSO_URL%|$RHSSO_URL|" ./ossm/frontend-request-auth.yml \
+    | sed "s|%REALM_ID%|$REALM_ID|" \
+    |  oc apply -n user1-services -f -
+-----
+
+. Create external serviceentry to RH-SSO:
++
+-----
+$ sed "s|%RHSSO_HOST%|$RHSSO_HOST|" ./ossm/keycloak-serviceentry.yml \
+    |  oc apply -n user1-services -f -
+-----
+

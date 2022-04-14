@@ -1,0 +1,19 @@
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: frontend-vs
+spec:
+  hosts:
+  - %FHOST%
+  gateways:
+  - user1-services/frontend-gw
+  http:
+  - match:
+    - uri:
+        prefix: /frontend
+    route:
+    - destination:
+        port:
+          number: 8080
+        host: frontend.user1-services.svc.cluster.local
