@@ -79,3 +79,7 @@ $ export KC_URL=$RHSSO_URL \
   && npm start
 -----
 
+
+== Reference
+
+. link:https://github.com/RedHatGov/service-mesh-workshop-dashboard/blob/main/workshop/content/lab5.4_authpolicy.md[Lab:  Authorizing and Authenticating Access via Policy]
