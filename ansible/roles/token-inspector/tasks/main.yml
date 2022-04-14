@@ -1,0 +1,11 @@
+---
+
+- name: retrieve sso route
+  shell: "{{ openshift_cli }} get route sso -o jsonpath='{.spec.host}' -n {{ namespace_sso }}"
+  register: sso_route_cmd
+
+- set_fact:
+    sso_url: "https://{{ sso_route_cmd.stdout }}/auth"
+    frontend_url: "https://frontend-{{ project_name }}.{{ ocp_domain }}/frontend"
+
+- import_tasks: deploy_from_image.yml

@@ -1,0 +1,21 @@
+---
+
+- set_fact:
+    namespace: "{{ project_name }}"
+    resources_dir: "{{ resources_base_dir }}/token-inspector"
+    work_dir_name: token-inspector
+- include_role:
+    name: ../roles/token-inspector
+  when: >
+    ACTION is not defined or
+    ACTION is none or
+    ACTION|trim() == "" or
+    ACTION|trim() == "install"
+
+
+- include_role:
+    name: ../roles/token-inspector
+    tasks_from: uninstall
+  when: >
+    ACTION is defined and
+    ACTION|trim() == "uninstall"

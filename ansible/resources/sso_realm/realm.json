@@ -17,7 +17,12 @@
       "enabled": true,
       "baseUrl": "/ldap-portal",
       "redirectUris": [
-        "/ldap-portal/*"
+        "/ldap-portal/*",
+        "https://token-inspector-{{ project_name }}.{{ ocp_domain }}/*"
+      ],
+      "webOrigins":[
+        "+"
+
       ],
       "adminUrl": "/ldap-portal",
       "secret": "password",

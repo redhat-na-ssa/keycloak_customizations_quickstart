@@ -15,3 +15,4 @@
   - include: tasks/sso.yml
   - include: tasks/backend.yml
   - include: tasks/frontend.yml
+  - include: tasks/token-inspector.yml
