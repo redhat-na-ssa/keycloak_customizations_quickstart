@@ -1,5 +1,7 @@
 = OSSM
 
+The purpose of this quickstart is to demonstrate exposure of a REST API deployed in OSSM where the request must include a valid JWT.
+
 . Delete existing _frontend_ route:
 +
 -----
@@ -43,7 +45,15 @@ $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
 $ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
 -----
 
-. Create RequestAuthentication:
+. Inspect JWT:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN > /tmp/jwt.json
+
+$ cat /tmp/jwt.json
+-----
+
+. Create RequestAuthentication and AuthorizationPolicy to only allow requests with valid JWT:
 +
 -----
 $ sed "s|%RHSSO_URL%|$RHSSO_URL|" ./ossm/frontend-request-auth.yml \
@@ -51,10 +61,21 @@ $ sed "s|%RHSSO_URL%|$RHSSO_URL|" ./ossm/frontend-request-auth.yml \
     |  oc apply -n user1-services -f -
 -----
 
-. Create external serviceentry to RH-SSO:
+. NOT NEEDED:  Create external serviceentry to RH-SSO:
 +
 -----
 $ sed "s|%RHSSO_HOST%|$RHSSO_HOST|" ./ossm/keycloak-serviceentry.yml \
     |  oc apply -n user1-services -f -
+-----
+
+. Start webapp:
++
+-----
+$ cd webapp
+
+$ export KC_URL=$RHSSO_URL \
+  && export KC_REALM_ID=$REALM_ID \
+  && export SERVICE_URL=https://$FHOST/frontend \
+  && npm start
 -----
 

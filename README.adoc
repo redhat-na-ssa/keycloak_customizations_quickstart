@@ -419,34 +419,6 @@ FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 
 All of the same tests conducted in your local environment can be executed in your OpenShift environment.
 
-==== RH-SSO
-
-===== *Master* Realm
-
-You can also login directly to the custom SSO realm used in the demo.  Details as follows:
-
-.. *userId* : admin
-.. *password* : execute the following from the command line:
-+
------
-$ echo -en "\n$(
-     oc get secret credential-rhsso -o json -n rhi-idm \
-     | jq .data.ADMIN_PASSWORD \
-     | sed 's/"//g' \
-     | base64 -d
-  )\n"
------
-
-.. *url:*
-+
-Using the credentials listed above, log into the _master_ realm of the RH-SSO server at the following URL:
-+
------
-$ echo -en "\n$RHSSO_URL\n"
------
-
-
-
 
 
 == API Gateway security using LDAP backed OIDC
