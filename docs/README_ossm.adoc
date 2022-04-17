@@ -83,3 +83,10 @@ $ export KC_URL=$RHSSO_URL \
 == Reference
 
 . link:https://github.com/RedHatGov/service-mesh-workshop-dashboard/blob/main/workshop/content/lab5.4_authpolicy.md[Lab:  Authorizing and Authenticating Access via Policy]
+. link:https://cloud.redhat.com/blog/restricting-user-access-via-service-mesh-2.0-and-red-hat-single-sign-on[Restricting User Access Via Service Mesh 2.0 & RH-SSO]
++
+Discuss three different approaches:
+
+.. Approach 1: Using Istio native mechanisms for JWT-based authorization
+.. Approach 2: Injecting oauth2-proxy container inside the Istio ingress gateway to implement an OIDC workflow
+.. Approach 3: Combining JWT-based authorization and OIDC workflow
