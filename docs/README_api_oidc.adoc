@@ -24,9 +24,9 @@ Your OpenShift cluster should have the 3scale API _Manager_ and _Tenant_ install
 === Additional Environment Variables
 
 -----
-API_SSO_CLIENT_ID=0171daa2                                              # auto-generated in RH-SSO by zync
-API_SSO_CLIENT_CRED=ec37f4b50fc6d78fa43b61111029b99d                    # auto-generated in RH-SSO by zync
-API_GW_URL=https://apicast-gw-user1-services.$OCP_DOMAIN
+API_SSO_CLIENT_ID=2d9fb188                                              # auto-generated in RH-SSO by zync
+API_SSO_CLIENT_CRED=5b22906b7a1a3970692d929b3bf88d2e                    # auto-generated in RH-SSO by zync
+API_GW_URL=https://gw-user1-services.$OCP_DOMAIN
 -----
 
 === Smoke Test API Gateway
@@ -50,7 +50,7 @@ $ echo $TKN
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
-       -X GET $API_GW_URL/frontend
+       -X GET $API_GW_URL/frontend-oidc/frontend
 
 
 
