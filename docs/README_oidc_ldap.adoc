@@ -421,10 +421,6 @@ All of the same tests conducted in your local environment can be executed in you
 
 
 
-== TO-DO
-
-. link:https://stackoverflow.com/questions/42186537/resources-scopes-permissions-and-policies-in-keycloak[keycloak Authorization lab]
-
 == Reference
 
 . link:https://docs.google.com/presentation/d/1PQu6XKFLgEy6O5Tm_OeiFfY88PVHX7hHAypHZJRP8ew/edit#slide=id.g775d9c5cf4_0_717[slidedeck]

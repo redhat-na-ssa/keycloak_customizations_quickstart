@@ -4,3 +4,8 @@
 . link:docs/README_oidc_ldap.adoc[RH-SSO / LDAP Integration Quickstart]
 . link:docs/README_api_oidc.adoc[RH-SSO / 3scale Integration Quickstart]
 . link:docs/README_ossm.adoc[RH-SSO / Service Mesh Quickstart]
+
+== TO-DO
+
+. link:https://redhat.highspot.com/items/5fa02438628ba20e0fd010b5?lfrm=srp.3#30[RH-SSO integration w/ HashiCorp Vaut]
+. link:https://stackoverflow.com/questions/42186537/resources-scopes-permissions-and-policies-in-keycloak[keycloak Authorization lab]
