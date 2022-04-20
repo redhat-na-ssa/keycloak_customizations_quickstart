@@ -10,3 +10,4 @@
 . link:https://redhat.highspot.com/items/5fa02438628ba20e0fd010b5?lfrm=srp.3#30[RH-SSO integration w/ HashiCorp Vaut]
 . link:https://stackoverflow.com/questions/42186537/resources-scopes-permissions-and-policies-in-keycloak[RH-SSO Authorization quickstart]
 . link:https://developers.redhat.com/blog/2021/02/19/x-509-user-certificate-authentication-with-red-hats-single-sign-on-technology#overview[RH-SSO using X.509 certs quickstart]
+. link:https://medium.com/@senthilrch/api-authentication-using-istio-ingress-gateway-oauth2-proxy-and-keycloak-a980c996c259[Ingress GW, OAuth2-Proxy and RH-SSO]
