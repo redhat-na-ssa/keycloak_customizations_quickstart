@@ -1,5 +1,56 @@
 = OSSM
 
+:numbered:
+
+== Restricting User Access Via Service Mesh 2.0 & RH-SSO
+
+=== Pre-reqs
+
+=== Environment Variables
+
+. Set the following environment variables with values similar to the following:
++
+-----
+export OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
+export RHSSO_HOST=sso-rhi-idm.$OCP_DOMAIN
+export RHSSO_URL=https://$RHSSO_HOST/auth
+export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
+export REALM_ID=user1-ldap
+export SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
+export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+export FHOST=frontend-istio.$OCP_DOMAIN
+-----
+
+=== Add Services to Mesh
+
+-----
+echo "apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: frontend
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: \"true\"" \
+  | oc apply -n user1-services -f -
+-----
+
+-----
+echo "apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: backend-oidc
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: \"true\"" \
+  | oc apply -n user1-services -f -
+-----
+
+
+=== Using Istio native mechanisms for JWT-based authorization
 The purpose of this quickstart is to demonstrate exposure of a REST API deployed in OSSM where the request must include a valid JWT.
 
 . Delete existing _frontend_ route:
@@ -11,19 +62,19 @@ $ oc delete route frontend -n user1-services
 . Create route that targets istio ingress gateway:
 +
 -----
-$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-route.yml |  oc apply -n admin1-istio-system -f -
+$ sed "s|%FHOST%|$FHOST|" ./ossm/frontend-route.yml |  oc apply -n admin1-istio-system -f -
 -----
 
 . Create gateway:
 +
 -----
-$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-gw.yml |  oc apply -n user1-services -f -
+$ sed "s|%FHOST%|$FHOST|" ./ossm/frontend-gw.yml |  oc apply -n user1-services -f -
 -----
 
 . Create virtual service:
 +
 -----
-$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-vs.yml |  oc apply -n user1-services -f -
+$ sed "s|%FHOST%|$FHOST|" ./ossm/frontend-vs.yml |  oc apply -n user1-services -f -
 -----
 
 . Retrieve token from RH-SSO:
@@ -79,11 +130,22 @@ $ export KC_URL=$RHSSO_URL \
   && npm start
 -----
 
+=== Injecting oauth2-proxy container inside the Istio ingress gateway to implement an OIDC workflow
 
-== Reference
+TO-DO
 
-. link:https://github.com/RedHatGov/service-mesh-workshop-dashboard/blob/main/workshop/content/lab5.4_authpolicy.md[Lab:  Authorizing and Authenticating Access via Policy]
+=== Combining JWT-based authorization and OIDC workflow
+
+TO-DO
+
+
+=== Reference
+
 . link:https://cloud.redhat.com/blog/restricting-user-access-via-service-mesh-2.0-and-red-hat-single-sign-on[Restricting User Access Via Service Mesh 2.0 & RH-SSO]
++
+Appears need to upgrade to:
++
+https://github.com/oauth2-proxy/oauth2-proxy/blob/master/docs/docs/configuration/auth.md#keycloak-oidc-auth-provider
 +
 Discuss three different approaches:
 
@@ -91,4 +153,46 @@ Discuss three different approaches:
 .. Approach 2: Injecting oauth2-proxy container inside the Istio ingress gateway to implement an OIDC workflow
 .. Approach 3: Combining JWT-based authorization and OIDC workflow
 
+. link:https://homelab.blog/blog/devops/Istio-OIDC-Config/[Configuring Istio w/ OIDC Authentication]
++
+Makes use of "oidc" provider of oauth2-proxy rather than "keycloak" provider.
++
+Introduces a Redis database as a workaround for an apparent bug at the time.
++
+Uses what seems to be an old container image:  quay.io/pusher/oauth2_proxy:v4.1.0
+
+
 . link:https://medium.com/@senthilrch/api-authentication-using-istio-ingress-gateway-oauth2-proxy-and-keycloak-a980c996c259[Ingress GW, OAuth2-Proxy and RH-SSO  .... similar to previous link]
+
+. link:https://github.com/RedHatGov/service-mesh-workshop-dashboard/blob/main/workshop/content/lab5.4_authpolicy.md[Lab:  Authorizing and Authenticating Access via Policy]
+
+
+== Apply API Policies to OIDC enabled Ingress Gateway traffic
+
+=== Reference
+
+. https://developers.redhat.com/articles/2021/12/06/custom-webassembly-extensions-openshift-service-mesh[Satya's writeup]
+. https://github.com/3scale/threescale-wasm-auth/[github: threescale-wasm-auth]
+. link:https://quay.io/repository/3scale/threescale-wasm-auth?tab=tags&tag=latest[3scale WASM container images]
+
+=== Procedure
+
+-----
+export TENANT_ADMIN_HOST=$(oc get secret adprod-tenant-secret -o json -n rhi-apimgmt | jq '.data.adminURL' -r | base64 -d | sed 's/https:\/\///' )
+export TENANT_ACCESS_TOKEN=$(oc get secret adprod-tenant-secret -o json -n rhi-apimgmt | jq '.data.token' -r | base64 -d)
+export API_MGMT_BACKEND_HOST=$( oc get route backend -n rhi-apimgmt --template='{{ .spec.host }}' )
+export API_SERVICE_ID=4
+export API_SERVICE_TOKEN=$( curl https://$TENANT_ACCESS_TOKEN@$TENANT_ADMIN_HOST/admin/api/services/$API_SERVICE_ID/proxy/configs/production/latest.json | jq -r '.proxy_config.content.backend_authentication_value'  )
+-----
+
+-----
+$ sed "s|%TENANT_ADMIN_HOST%|$TENANT_ADMIN_HOST|" ./ossm/apimgmt/serviceentry-adminURL.yml |  oc apply -n user1-services -f -
+-----
+
+-----
+$ sed "s|%API_MGMT_BACKEND_URL%|$API_MGMT_BACKEND_URL|" ./ossm/apimgmt/serviceentry-backendURL.yml |  oc apply -n user1-services -f -
+-----
+
+-----
+$ . ossm/apimgmt/servicemeshextension.yml | oc apply -n user1-services -f -
+-----

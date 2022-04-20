@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+ labels:
+   app: ''
+ name: system-entry
+spec:
+ hosts:
+   - %TENANT_ADMIN_HOST%
+ location: MESH_EXTERNAL
+ ports:
+   - name: https
+     number: 80
+     protocol: HTTP
+ resolution: DNS

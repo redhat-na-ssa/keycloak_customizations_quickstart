@@ -405,14 +405,14 @@ $ ansible-playbook playbooks/install.yml
 . Set the following environment variables with values similar to the following:
 +
 -----
-OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
-RHSSO_HOST=sso-rhi-idm.$OCP_DOMAIN
-RHSSO_URL=https://$RHSSO_HOST/auth
-RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
-REALM_ID=user1-ldap
-SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
-ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
-FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
+export OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
+export RHSSO_HOST=sso-rhi-idm.$OCP_DOMAIN
+export RHSSO_URL=https://$RHSSO_HOST/auth
+export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
+export REALM_ID=user1-ldap
+export SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
+export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+export FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 -----
 
 === Testing 
