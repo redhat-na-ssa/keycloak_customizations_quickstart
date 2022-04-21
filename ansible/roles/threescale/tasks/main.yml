@@ -44,6 +44,16 @@
   delay: 15
   changed_when: false
 
+
+# NOTE:  access token is not available from tenant creation via operator  (it is however available when tenant created directly from master API)
+#   Eguzki Lezaun; Mar 3, 2021
+#
+#   The Access Token info is only available at the response of the tenant. After that, the access token cannot be read, even with the master access token
+#   So the operator cannot reconcilliate and be idempontent in case something goes wrong (cluster access error or 3scale API temporary error)
+#   As an example, the operator creates the tenant and then tries to store the access token in a secret. The secret creation op fails
+#   The operator cannot finish the reconciliation of the Tenant CRD with the recently created tenant. It would need to create another tenant and expect no error
+#   The provider key, on the other hand, is available in the account info (actually is a little bit more complex, but for simplicity let's say it is in the account info)
+
 ###################################
 
 
