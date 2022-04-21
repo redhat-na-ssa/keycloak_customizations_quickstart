@@ -7,13 +7,13 @@ spec:
   email: admin@example.com
   masterCredentialsRef:
     name: system-seed
-    namespace: rhi-3scale
+    namespace: {{ apimanager_namespace }}
   organizationName: adprod
   passwordCredentialsRef:
     name: adprod-admin-secret
-    namespace: rhi-3scale
-  systemMasterUrl: https://master.apps.den.ratwater.xyz
+    namespace: {{ apimanager_namespace }}
+  systemMasterUrl: https://master.{{ ocp_domain }}
   tenantSecretRef:
     name: adprod-tenant-secret
-    namespace: rhi-3scale
+    namespace: {{ apimanager_namespace }}
   username: admin

@@ -63,10 +63,10 @@ backend_url: "http://{{ backend_app_name }}.{{ project_name }}:8080"
 
 
 #########     3scale      ##############
-apimanager_namespace: rhi-3scale
+apimanager_namespace: rhi-apimgmt
 apigw_namespace: "{{ project_name }}"
 apigw_hostname_subcontext: "gw-{{ apigw_namespace }}"
 
-tenant_name: jeff
+tenant_name: adprod
 delete_tenant: false
 ########################################
