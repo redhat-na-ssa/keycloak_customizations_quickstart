@@ -1,0 +1,20 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    openshift.io/host.generated: \"true\"
+  labels:
+    app: frontend
+  name: frontend-route
+spec:
+  host: %FHOST%
+  port:
+    targetPort: http2
+  tls:
+    termination: edge
+  to:
+    kind: Service
+    name: istio-ingressgateway
+    weight: 100
+  wildcardPolicy: None

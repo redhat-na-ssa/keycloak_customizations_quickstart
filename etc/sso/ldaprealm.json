@@ -17,13 +17,18 @@
       "enabled": true,
       "baseUrl": "/ldap-portal",
       "redirectUris": [
-        "/ldap-portal/*"
+        "/ldap-portal/*",
+        "http://localhost:8000/*"
+      ],
+      "webOrigins":[
+        "+"
+
       ],
       "adminUrl": "/ldap-portal",
       "secret": "password",
       "fullScopeAllowed": true,
       "directAccessGrantsEnabled":true,
-      "publicClient":false,
+      "publicClient":true,
       "protocolMappers": [
         {
           "protocolMapper" : "oidc-usermodel-property-mapper",
@@ -124,6 +129,28 @@
       ]
     }
   ],
+  "identityProviders": [
+    {    
+      "alias": "github",
+      "internalId": "cc685e38-f5a3-42bc-8a79-d0c0b007406e",
+      "providerId": "github",
+      "enabled": true,
+      "updateProfileFirstLoginMode": "on",
+      "trustEmail": false,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "syncMode": "IMPORT",
+        "clientSecret": "changeme",
+        "clientId": "c6a9ddf147769e61b462",
+        "useJwksUrl": "true"
+      }    
+    }    
+  ],
+  "identityProviderMappers": [],
   "userFederationProviders": [
     {
       "displayName": "ldap-apacheds",
@@ -143,7 +170,7 @@
         "bindCredential" : "admin",
         "rdnLDAPAttribute" : "uid",
         "vendor" : "other",
-        "editMode" : "WRITABLE",
+        "editMode" : "READ_ONLY",
         "uuidLDAPAttribute" : "uid",
         "connectionUrl" : "ldap://openldap:389",
         "syncRegistrations" : "true",

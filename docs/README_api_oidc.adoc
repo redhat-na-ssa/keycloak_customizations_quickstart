@@ -1,0 +1,120 @@
+:scrollbar:
+:data-uri:
+:toc2:
+:linkattrs:
+
+= API Gateway security using LDAP backed OIDC
+
+The quickstart in your OpenShift environment can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
+
+image::images/user_fed_gw.png[]
+
+:numbered:
+
+=== Pre-reqs:
+
+. _3scale API Manager and Tenant_ (version 2.11)
++
+Your OpenShift cluster should have the 3scale API _Manager_ and _Tenant_ installed (preferrably via the 3scale Operator).
+
+. _3scale APIcast Gateway_ (version 2.11)
+
+.. An apicast gateway should be provioned via the OpenShift operator in the _user1-services_ namespace
+
+=== Additional Environment Variables
+
+-----
+API_SSO_CLIENT_ID=2d9fb188                                              # auto-generated in RH-SSO by zync
+API_SSO_CLIENT_CRED=5b22906b7a1a3970692d929b3bf88d2e                    # auto-generated in RH-SSO by zync
+API_GW_URL=https://gw-user1-services.$OCP_DOMAIN
+-----
+
+=== Smoke Test API Gateway
+. Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
++
+-----
+TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=$API_SSO_CLIENT_ID" \
+            -d "client_secret=$API_SSO_CLIENT_CRED" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+
+$ echo $TKN
+-----
+
+. Invoke frontend service: 
++
+-----
+$ curl -v -H "Authorization: Bearer $TKN" \
+       -X GET $API_GW_URL/frontend-oidc/frontend
+
+
+
+< HTTP/1.1 200 OK
+Hello jbrown with roles: ldap-user ldap-admin
+-----
+
+=== JWT claims used by 3scale API GW
+
+API GW extracts the value of the _azp_ or _aud_ claim of the access token and uses it as the Client ID that identifies the application in 3scale to authorize the call through the 3scale _Service Management API_. 
+
+In practice, the _azp_ claim contains the SSO clientId that issued the access token.
+That should be sufficient.
+Unfortunately, as per link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006], the gateway also requires the _aud_ claim to be populated (the contents of which do not need to be accurate).
+
+Otherwise, the following is an example failure in _apicast_ (when apicast logLevel: debug): 
+
+-----
+2021/12/27 23:42:23 [debug] 28#28: *13 oidc.lua:191: verify(): [jwt] failed verification for token, reason: 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
+2021/12/27 23:42:23 [debug] 28#28: *13 proxy.lua:287: rewrite(): oauth failed with 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
+-----
+
+==== Determine value of _aud_ field in access token:
+
+. Execute:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .aud
+
+[
+  "realm-management",
+  "broker",
+  "account"
+]
+-----
+
+. If the above returns _null_ then proceed to the next section to manually populate the _aud_ field of the access token:
+
+
+==== Manual Fix
+
+The sso realm configuration of this quickstart should by default generate access tokens whose _aud_ claim is populated.  So all is good.  
+If not, then execute the following:
+
+. Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
+. From the drop-down, select and add all _Available Roles_ from the following SSO clients:
+
+.. _account_
+.. _broker_
+.. _realm-management_
+
+Please refer to chapter 5 of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] for more details and background regarding the _audience_ claim of a Keycloak generated _access token_.
+
+==== Alternatives to _azp_
+
+Customize, link:https://developers.redhat.com/blog/2020/11/09/openid-connect-integration-with-red-hat-3scale-api-management-and-okta?source=sso#verify_and_match_the_jwt_claim[verify and match the JWT claim]
+
+
+==== Reference:
+
+. link:https://datatracker.ietf.org/doc/html/rfc7519.html#section-4.1.3[Audience Claim as described in JWT specification]
+. link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloak - Audience Support]
+. link:https://www.pingidentity.com/en/company/blog/posts/2019/oauth2-access-token-multiple-resources-usage-strategies.html[Ping Identity: OAuth2 Token Usage Strategies for Multiple Resources]
+. link:https://chat.google.com/room/AAAAdbt0MpQ/bO6zL3tUBcs[chat]
+. link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.11/html/administering_the_api_gateway/openid-connect#apicast-oidc-integration[3scale API GW: JWT verification & parsing]
+. link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006: "aud" claim is required in APIcast JWT validation]
+. link:https://issues.redhat.com/browse/THREESCALE-3952[THREESCALE-3952: Claims verification in APIcast]

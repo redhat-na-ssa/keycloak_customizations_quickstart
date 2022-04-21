@@ -1,0 +1,94 @@
+= OSSM
+
+The purpose of this quickstart is to demonstrate exposure of a REST API deployed in OSSM where the request must include a valid JWT.
+
+. Delete existing _frontend_ route:
++
+-----
+$ oc delete route frontend -n user1-services
+-----
+
+. Create route that targets istio ingress gateway:
++
+-----
+$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-route.yml |  oc apply -n admin1-istio-system -f -
+-----
+
+. Create gateway:
++
+-----
+$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-gw.yml |  oc apply -n user1-services -f -
+-----
+
+. Create virtual service:
++
+-----
+$ FHOST=frontend-istio.$OCP_DOMAIN && sed "s|%FHOST%|$FHOST|" ./ossm/frontend-vs.yml |  oc apply -n user1-services -f -
+-----
+
+. Retrieve token from RH-SSO:
++
+-----
+$ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=$SSO_CLIENT_ID" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+. Invoke frontend service via istio ingress gateway:
++
+-----
+$ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
+-----
+
+. Inspect JWT:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN > /tmp/jwt.json
+
+$ cat /tmp/jwt.json
+-----
+
+. Create RequestAuthentication and AuthorizationPolicy to only allow requests with valid JWT:
++
+-----
+$ sed "s|%RHSSO_URL%|$RHSSO_URL|" ./ossm/frontend-request-auth.yml \
+    | sed "s|%REALM_ID%|$REALM_ID|" \
+    |  oc apply -n user1-services -f -
+-----
+
+. NOT NEEDED:  Create external serviceentry to RH-SSO:
++
+-----
+$ sed "s|%RHSSO_HOST%|$RHSSO_HOST|" ./ossm/keycloak-serviceentry.yml \
+    |  oc apply -n user1-services -f -
+-----
+
+. Start webapp:
++
+-----
+$ cd webapp
+
+$ export KC_URL=$RHSSO_URL \
+  && export KC_REALM_ID=$REALM_ID \
+  && export SERVICE_URL=https://$FHOST/frontend \
+  && npm start
+-----
+
+
+== Reference
+
+. link:https://github.com/RedHatGov/service-mesh-workshop-dashboard/blob/main/workshop/content/lab5.4_authpolicy.md[Lab:  Authorizing and Authenticating Access via Policy]
+. link:https://cloud.redhat.com/blog/restricting-user-access-via-service-mesh-2.0-and-red-hat-single-sign-on[Restricting User Access Via Service Mesh 2.0 & RH-SSO]
++
+Discuss three different approaches:
+
+.. Approach 1: Using Istio native mechanisms for JWT-based authorization
+.. Approach 2: Injecting oauth2-proxy container inside the Istio ingress gateway to implement an OIDC workflow
+.. Approach 3: Combining JWT-based authorization and OIDC workflow
+
+. link:https://medium.com/@senthilrch/api-authentication-using-istio-ingress-gateway-oauth2-proxy-and-keycloak-a980c996c259[Ingress GW, OAuth2-Proxy and RH-SSO  .... similar to previous link]

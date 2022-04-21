@@ -1,0 +1,9 @@
+---
+
+application_name: token-inspector
+application_template: app.yml
+
+service_image: quay.io/jbride/keycloak-token-inspector
+service_image_tag: 0.0.1
+
+binary_imagestream_template: binary-imagestream.yml

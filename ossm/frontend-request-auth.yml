@@ -1,0 +1,35 @@
+# Rule for frontend service servers to only accept JWT traffic
+#   https://istio.io/latest/docs/reference/config/security/request_authentication/
+#   https://istio.io/latest/docs/reference/config/security/jwt/#JWTRule
+ 
+apiVersion: "security.istio.io/v1beta1"
+kind: RequestAuthentication
+metadata:
+  name: "frontend-requestauth-jwt"
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+      group: oidc
+  jwtRules:
+  - issuer: %RHSSO_URL%/realms/%REALM_ID%
+    jwksUri: %RHSSO_URL%/realms/%REALM_ID%/protocol/openid-connect/certs
+
+    # Need to retain JWT in request header so that it can be passed to backend service
+    forwardOriginalToken: true
+---
+
+# https://istio.io/latest/docs/reference/config/security/authorization-policy/
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: frontend-authrequests-only
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+      group: oidc
+  rules:
+  - from:
+    - source:
+        requestPrincipals: ["*"]
