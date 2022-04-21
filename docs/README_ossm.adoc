@@ -171,6 +171,7 @@ Uses what seems to be an old container image:  quay.io/pusher/oauth2_proxy:v4.1.
 
 === Reference
 
+. https://github.com/3scale-demos/ossm-3scale-wasm.git
 . https://developers.redhat.com/articles/2021/12/06/custom-webassembly-extensions-openshift-service-mesh[Satya's writeup]
 . https://github.com/3scale/threescale-wasm-auth/[github: threescale-wasm-auth]
 . link:https://quay.io/repository/3scale/threescale-wasm-auth?tab=tags&tag=latest[3scale WASM container images]
