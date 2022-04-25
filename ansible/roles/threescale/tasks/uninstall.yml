@@ -27,7 +27,7 @@
     kind: tenant
   when: delete_tenant|bool == true
 
-- name: delete tenant secrets
+- name: "delete tenant secret {{ tenant_name }}-admin-secret"
   oc_obj:
     oc_binary: "{{ openshift_cli }}"
     state: absent
@@ -35,10 +35,21 @@
     namespace: "{{ apimanager_namespace }}"
     kind: secret
   when: delete_tenant|bool == true
-- oc_obj:
+
+- name: "delete tenant secret {{ tenant_name }}-tenant-secret"
+  oc_obj:
     oc_binary: "{{ openshift_cli }}"
     state: absent
     name: "{{ tenant_name }}-tenant-secret"
+    namespace: "{{ apimanager_namespace }}"
+    kind: secret
+  when: delete_tenant|bool == true
+
+- name: "delete tenant secret {{ tenant_name }}-atoken-secret"
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ tenant_name }}-atoken-secret"
     namespace: "{{ apimanager_namespace }}"
     kind: secret
   when: delete_tenant|bool == true

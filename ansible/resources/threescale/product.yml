@@ -29,7 +29,7 @@ spec:
     enabled: true
     name: apicast
     version: builtin  
-#  providerAccountRef:
-#    name: {{ tenant_name }}-tenant-secret
+  providerAccountRef:
+    name: {{ tenant_name }}-atoken-secret
 
     

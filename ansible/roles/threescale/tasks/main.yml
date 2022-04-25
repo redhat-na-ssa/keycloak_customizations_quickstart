@@ -14,7 +14,7 @@
 
 ########    Tenant    #############
 
-- name: "tenant secret {{ tenant_name }}-admin-secret"
+- name: "tenant secret {{ tenant_name }}-admin-secret with tenant password"
   oc_secret:
     oc_binary: "{{ openshift_cli }}"
     state: present
@@ -24,15 +24,15 @@
     from_literal:
       admin_password: admin
 
-#- name: "create tenant {{ tenant_name }}"
-#  oc_obj:
-#    state: present
-#    oc_binary: "{{ openshift_cli }}"
-#    namespace: "{{ apimanager_namespace }}"
-#    name: "{{ tenant_name }}"
-#    kind: tenant
-#    files:
-#      - "{{ work_dir }}/tenant.yml"
+- name: "create tenant {{ tenant_name }}"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ apimanager_namespace }}"
+    name: "{{ tenant_name }}"
+    kind: tenant
+    files:
+      - "{{ work_dir }}/tenant.yml"
 
 - name: "wait until {{ tenant_name }} tenant is up and running"
   shell: "{{ openshift_cli }} get tenant {{ tenant_name }} -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
@@ -44,6 +44,12 @@
   delay: 15
   changed_when: false
 
+###################################
+
+
+
+
+#####   # Generate Access token from provider_key   ###########
 
 # NOTE:  access token is not available from tenant creation via operator  (it is however available when tenant created directly from master API)
 #   Eguzki Lezaun; Mar 3, 2021
@@ -54,60 +60,81 @@
 #   The operator cannot finish the reconciliation of the Tenant CRD with the recently created tenant. It would need to create another tenant and expect no error
 #   The provider key, on the other hand, is available in the account info (actually is a little bit more complex, but for simplicity let's say it is in the account info)
 
-# Generate Access token from provider_key
 
-- name: "Identify provider_key from auto-generated tenant secret"
-  shell: "oc get secret {{ tenant_name }}-tenant-secret -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
-  vars:
-    json_template: '\{\{.data.token\}\}'
-  register: provider_key_response
-- set_fact:
-    provider_key: "{{ provider_key_response.stdout | b64decode }}"
+- name: determine of {{ tenant_name }}-atoken-secret already exists"
+  oc_obj:
+    state: list
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ tenant_name }}-atoken-secret"
+    kind: "secret"
+    namespace: "{{ apimanager_namespace }}"
+  register: atoken_status
 - debug:
-    msg: "provider_key = {{ provider_key }}"  
+    msg: "atoken_status = {{ atoken_status }}"
+- set_fact:
+    atoken_not_exists: "{{ atoken_status.ansible_module_results.stderr }}"
+  when: atoken_status.ansible_module_results.stderr is defined
 
+- block:
 
-- name: "Using provider_key, identify userId of admin provider account of tenant"
-  set_fact:
-    list_users_url: "https://{{ tenant_name }}-admin.{{ ocp_domain }}/admin/api/users.json?role=admin&provider_key={{ provider_key }}"
-- uri:
-    url: "{{ list_users_url }}"
-    method: GET
-    timeout: 10
-    status_code: 200
-    return_content: yes
-    validate_certs: no
-  register: user_list_response
-- set_fact:
-    admin_id_json: "{{ user_list_response.content | from_json }}"
-- set_fact:
-    admin_id: "{{ admin_id_json.users[0].user.id }}"
-- debug:
-    msg: "admin_id = {{ admin_id }}"  
+  - name: "Identify provider_key from auto-generated tenant secret"
+    shell: "oc get secret {{ tenant_name }}-tenant-secret -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
+    vars:
+      json_template: '\{\{.data.token\}\}'
+    register: provider_key_response
+  - set_fact:
+      provider_key: "{{ provider_key_response.stdout | b64decode }}"
+  - debug:
+      msg: "provider_key = {{ provider_key }}"  
+  
+  
+  - name: "Using provider_key, identify userId of admin provider account of tenant"
+    set_fact:
+      list_users_url: "https://{{ tenant_name }}-admin.{{ ocp_domain }}/admin/api/users.json?role=admin&provider_key={{ provider_key }}"
+  - uri:
+      url: "{{ list_users_url }}"
+      method: GET
+      timeout: 10
+      status_code: 200
+      return_content: yes
+      validate_certs: no
+    register: user_list_response
+  - set_fact:
+      admin_id_json: "{{ user_list_response.content | from_json }}"
+  - set_fact:
+      admin_id: "{{ admin_id_json.users[0].user.id }}"
+  - debug:
+      msg: "admin_id = {{ admin_id }}"  
+  
+  - name: "Using provider_key, generate an access token for the tenant default admin account"
+    set_fact:
+      obtain_token_url: "https://{{ tenant_name }}-admin.{{ ocp_domain }}/admin/api/users/{{ admin_id }}/access_tokens.json?name=admin_rw_token&permission=rw&scopes[]=account_management&provider_key={{ provider_key }}"
+  - uri:
+      url: "{{ obtain_token_url }}"
+      method: POST
+      timeout: 10
+      status_code: 201
+      return_content: yes
+      validate_certs: no
+      body_format: 'form-urlencoded'
+      body:
+        name: admin_rw_token
+        permission: rw
+        scopes[]: account_management
+        provider_key: "{{ provider_key }}"
+    register: token_response
+  - set_fact:
+      access_token_content: "{{ token_response.content }}"
+  - set_fact:
+      access_token: "{{ access_token_content.access_token.value }}"
+  - debug:
+      msg: "access_token = {{ access_token }}"
+  
+  - name: "create secret containing access token {{ tenant_name }}-atoken-secret"
+    shell: "oc create secret generic {{ tenant_name }}-atoken-secret --from-literal=adminURL=https://{{ tenant_name }}-admin.{{ ocp_domain }} --from-literal=token={{ access_token }} -n {{ apimanager_namespace }}"
 
-- name: "Using provider_key, generate an access token for the tenant default admin account"
-  set_fact:
-    obtain_token_url: "https://{{ tenant_name }}-admin.{{ ocp_domain }}/admin/api/users/{{ admin_id }}/access_tokens.json?name=admin_rw_token&permission=rw&scopes[]=account_management&provider_key={{ provider_key }}"
-- uri:
-    url: "{{ obtain_token_url }}"
-    method: POST
-    timeout: 10
-    status_code: 201
-    return_content: yes
-    validate_certs: no
-    body_format: 'form-urlencoded'
-    body:
-      name: admin_rw_token
-      permission: rw
-      scopes[]: account_management
-      provider_key: "{{ provider_key }}"
-  register: token_response
-- set_fact:
-    access_token_content: "{{ token_response.content }}"
-- set_fact:
-    access_token: "{{ access_token_content.access_token.value }}"
-- debug:
-    msg: "access_token = {{ access_token }}"
+  when: >
+    atoken_not_exists is defined
 
 ###################################
 

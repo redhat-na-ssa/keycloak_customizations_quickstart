@@ -11,5 +11,5 @@ spec:
   name: {{ backend_name }}
   privateBaseURL: {{ frontend_url }}
   systemName: {{ backend_name }}
-#  providerAccountRef:
-#    name: {{ tenant_name }}-tenant-secret
+  providerAccountRef:
+    name: {{ tenant_name }}-atoken-secret

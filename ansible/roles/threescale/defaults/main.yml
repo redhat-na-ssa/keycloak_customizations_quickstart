@@ -1,7 +1,7 @@
 ---
 
 
-tenant_admin_email: 
+tenant_admin_email:
 
 backend_name: quarkus-backend
 

@@ -67,6 +67,6 @@ apimanager_namespace: rhi-apimgmt
 apigw_namespace: "{{ project_name }}"
 apigw_hostname_subcontext: "gw-{{ apigw_namespace }}"
 
-tenant_name: adprod
+tenant_name: adprod2
 delete_tenant: false
 ########################################
