@@ -51,6 +51,9 @@
 
 # ####     Generate Access token from provider_key   ###########
 
+
+# NOTE:  This workaround is no longer necessary in 3scale 2.12 as per:  https://github.com/3scale/3scale-operator/pull/725
+
 # NOTE:  access token is not available from tenant creation via operator  (it is however available when tenant created directly from master API)
 #   Eguzki Lezaun; Mar 3, 2021
 #

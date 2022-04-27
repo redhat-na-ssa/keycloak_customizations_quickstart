@@ -139,7 +139,7 @@ There are no problems with creation of backend and product creation in default t
 However, deletion of product and backend resources does not actually delete corresponding resources in 3scale API Manager.
 
 
-. New tenant creation; provider_key from {{ tenant_name }}-generated-secret is used
+. 3scale 2.11:  New tenant creation; provider_key from {{ tenant_name }}-generated-secret is used
 
 .. Execution
 +
@@ -164,8 +164,10 @@ oc describe on the product shows the following error:
 -----
 Warning  ReconcileError  66s (x15 over 4m1s)  Product  Task failed SyncBackendUsage: Error sync product [adprod-quarkus-product] backendusages: product [adprod-quarkus-product] get backendUsages: error calling 3scale system - reason: {"status":"Forbidden"} - code: 403
 -----
++
+NOTE:  This problem is link:https://github.com/3scale/3scale-operator/pull/725[resolved in 3scale 2.12]
 
-. New tenant creation; provider_key from {{ tenant_name }}-generated-secret is used to create new access token for use when creating backend and product:
+. 3scale 2.11:  New tenant creation; provider_key from {{ tenant_name }}-generated-secret is used to create new access token for use when creating backend and product:
 
 .. Execution
 +
@@ -180,4 +182,6 @@ $ ansible-playbook playbooks/threescale.yml \
 There are no problems with creation of backend and product creation in default tenant
 +
 However, deletion of product and backend resources does not actually delete corresponding resources in 3scale API Manager.
++
+NOTE:  This workaround is applicable to 3scale 2.11.  The root issue is ink:https://github.com/3scale/3scale-operator/pull/725[resolved in 3scale 2.12]
 
