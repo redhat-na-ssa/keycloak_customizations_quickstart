@@ -29,7 +29,12 @@ spec:
     enabled: true
     name: apicast
     version: builtin  
+
+  {% if create_tenant|bool %}
+
   providerAccountRef:
-    name: {{ tenant_name }}-atoken-secret
+    name: {{ tenant_access_token_secret }}
+
+  {% endif %}
 
     

@@ -10,10 +10,10 @@ spec:
     namespace: {{ apimanager_namespace }}
   organizationName: {{ tenant_name }}
   passwordCredentialsRef:
-    name: {{ tenant_name }}-admin-secret
+    name: {{ tenant_name }}-admin-passwd-secret
     namespace: {{ apimanager_namespace }}
   systemMasterUrl: https://master.{{ ocp_domain }}
   tenantSecretRef:
-    name: {{ tenant_name }}-tenant-secret
+    name: {{ tenant_name }}-generated-secret
     namespace: {{ apimanager_namespace }}
   username: admin

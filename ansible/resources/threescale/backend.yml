@@ -11,5 +11,10 @@ spec:
   name: {{ backend_name }}
   privateBaseURL: {{ frontend_url }}
   systemName: {{ backend_name }}
+
+  {% if create_tenant|bool %}
+
   providerAccountRef:
-    name: {{ tenant_name }}-atoken-secret
+    name: {{ tenant_access_token_secret }}
+
+  {% endif %}
