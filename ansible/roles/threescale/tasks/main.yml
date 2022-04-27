@@ -1,0 +1,187 @@
+---
+
+- name: set threescale facts
+  set_fact:
+    api_gw_url: "https://{{ apigw_hostname_subcontext }}.{{ ocp_domain }}"
+    sso_confidential_realm_url: "https://sso-{{ namespace_sso }}.{{ ocp_domain }}"
+
+- name: "copy 3scale related template files to {{ work_dir }}"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ work_dir }}/{{ item.path }}"
+  with_filetree: "{{ resources_dir }}"
+
+
+########    Tenant    #############
+
+- block:
+
+  - name: "tenant secret {{ tenant_name }}-admin-passwd-secret with tenant password"
+    oc_secret:
+      oc_binary: "{{ openshift_cli }}"
+      state: present
+      namespace: "{{ apimanager_namespace }}"
+      name: "{{ tenant_name }}-admin-passwd-secret"
+      type: generic
+      from_literal:
+        admin_password: admin
+  
+  - name: "create tenant {{ tenant_name }}"
+    oc_obj:
+      state: present
+      oc_binary: "{{ openshift_cli }}"
+      namespace: "{{ apimanager_namespace }}"
+      name: "{{ tenant_name }}"
+      kind: tenant
+      files:
+        - "{{ work_dir }}/tenant.yml"
+  
+  - name: "wait until {{ tenant_name }} tenant is up and running"
+    shell: "{{ openshift_cli }} get tenant {{ tenant_name }} -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
+    vars:
+      json_template: '\{\{.status.tenantId\}\}'
+    register: result
+    until: result.stdout | int >= 1
+    retries: 10
+    delay: 15
+    changed_when: false
+  
+
+
+
+# ####     Generate Access token from provider_key   ###########
+
+# NOTE:  access token is not available from tenant creation via operator  (it is however available when tenant created directly from master API)
+#   Eguzki Lezaun; Mar 3, 2021
+#
+#   The Access Token info is only available at the response of the tenant. After that, the access token cannot be read, even with the master access token
+#   So the operator cannot reconcilliate and be idempontent in case something goes wrong (cluster access error or 3scale API temporary error)
+#   As an example, the operator creates the tenant and then tries to store the access token in a secret. The secret creation op fails
+#   The operator cannot finish the reconciliation of the Tenant CRD with the recently created tenant. It would need to create another tenant and expect no error
+#   The provider key, on the other hand, is available in the account info (actually is a little bit more complex, but for simplicity let's say it is in the account info)
+
+  - name: "determine of {{ tenant_access_token_secret }} already exists"
+    oc_obj:
+      state: list
+      oc_binary: "{{ openshift_cli }}"
+      name: "{{ tenant_access_token_secret }}"
+      kind: "secret"
+      namespace: "{{ apimanager_namespace }}"
+    register: atoken_status
+  - debug:
+      msg: "atoken_status = {{ atoken_status }}"
+  - set_fact:
+      atoken_not_exists: "{{ atoken_status.ansible_module_results.stderr }}"
+    when: atoken_status.ansible_module_results.stderr is defined
+
+  - block:
+
+    - name: "Identify provider_key from auto-generated tenant secret"
+      shell: "oc get secret {{ tenant_name }}-generated-secret -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
+      vars:
+        json_template: '\{\{.data.token\}\}'
+      register: provider_key_response
+    - set_fact:
+        provider_key: "{{ provider_key_response.stdout | b64decode }}"
+    - debug:
+        msg: "provider_key = {{ provider_key }}"  
+    
+    
+    - name: "Using provider_key, identify userId of admin provider account of tenant"
+      set_fact:
+        list_users_url: "https://{{ tenant_name }}-admin.{{ ocp_domain }}/admin/api/users.json?role=admin&provider_key={{ provider_key }}"
+    - uri:
+        url: "{{ list_users_url }}"
+        method: GET
+        timeout: 10
+        status_code: 200
+        return_content: yes
+        validate_certs: no
+      register: user_list_response
+    - set_fact:
+        admin_id_json: "{{ user_list_response.content | from_json }}"
+    - set_fact:
+        admin_id: "{{ admin_id_json.users[0].user.id }}"
+    - debug:
+        msg: "admin_id = {{ admin_id }}"  
+    
+    - name: "Using provider_key, generate an access token for the tenant default admin account"
+      set_fact:
+        obtain_token_url: "https://{{ tenant_name }}-admin.{{ ocp_domain }}/admin/api/users/{{ admin_id }}/access_tokens.json?name=admin_rw_token&permission=rw&scopes[]=account_management&provider_key={{ provider_key }}"
+    - uri:
+        url: "{{ obtain_token_url }}"
+        method: POST
+        timeout: 10
+        status_code: 201
+        return_content: yes
+        validate_certs: no
+        body_format: 'form-urlencoded'
+        body:
+          name: admin_rw_token
+          permission: rw
+          scopes[]: account_management
+          provider_key: "{{ provider_key }}"
+      register: token_response
+    - set_fact:
+        access_token_content: "{{ token_response.content }}"
+    - set_fact:
+        access_token: "{{ access_token_content.access_token.value }}"
+    - debug:
+        msg: "access_token = {{ access_token }}"
+    
+    - name: "create secret containing access token {{ tenant_access_token_secret }}"
+      shell: "oc create secret generic {{ tenant_access_token_secret }} --from-literal=adminURL=https://{{ tenant_name }}-admin.{{ ocp_domain }} --from-literal=token={{ access_token }} -n {{ apimanager_namespace }}"
+    when: atoken_not_exists is defined
+
+  when: create_tenant|bool
+
+###################################
+
+
+
+########    backend    #############
+- name: "create backend {{ backend_name }}"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ apimanager_namespace }}"
+    name: "{{ backend_name }}"
+    kind: backend
+    files:
+      - "{{ work_dir }}/backend.yml"
+
+- name: "wait until {{ backend_name }} backend is up and running"
+  shell: "{{ openshift_cli }} get backend {{ backend_name }} -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
+  vars:
+    json_template: '\{\{.status.backendId\}\}'
+  register: result
+  until: result.stdout | int >= 1
+  retries: 10
+  delay: 10
+  changed_when: false
+
+###################################
+
+
+########    product    #############
+- name: "create product {{ api_product_name }}"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    namespace: "{{ apimanager_namespace }}"
+    name: "{{ api_product_name }}"
+    kind: product
+    files:
+      - "{{ work_dir }}/product.yml"
+
+- name: "wait until {{ api_product_name }} product is up and running"
+  shell: "{{ openshift_cli }} get product {{ api_product_name }} -o template --template={{ json_template }} -n {{ apimanager_namespace }}"
+  vars:
+    json_template: '\{\{.status.productId\}\}'
+  register: result
+  until: result.stdout | int >= 1
+  retries: 10
+  delay: 10
+  changed_when: false
+
+###################################

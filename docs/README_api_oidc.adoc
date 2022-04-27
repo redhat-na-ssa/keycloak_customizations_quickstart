@@ -11,7 +11,7 @@ image::images/user_fed_gw.png[]
 
 :numbered:
 
-=== Pre-reqs:
+== Pre-reqs:
 
 . _3scale API Manager and Tenant_ (version 2.11)
 +
@@ -21,7 +21,7 @@ Your OpenShift cluster should have the 3scale API _Manager_ and _Tenant_ install
 
 .. An apicast gateway should be provioned via the OpenShift operator in the _user1-services_ namespace
 
-=== Additional Environment Variables
+== Additional Environment Variables
 
 -----
 API_SSO_CLIENT_ID=2d9fb188                                              # auto-generated in RH-SSO by zync
@@ -29,7 +29,7 @@ API_SSO_CLIENT_CRED=5b22906b7a1a3970692d929b3bf88d2e                    # auto-g
 API_GW_URL=https://gw-user1-services.$OCP_DOMAIN
 -----
 
-=== Smoke Test API Gateway
+== Smoke Test API Gateway
 . Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
 +
 -----
@@ -58,7 +58,7 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 Hello jbrown with roles: ldap-user ldap-admin
 -----
 
-=== JWT claims used by 3scale API GW
+== JWT claims used by 3scale API GW
 
 API GW extracts the value of the _azp_ or _aud_ claim of the access token and uses it as the Client ID that identifies the application in 3scale to authorize the call through the 3scale _Service Management API_. 
 
@@ -73,7 +73,7 @@ Otherwise, the following is an example failure in _apicast_ (when apicast logLev
 2021/12/27 23:42:23 [debug] 28#28: *13 proxy.lua:287: rewrite(): oauth failed with 'aud' claim is required., requestID=f9e14f4fb6019ad77b5b162fe6def0f3
 -----
 
-==== Determine value of _aud_ field in access token:
+=== Determine value of _aud_ field in access token:
 
 . Execute:
 +
@@ -90,7 +90,7 @@ $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .aud
 . If the above returns _null_ then proceed to the next section to manually populate the _aud_ field of the access token:
 
 
-==== Manual Fix
+=== Manual Fix
 
 The sso realm configuration of this quickstart should by default generate access tokens whose _aud_ claim is populated.  So all is good.  
 If not, then execute the following:
@@ -104,12 +104,12 @@ If not, then execute the following:
 
 Please refer to chapter 5 of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] for more details and background regarding the _audience_ claim of a Keycloak generated _access token_.
 
-==== Alternatives to _azp_
+=== Alternatives to _azp_
 
 Customize, link:https://developers.redhat.com/blog/2020/11/09/openid-connect-integration-with-red-hat-3scale-api-management-and-okta?source=sso#verify_and_match_the_jwt_claim[verify and match the JWT claim]
 
 
-==== Reference:
+=== Reference:
 
 . link:https://datatracker.ietf.org/doc/html/rfc7519.html#section-4.1.3[Audience Claim as described in JWT specification]
 . link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloak - Audience Support]
@@ -118,3 +118,66 @@ Customize, link:https://developers.redhat.com/blog/2020/11/09/openid-connect-int
 . link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.11/html/administering_the_api_gateway/openid-connect#apicast-oidc-integration[3scale API GW: JWT verification & parsing]
 . link:https://issues.redhat.com/browse/THREESCALE-7006[THREESCALE-7006: "aud" claim is required in APIcast JWT validation]
 . link:https://issues.redhat.com/browse/THREESCALE-3952[THREESCALE-3952: Claims verification in APIcast]
+
+
+== API Resources Automation
+
+=== Smoke Tests
+
+. Backend and product creation in default tenant; no new tenant creation
+
+.. Execution
++
+-----
+$ ansible-playbook playbooks/threescale.yml
+----- 
+
+.. Result: 
++
+There are no problems with creation of backend and product creation in default tenant
++
+However, deletion of product and backend resources does not actually delete corresponding resources in 3scale API Manager.
+
+
+. New tenant creation; provider_key from {{ tenant_name }}-generated-secret is used
+
+.. Execution
++
+-----
+$ ansible-playbook playbooks/threescale.yml \
+    -e create_tenant=true \
+    -e tenant_admin_email=jbride+50@ratwater.xyz \
+    -e tenant_access_token_secret=adprod-generated-secret
+----- 
+
+.. Result:
++
+Backend is created with no problem.
+Product is created in API Manager however the kubernetes resource fails with the following exception in operator log:
++
+-----
+{"level":"error","ts":1651072701.7644935,"logger":"controllers.Product","msg":"Failed to reconcile","product":"rhi-apimgmt/adprod-quarkus-product","error":"Task failed SyncBackendUsage: Error sync product [adprod-quarkus-product] backendusages: product [adprod-quarkus-product] get backendUsages: error calling 3scale system - reason: {\"status\":\"Forbidden\"} - code: 403"
+-----
++
+oc describe on the product shows the following error:
++
+-----
+Warning  ReconcileError  66s (x15 over 4m1s)  Product  Task failed SyncBackendUsage: Error sync product [adprod-quarkus-product] backendusages: product [adprod-quarkus-product] get backendUsages: error calling 3scale system - reason: {"status":"Forbidden"} - code: 403
+-----
+
+. New tenant creation; provider_key from {{ tenant_name }}-generated-secret is used to create new access token for use when creating backend and product:
+
+.. Execution
++
+-----
+$ ansible-playbook playbooks/threescale.yml \
+    -e create_tenant=true \
+    -e tenant_admin_email=jbride+50@ratwater.xyz
+----- 
+
+.. Result:
++
+There are no problems with creation of backend and product creation in default tenant
++
+However, deletion of product and backend resources does not actually delete corresponding resources in 3scale API Manager.
+

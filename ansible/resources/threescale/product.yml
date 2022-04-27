@@ -1,0 +1,40 @@
+kind: Product
+apiVersion: capabilities.3scale.net/v1beta1
+metadata:
+  name: {{ api_product_name }}
+spec:
+  name: {{ api_product_name }}
+  systemName: {{ api_product_name }}
+  deployment:
+    apicastSelfManaged:
+      stagingPublicBaseURL: {{ api_gw_url }}
+      productionPublicBaseURL: {{ api_gw_url }}
+    authentication:
+      oidc:
+      issuerEndpoint: {{ sso_confidential_realm_url }}
+      issuerType: keycloak
+      authenticationFlow:
+        standardFlowEnabled: true
+        implicitFlowEnabled: false
+        serviceAccountsEnabled: true
+        directAccessGrantsEnabled: true
+  backendUsages:
+    {{ backend_name }}:
+      path: /
+  applicationPlans:
+    {{ app_plan_name }}:
+      appsRequireApproval: true
+  policies:
+  - configuration: {}
+    enabled: true
+    name: apicast
+    version: builtin  
+
+  {% if create_tenant|bool %}
+
+  providerAccountRef:
+    name: {{ tenant_access_token_secret }}
+
+  {% endif %}
+
+    

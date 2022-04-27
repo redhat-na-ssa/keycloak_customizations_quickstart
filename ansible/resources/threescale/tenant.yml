@@ -2,18 +2,18 @@ apiVersion: capabilities.3scale.net/v1alpha1
 kind: Tenant
 metadata:
   annotations:
-  name: adprod
+  name: {{ tenant_name }}
 spec:
-  email: admin@example.com
+  email: {{ tenant_admin_email }}
   masterCredentialsRef:
     name: system-seed
     namespace: {{ apimanager_namespace }}
-  organizationName: adprod
+  organizationName: {{ tenant_name }}
   passwordCredentialsRef:
-    name: adprod-admin-secret
+    name: {{ tenant_name }}-admin-passwd-secret
     namespace: {{ apimanager_namespace }}
   systemMasterUrl: https://master.{{ ocp_domain }}
   tenantSecretRef:
-    name: adprod-tenant-secret
+    name: {{ tenant_name }}-generated-secret
     namespace: {{ apimanager_namespace }}
   username: admin
