@@ -3,7 +3,7 @@ kind: ServiceEntry
 metadata:
  labels:
    app: ''
- name: system-entry
+ name: system-entry-apimgr-tenant-provider
 spec:
  hosts:
    - %TENANT_ADMIN_HOST%

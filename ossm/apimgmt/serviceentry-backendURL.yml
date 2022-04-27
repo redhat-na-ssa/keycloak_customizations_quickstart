@@ -3,13 +3,13 @@ kind: ServiceEntry
 metadata:
  labels:
    app: ''
- name: system-entry
+ name: system-entry-apimgr-backend
 spec:
  hosts:
-   - %API_MGMT_BACKEND_URL%
+   - %API_MGMT_BACKEND_HOST%
  location: MESH_EXTERNAL
  ports:
    - name: https
-     number: 80
-     protocol: HTTP
+     number: 443
+     protocol: HTTPS
  resolution: DNS

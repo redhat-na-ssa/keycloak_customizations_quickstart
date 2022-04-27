@@ -2,44 +2,16 @@ cat <<EOF
 apiVersion: maistra.io/v1
 kind: ServiceMeshExtension
 metadata:
- labels:
-   app: ''
- name: threescale-wasm-extension
+ name: threescale-wasm-adprod
 spec:
+ image: 'registry.redhat.io/openshift-service-mesh/3scale-auth-wasm-rhel8:0.0.1'
+ phase: PostAuthZ
+ priority: 100
+ workloadSelector:
+   labels:
+     app: frontend
  config:
    api: v1
-   backend:
-     extensions:
-       - no_body
-     name: backend
-     upstream:
-       name: >-
-         outbound|443||$API_MGMT_BACKEND_HOST
-       timeout: 5000
-       url: 'https://$API_MGMT_BACKEND_HOST'
-   services:
-     - authorities:
-         - '*'
-       id: '$API_SERVICE_ID'
-       credentials:
-         app_id:
-           - filter:
-               path:
-                 - envoy.filters.http.jwt_authn
-                 - "0"
-             keys:
-               - azp
-               - aud
-             ops:
-               - take:
-                   head: 1
-       mapping_rules:
-         - method: GET
-           pattern: /
-           usages:
-             - delta: 1
-               name: hits
-       token: $API_SERVICE_TOKEN
    system:
      name: system
      token: $TENANT_ACCESS_TOKEN
@@ -48,10 +20,40 @@ spec:
          outbound|443||$TENANT_ADMIN_HOST
        timeout: 5000
        url: 'https://$TENANT_ADMIN_HOST'
- image: 'quay.io/3scale/threescale-wasm-auth:qe'
- phase: PostAuthZ
- priority: 100
- workloadSelector:
-   labels:
-     app: frontend
+   backend:
+     name: backend
+     upstream:
+       name: >-
+         outbound|443||$API_MGMT_BACKEND_HOST
+       timeout: 5000
+       url: 'https://$API_MGMT_BACKEND_HOST'
+   services:
+    - id: '$API_SERVICE_ID'
+      token: $API_SERVICE_TOKEN
+      authorities:
+        - '*'
+      credentials:
+        app_id:
+          # NOTE:  This approach is taken because the example passes the JWT in the heder
+          #   https://github.com/3scale/threescale-wasm-auth/blob/main/docs/reference.md#picking-up-the-jwt-token-from-a-header
+          #
+          # NOTE:  Currently getting following error when loading threescale wasm:
+          #   error	envoy wasm	wasm log threescale-wasm-adprod_root :    (root/1) 3012357918: fatal configuration error: Error("data did not match any variant of untagged enum Operation", line: 0, column: 0)
+          - header:
+              keys:
+                - x-jwt-payload
+              ops:
+                - base64_urlsafe
+                - json:
+                  - keys:
+                    - azp
+                    - aud
+                - take:
+                    head: 1
+      mapping_rules:
+        - method: GET
+          pattern: /frontend
+          usages:
+            - delta: 1
+              name: hits
 EOF

@@ -178,22 +178,86 @@ Uses what seems to be an old container image:  quay.io/pusher/oauth2_proxy:v4.1.
 
 === Procedure
 
+. View list of tags for _3scale-auth-wasm_rhel8_ container image: 
++
 -----
-export TENANT_ADMIN_HOST=$(oc get secret adprod-tenant-secret -o json -n rhi-apimgmt | jq '.data.adminURL' -r | base64 -d | sed 's/https:\/\///' )
-export TENANT_ACCESS_TOKEN=$(oc get secret adprod-tenant-secret -o json -n rhi-apimgmt | jq '.data.token' -r | base64 -d)
-export API_MGMT_BACKEND_HOST=$( oc get route backend -n rhi-apimgmt --template='{{ .spec.host }}' )
-export API_SERVICE_ID=4
-export API_SERVICE_TOKEN=$( curl https://$TENANT_ACCESS_TOKEN@$TENANT_ADMIN_HOST/admin/api/services/$API_SERVICE_ID/proxy/configs/production/latest.json | jq -r '.proxy_config.content.backend_authentication_value'  )
+$ skopeo login registry.redhat.io -u <userId> -p <passwd>
+
+$ skopeo list-tags docker://registry.redhat.io/openshift-service-mesh/3scale-auth-wasm-rhel8
+
 -----
 
+. Set Environment Variables: 
++
+-----
+# export TENANT_SECRET=adprod-generated-secret  # only applicable for fix in 3scale 2.12
+export TENANT_SECRET=adprod-atoken-secret  # appropriate for 3scale 2.11
+export TENANT_ADMIN_HOST=$(oc get secret $TENANT_SECRET -o json -n rhi-apimgmt | jq '.data.adminURL' -r | base64 -d | sed 's/https:\/\///' )
+export TENANT_ACCESS_TOKEN=$(oc get secret $TENANT_SECRET -o json -n rhi-apimgmt | jq '.data.token' -r | base64 -d)
+export API_MGMT_BACKEND_HOST=$( oc get route backend -n rhi-apimgmt --template='{{ .spec.host }}' )
+export API_SERVICE_ID=$(oc get product adprod-quarkus-product -n rhi-apimgmt -o json | jq .status.productId)
+export API_SERVICE_TOKEN=$( curl https://$TENANT_ACCESS_TOKEN@$TENANT_ADMIN_HOST/admin/api/services/$API_SERVICE_ID/proxy/configs/production/latest.json | jq -r '.proxy_config.content.backend_authentication_value'  )
+export API_APP_ID=CHANGEME
+-----
+
+. Create a ServiceEntry allowing API gateway WASM to invoke 3scale Admin Provider URL: 
++
 -----
 $ sed "s|%TENANT_ADMIN_HOST%|$TENANT_ADMIN_HOST|" ./ossm/apimgmt/serviceentry-adminURL.yml |  oc apply -n user1-services -f -
 -----
 
+. Create a ServiceEntry allowing API gateway WASM to invoke 3scale backend URL: 
++
 -----
-$ sed "s|%API_MGMT_BACKEND_URL%|$API_MGMT_BACKEND_URL|" ./ossm/apimgmt/serviceentry-backendURL.yml |  oc apply -n user1-services -f -
+$ sed "s|%API_MGMT_BACKEND_HOST%|$API_MGMT_BACKEND_HOST|" ./ossm/apimgmt/serviceentry-backendURL.yml |  oc apply -n user1-services -f -
 -----
 
+. Set the log level of the _wasm_ module of _istio-proxy_ to debug: 
++
+-----
+$ oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?wasm=debug
+-----
+
+. In a new terminal, tail the log file of the _frontend_ pod's _istio-proxy_ container: 
++
+-----
+$ oc logs -c istio-proxy -f $(oc get pod | grep "^frontend" | awk '{print $1}')
+-----
+
+. Create a new ServiceMeshExtension: 
++
 -----
 $ . ossm/apimgmt/servicemeshextension.yml | oc apply -n user1-services -f -
+-----
++
+NOTE: In the logs of the _istio-proxy_, you might see warnings such as the following: 
++
+-----
+2022-04-27T21:39:08.178317Z	warning	envoy wasm	wasm log threescale-wasm-adprod_root :  (root/1)  331943116: on_vm_start: empty VM config
+2022-04-27T21:39:08.206972Z	warning	envoy wasm	wasm log threescale-wasm-adprod_root :  (root/1) 3991748476: on_vm_start: empty VM config
+2022-04-27T21:39:08.207477Z	warning	envoy wasm	wasm log threescale-wasm-adprod_root :  (root/1) 1626258163: on_vm_start: empty VM config
+2022-04-27T21:39:08.207534Z	warning	envoy wasm	wasm log threescale-wasm-adprod_root :  (root/1)  307150597: on_vm_start: empty VM config
+
+-----
++
+These warnings are benign and can be ignored.
+What you should not see are any errors in the log.
+
+. Retrieve token from RH-SSO:
++
+-----
+$ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=$API_APP_ID" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+. Invoke frontend service via istio ingress gateway:
++
+-----
+$ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
 -----

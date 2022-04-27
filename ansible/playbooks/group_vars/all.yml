@@ -53,8 +53,7 @@ sso_clientId: ldap-app
 project_name: "{{ project_admin }}-services"
 
 frontend_app_name: frontend
-#frontend_url: "http://{{ frontend_app_name }}.{{ project_name }}:8080"
-frontend_url: https://api.example.com
+frontend_url: "http://{{ frontend_app_name }}.{{ project_name }}:8080"
 
 backend_app_name: backend-oidc
 backend_url: "http://{{ backend_app_name }}.{{ project_name }}:8080"
