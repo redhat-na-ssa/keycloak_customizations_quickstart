@@ -60,7 +60,7 @@
 #   The operator cannot finish the reconciliation of the Tenant CRD with the recently created tenant. It would need to create another tenant and expect no error
 #   The provider key, on the other hand, is available in the account info (actually is a little bit more complex, but for simplicity let's say it is in the account info)
 
-  - name: "determine of {{ tenant_access_token_secret }} already exists"
+  - name: "determine if {{ tenant_access_token_secret }} already exists"
     oc_obj:
       state: list
       oc_binary: "{{ openshift_cli }}"
