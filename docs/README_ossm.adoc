@@ -219,10 +219,11 @@ error	envoy wasm	wasm log:    233614343 (1/http): on_http_request_headers: could
 
 -----
 
-. Set the log level of the _wasm_ module of _istio-proxy_ to debug: 
+. Set the log level of the _wasm_ and _http_ modules of _istio-proxy_ to debug: 
 +
 -----
-$ oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?wasm=debug
+$ oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?wasm=debug \
+  && oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?http=debug
 -----
 
 . In a new terminal, tail the log file of the _frontend_ pod's _istio-proxy_ container: 
@@ -250,6 +251,14 @@ NOTE: In the logs of the _istio-proxy_, you might see warnings such as the follo
 These warnings are benign and can be ignored.
 What you should not see are any errors in the log.
 
+. Optional:  Advanced envoy debugging:
+.. Using the _istioctl_ utility, execute the following:
++
+-----
+$ istioctl dashboard envoy $(oc get pod | grep "^frontend" | awk '{print $1}').user1-services
+-----
+.. Navigate to _config_dump_
+
 . Retrieve token from RH-SSO:
 +
 -----
@@ -269,7 +278,9 @@ $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
 $ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
 -----
 
-. Existing eror: 
+. Existing error when servicemeshextension configured to use https to backend:
+
+.. logs: 
 +
 -----
 }
@@ -281,3 +292,8 @@ $ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
 2022-04-28T02:03:48.060953Z	debug	envoy wasm	wasm log:    1625927304 (1/http): 403 sent
 
 -----
+
+.. Jiras
+
+... link:https://github.com/3scale/threescale-wasm-auth/issues/79[79].
+... link:https://issues.redhat.com/browse/THREESCALE-7919[THREESCALE-7919]
