@@ -17,9 +17,9 @@
   "scope": "profile email",
   "sid": "34c13c5d-a310-440b-bb59-b68b9495beda",
   "email_verified": false,
-  "name": "James Brown",
+  "name": "John Brown",
   "preferred_username": "jbrown",
-  "given_name": "James",
+  "given_name": "John",
   "family_name": "Brown",
   "email": "jbrown@keycloak.org"
 }

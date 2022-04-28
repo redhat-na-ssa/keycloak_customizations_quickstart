@@ -18,7 +18,7 @@
                 document.getElementById('name').textContent = 'Hello ' + kc.idTokenParsed.preferred_username;
             }
             if (kc.idTokenParsed.picture) {
-                document.getElementById('picture').src = kc.idTokenParsed.picture;
+                document.getElementById('picture').src = 'data:image/jpeg;base64,'+ kc.idTokenParsed.picture;
             }
             document.getElementById('user').style.display = 'block';
         }

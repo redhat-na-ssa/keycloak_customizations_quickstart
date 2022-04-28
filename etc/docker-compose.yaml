@@ -46,8 +46,8 @@ services:
       # Add the following entry in your /etc/hosts:  127.0.0.1  sso.local
       KC_HOSTNAME: sso.local:4080
 
-      KEYCLOAK_ADMIN: master
-      KEYCLOAK_ADMIN_PASSWORD: master
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB_URL: 'jdbc:postgresql://psql_sso:4432/sso'
       KC_DB_USERNAME: sso
       KC_DB_PASSWORD: sso
@@ -98,7 +98,7 @@ services:
 
   token-inspector:
     container_name: token-inspector
-    image: quay.io/jbride/keycloak-token-inspector:0.0.1
+    image: quay.io/jbride/keycloak-token-inspector:0.0.2
     restart: always
     ports:
       - "8000:8000"

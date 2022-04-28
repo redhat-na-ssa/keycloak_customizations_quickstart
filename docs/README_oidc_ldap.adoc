@@ -70,26 +70,29 @@ This quickstart includes a _docker-compose_ to facilitate development and testin
 
 === Pre-reqs
 
-. _docker_ or _podman_
+. *docker* or *podman*
 
-. _docker-compose_
+. *docker-compose*
 
-. _curl_ utility
+. *curl*
 
-. _ldapsearch_
+. *ldapsearch*
+
+. *jq*
 
 === Environment Variables
 
 . Set the following environment variables with values similar to the following:
 +
 -----
-RHSSO_HOST=sso.local
-RHSSO_URL=http://$RHSSO_HOST:4080
-REALM_ID=ldap-demo
-SSO_CLIENT_ID=ldap-app
-ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
-BACKEND_ROUTE=http://localhost:6080
-FRONTEND_ROUTE=http://localhost:7080
+export RHSSO_HOST=sso.local
+export RHSSO_URL=http://$RHSSO_HOST:4080
+export RHSSO_MASTER_PASSWD=admin
+export REALM_ID=ldap-demo
+export SSO_CLIENT_ID=ldap-app
+export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+export BACKEND_ROUTE=http://localhost:6080
+export FRONTEND_ROUTE=http://localhost:7080
 -----
 
 . Add the following entry to your `/etc/hosts`:
@@ -120,6 +123,25 @@ quay.io/redhat_naps_da/frontend-oidc:0.0.4              0.0.0.0:7080->7080/tcp  
 quay.io/jbride/keycloak-token-inspector:0.0.1           0.0.0.0:8000->8000/tcp                          token-inspector
 -----
 
+=== RH-SSO Admin Console and Endpoints
+. Open a web browser and navigate to the console of the `master` realm :
++
+-----
+$ echo -en "\n$RHSSO_URL/admin/master/console\n\n"
+-----
+
+. Authenticate using `admin` as the userId and the value of the `$RHSSO_MASTER_PASSWD` environment variable as the password.
+. As the RH-SSO site admin, you have full access to all of its resources.
++
+image::images/master_homepage.png[]
+
+
+. Invoke _Discovery Endpoint_ of RH-SSO to view details of OIDC related REST APIs:
++
+-----
+$ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" | jq .
+-----
+
 
 === Smoke Test
 
@@ -129,12 +151,6 @@ quay.io/jbride/keycloak-token-inspector:0.0.1           0.0.0.0:8000->8000/tcp  
 $ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
 -----
 
-
-. Invoke _Discovery Endpoint_ of RH-SSO to view details of OIDC related REST APIs:
-+
------
-$ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" | jq .
------
 
 
 . Retrieve an OAuth2 _access token_ using OAuth2 link:https://tools.ietf.org/html/rfc6749#section-4.3[Resource Owner Password Credentials] flow :
@@ -154,7 +170,7 @@ $ echo $TKN
 +
 NOTE:  By setting a `scope=openid`, the OIDC _id_token_ is also included in the response.
 
-. By setting _fullScopeAllowed=true_ in SSO client, all roles assocated with an authenticated user will be included in the access token.
+. By setting _fullScopeAllowed=true_ in the SSO client, all roles assocated with an authenticated user will be included in the access token.
 +
 These roles can be visualized as follows:
 +
@@ -224,7 +240,7 @@ Subsequently, all credit for that web app goes to the author of that book.  Than
 . Open a web browser and navigate to:  http://localhost:8000
 . Switch to the _Network_ tab of your _Web Developer Tools_ on that page.
 +
-image::docs/images/browser_network_tools.png[]
+image::images/browser_network_tools.png[]
 
 . Click the `Login` button at the top-left corner of the page
 . Notice the re-direction to the URL of the app's _SSO Realm_.  What are the request parameters?
@@ -246,9 +262,9 @@ In this section of the lab, you will modify the synchronization strategy to allo
 
 ==== Change synchronization to: Writable
 . Your SSO Realm includes a _User Federation_ config called:  `ldap-apacheds`.
-. Navigate to: `User Federation -> ldap-apacheds`
+. In the _ldap-demo_ realm of RH-SSO, navigate to: `User Federation -> ldap-apacheds -> edit`
 +
-image::images/modify_ldap-apacheds.png[]
+image::images/edit_user_federation.png[]
 
 . Switch the _Edit Mode_ to:  `WRITEABLE`.
 . Click `Save`
