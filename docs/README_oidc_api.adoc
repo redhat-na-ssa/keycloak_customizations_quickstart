@@ -11,15 +11,24 @@ image::images/user_fed_gw.png[]
 
 :numbered:
 
+== Quickstart Highlights
+
+. Automated and idempotent install of the following API Mgmt related resources:
+.. Tenant
+.. API Gateway (co-located with business services and in communication with admin provider of tenant)
+.. Backend
+.. Product
+.. Developer Account and User
+
+. Exploration of the _aud_ claim of an Oauth2 _Access Token_.
++
+In particular, this token is required by the _apicast_ gateway of 3scale.
+
 == Pre-reqs:
 
-. _3scale API Manager and Tenant_ (version 2.11)
+. _3scale API Manager (version 2.11)
 +
-Your OpenShift cluster should have the 3scale API _Manager_ and _Tenant_ installed (preferrably via the 3scale Operator).
-
-. _3scale APIcast Gateway_ (version 2.11)
-
-.. An apicast gateway should be provioned via the OpenShift operator in the _user1-services_ namespace
+Your OpenShift cluster should have the 3scale API _Manager_ installed (via the 3scale Operator) in the following namespace:  _rhi-apimgmt_.
 
 == Additional Environment Variables
 

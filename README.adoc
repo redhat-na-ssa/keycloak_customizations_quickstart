@@ -1,9 +1,15 @@
-= RH-SSO Integration Quickstarts
+= RH-SSO Integrations Quickstarts
+
+The purpose of this project is to demonstrate various security related use cases that involve Red Hat SSO and other Red Hat products.
+
+The use cases build on each other.
+
+This project includes the following documentation that should be viewed in order:
 
 
-. link:docs/README_oidc_ldap.adoc[RH-SSO / LDAP Integration Quickstart]
-. link:docs/README_api_oidc.adoc[RH-SSO / 3scale Integration Quickstart]
-. link:docs/README_ossm.adoc[RH-SSO / Service Mesh Quickstart]
+. link:docs/README_oidc_ldap.adoc[RH-SSO / LDAP Integrations Quickstart]
+. link:docs/README_oidc_api.adoc[RH-SSO / API Mgmt Integrations Quickstart]
+. link:docs/README_ossm.adoc[RH-SSO / OSSM / API Mgmt Integrations Quickstart]
 
 == TO-DO
 

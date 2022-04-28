@@ -20,10 +20,10 @@ spec:
         directAccessGrantsEnabled: true
   backendUsages:
     {{ backend_name }}:
-      path: /
+      path: /frontend
   applicationPlans:
     {{ app_plan_name }}:
-      appsRequireApproval: true
+      appsRequireApproval: false
   policies:
   - configuration: {}
     enabled: true

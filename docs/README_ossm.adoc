@@ -8,9 +8,20 @@
 
 :numbered:
 
+== Pre-reqs
+
+=== Download `istioctl`
+
+Some exercises in this course use the `istioctl` Istio command line tool. +
+Download the upstream Istio distribution from link:https://github.com/istio/istio/releases/tag/1.9.9[]. 
+
+Make sure to download the _1.9.9_ version, which corresponds with the upstream Istio version that Red Hat Service Mesh is based on.
+
+Extract the archive to a directory on your $PATH.
+
 == Restrict User Access Via Service Mesh 2.0 & RH-SSO
 
-=== Pre-reqs
+
 
 === Environment Variables
 

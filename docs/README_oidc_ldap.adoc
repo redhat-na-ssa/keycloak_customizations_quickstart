@@ -27,9 +27,11 @@ In particular, the _WRITABLE_ strategy can be used to replicate any changes made
 
 . Exploration of Broker Federation using RH-SSO and Github
 
-. Exploration of the _aud_ claim of an Oauth2 _Access Token_.
-+
-In particular, this token is required by the _apicast_ gateway of 3scale.
+. OIDC enabled web app development in local environment via _docker-compose_
+
+. OIDC enabled web app deployment to OpenShift via ansible
+
+
 
 == Architecture
 
@@ -298,12 +300,12 @@ Keycloak can integrate w/ 3rd party identity providers using a set of open stand
 
 In this section of the quickstart, _github_ will be used as that targeted identity provider and the protocol used to facilitate that integration will be OpenID Connect.
 
-=== Benefits
+==== Benefits
 Through identity brokering, you can provide a much better experience for users where they can leverage an existing account to authenticate and sign up in your realm.
 
 Once these users have been created and their information has been imported from the third-party provider, they become users of your realm and can enjoy all of the features provided by Keycloak and respect the security constraints imposed by your realm.
 
-=== github OAuth App
+==== github OAuth App
 
 In this section, you will create a new OAuth client in github.
 
@@ -319,7 +321,7 @@ In this section, you will create a new OAuth client in github.
 image::images/external-idp-settings.png[]
 
 
-=== RH-SSO: github Identity Provider
+==== RH-SSO: github Identity Provider
 
 . Modify both the `Client Id` as well as the `Client Secret` with the values provided in the github OAuth App
 +
@@ -353,9 +355,6 @@ image::images/rhsso_github_idp.png[]
 
 . Click `Save`
 
-
-
-
 == OpenShift
 This quickstart includes _ansible_ to deploy to an OpenShift environment.  All of the same tests conducted in your local environment can be executed in your OpenShift environment.
 
@@ -365,11 +364,9 @@ This quickstart includes _ansible_ to deploy to an OpenShift environment.  All o
 +
 The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of this quickstart.
 
-. _oc utiltiy_
+. link:https://mirror.openshift.com/pub/openshift-v4/clients/ocp/?C=M;O=D[oc utility] corresponding to the version of your OpenShift cluster.
 
-. _curl_ utility
-
-. _ldapsearch_
+. _ansible-playbook_ utility installed
 
 
 === Startup
@@ -396,7 +393,7 @@ $ ansible-playbook playbooks/install.yml
 .. *user1-services* namespace: 
 ... *frontend* service
 ... *backend* service
-
+... *token-inspector* web app
 
 
 === Environment Variables
@@ -417,8 +414,7 @@ export FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 
 === Testing 
 
-All of the same tests conducted in your local environment can be executed in your OpenShift environment.
-
+All of the same tests conducted previously in your local environment can be executed in your OpenShift environment.
 
 
 == Reference
