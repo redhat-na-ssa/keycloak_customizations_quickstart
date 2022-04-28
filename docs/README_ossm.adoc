@@ -211,6 +211,13 @@ $ sed "s|%TENANT_ADMIN_HOST%|$TENANT_ADMIN_HOST|" ./ossm/apimgmt/serviceentry-ad
 -----
 $ sed "s|%API_MGMT_BACKEND_HOST%|$API_MGMT_BACKEND_HOST|" ./ossm/apimgmt/serviceentry-backendURL.yml |  oc apply -n user1-services -f -
 -----
++
+NOTE:  Without this ServiceEntry, an error should appear in the _envoy-proxy_ logs similar to the following: 
++
+-----
+error	envoy wasm	wasm log:    233614343 (1/http): on_http_request_headers: could not dispatch HTTP call to outbound|443||backend-3scale.apps.den.ratwater.xyz: did you create the cluster to do so? - "failed to dispatch HTTP (https) call to cluster outbound|443||backend-3scale.apps.den.ratwater.xyz with authority backend-3scale.apps.den.ratwater.xyz: BadArgument"
+
+-----
 
 . Set the log level of the _wasm_ module of _istio-proxy_ to debug: 
 +
@@ -260,4 +267,17 @@ $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
+-----
+
+. Existing eror: 
++
+-----
+}
+2022-04-28T02:03:48.058188Z	debug	envoy wasm	wasm log:    1625927304 (1/http): matched pattern in /frontend
+2022-04-28T02:03:48.058378Z	info	envoy wasm	wasm log: calling out outbound|443||backend-3scale.apps.den.ratwater.xyz (using https scheme) with headers -> [(":authority", "backend-3scale.apps.den.ratwater.xyz"), (":scheme", "https"), (":method", "GET"), (":path", "/transactions/authrep.xml?service_id=13&service_token=ea06d62d7cb0659140d0b31384f789a9464934feedf478fe8030933529e331f4&app_id=84493d52&usage[hits]=1"), ("3scale-options", "no_body=1"), ("User-Agent", "threescalers/0.8.0")] <- and body -> "(nothing)" <-
+2022-04-28T02:03:48.059140Z	info	envoy wasm	wasm log:     1625927304 (1/http): on_http_request_headers: call token is 4
+2022-04-28T02:03:48.060876Z	info	envoy wasm	wasm log:     1625927304 (1/http): http_ctx: on_http_call_response: token id is 4
+2022-04-28T02:03:48.060927Z	info	envoy wasm	wasm log:     1625927304 (1/http): on_http_call_response: forbidden 4
+2022-04-28T02:03:48.060953Z	debug	envoy wasm	wasm log:    1625927304 (1/http): 403 sent
+
 -----

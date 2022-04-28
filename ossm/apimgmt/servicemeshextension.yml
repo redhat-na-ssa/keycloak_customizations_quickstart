@@ -34,22 +34,33 @@ spec:
         - '*'
       credentials:
         app_id:
-          # NOTE:  This approach is taken because the example passes the JWT in the heder
-          #   https://github.com/3scale/threescale-wasm-auth/blob/main/docs/reference.md#picking-up-the-jwt-token-from-a-header
-          #
-          # NOTE:  Currently getting following error when loading threescale wasm:
-          #   error	envoy wasm	wasm log threescale-wasm-adprod_root :    (root/1) 3012357918: fatal configuration error: Error("data did not match any variant of untagged enum Operation", line: 0, column: 0)
-          - header:
+          - filter:
+              path:
+                - envoy.filters.http.jwt_authn
+                - "0"
               keys:
-                - x-jwt-payload
+                - azp
               ops:
-                - base64_urlsafe
-                - json:
-                  - keys:
-                    - azp
-                    - aud
                 - take:
                     head: 1
+#      credentials:
+#        app_id:
+#          # NOTE:  This approach is taken because the example passes the JWT in the heder
+#          #   https://github.com/3scale/threescale-wasm-auth/blob/main/docs/reference.md#picking-up-the-jwt-token-from-a-header
+#          #
+#          # NOTE:  Currently getting following error when loading threescale wasm:
+#          #   error	envoy wasm	wasm log threescale-wasm-adprod_root :    (root/1) 3012357918: fatal configuration error: Error("data did not match any variant of untagged enum Operation", line: 0, column: 0)
+#          - header:
+#              keys:
+#                - x-jwt-payload
+#              ops:
+#                - base64_urlsafe
+#                - json:
+#                  - keys:
+#                    - azp
+#                    - aud
+#                - take:
+#                    head: 1
       mapping_rules:
         - method: GET
           pattern: /frontend
