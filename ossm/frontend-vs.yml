@@ -5,7 +5,7 @@ metadata:
   name: frontend-vs
 spec:
   hosts:
-  - %FHOST%
+  - %INGRESS_HOST%
   gateways:
   - user1-services/frontend-gw
   http:

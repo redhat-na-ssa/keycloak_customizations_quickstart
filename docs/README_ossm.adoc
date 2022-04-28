@@ -1,8 +1,14 @@
-= OSSM
+:scrollbar:
+:data-uri:
+:toc2:
+:linkattrs:
+
+
+= OSSM / SSO / API Mgmt Integrations
 
 :numbered:
 
-== Restricting User Access Via Service Mesh 2.0 & RH-SSO
+== Restrict User Access Via Service Mesh 2.0 & RH-SSO
 
 === Pre-reqs
 
@@ -18,7 +24,7 @@ export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm |
 export REALM_ID=user1-ldap
 export SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
 export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
-export FHOST=frontend-istio.$OCP_DOMAIN
+export INGRESS_HOST=secure-ingress.$OCP_DOMAIN
 -----
 
 === Add Services to Mesh
@@ -50,7 +56,7 @@ spec:
 -----
 
 
-=== Using Istio native mechanisms for JWT-based authorization
+=== Use Istio native mechanisms for JWT-based authorization
 The purpose of this quickstart is to demonstrate exposure of a REST API deployed in OSSM where the request must include a valid JWT.
 
 . Delete existing _frontend_ route:
@@ -62,19 +68,19 @@ $ oc delete route frontend -n user1-services
 . Create route that targets istio ingress gateway:
 +
 -----
-$ sed "s|%FHOST%|$FHOST|" ./ossm/frontend-route.yml |  oc apply -n admin1-istio-system -f -
+$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/ingress-route.yml |  oc apply -n admin1-istio-system -f -
 -----
 
 . Create gateway:
 +
 -----
-$ sed "s|%FHOST%|$FHOST|" ./ossm/frontend-gw.yml |  oc apply -n user1-services -f -
+$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/frontend-gw.yml |  oc apply -n user1-services -f -
 -----
 
 . Create virtual service:
 +
 -----
-$ sed "s|%FHOST%|$FHOST|" ./ossm/frontend-vs.yml |  oc apply -n user1-services -f -
+$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/frontend-vs.yml |  oc apply -n user1-services -f -
 -----
 
 . Retrieve token from RH-SSO:
@@ -93,7 +99,7 @@ $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
 . Invoke frontend service via istio ingress gateway:
 +
 -----
-$ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
+$ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$INGRESS_HOST/frontend
 -----
 
 . Inspect JWT:
@@ -126,15 +132,11 @@ $ cd webapp
 
 $ export KC_URL=$RHSSO_URL \
   && export KC_REALM_ID=$REALM_ID \
-  && export SERVICE_URL=https://$FHOST/frontend \
+  && export SERVICE_URL=https://$INGRESS_HOST/frontend \
   && npm start
 -----
 
-=== Injecting oauth2-proxy container inside the Istio ingress gateway to implement an OIDC workflow
-
-TO-DO
-
-=== Combining JWT-based authorization and OIDC workflow
+=== Inject oauth2-proxy in Istio ingress gateway to implement an OIDC workflow
 
 TO-DO
 
@@ -167,7 +169,7 @@ Uses what seems to be an old container image:  quay.io/pusher/oauth2_proxy:v4.1.
 . link:https://github.com/RedHatGov/service-mesh-workshop-dashboard/blob/main/workshop/content/lab5.4_authpolicy.md[Lab:  Authorizing and Authenticating Access via Policy]
 
 
-== Apply API Policies to OIDC enabled Ingress Gateway traffic
+== Apply API Policies to Ingress Gateway traffic
 
 === Reference
 
@@ -175,6 +177,32 @@ Uses what seems to be an old container image:  quay.io/pusher/oauth2_proxy:v4.1.
 . https://developers.redhat.com/articles/2021/12/06/custom-webassembly-extensions-openshift-service-mesh[Satya's writeup]
 . https://github.com/3scale/threescale-wasm-auth/[github: threescale-wasm-auth]
 . link:https://quay.io/repository/3scale/threescale-wasm-auth?tab=tags&tag=latest[3scale WASM container images]
+
+=== Prereqs
+
+=== Envoy Proxy troubleshooting
+
+. Set the log level of the _wasm_ and _http_ modules of _istio-proxy_ to debug: 
++
+-----
+$ oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?wasm=debug \
+  && oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?http=debug
+-----
+
+. In a new terminal, tail the log file of the _frontend_ pod's _istio-proxy_ container: 
++
+-----
+$ oc logs -c istio-proxy -f $(oc get pod | grep "^frontend" | awk '{print $1}')
+-----
+
+. Optional:  Advanced envoy debugging:
+.. Using the _istioctl_ utility, execute the following:
++
+-----
+$ istioctl dashboard envoy $(oc get pod | grep "^frontend" | awk '{print $1}').user1-services
+-----
+.. Navigate to _config_dump_
+
 
 === Procedure
 
@@ -203,39 +231,28 @@ export API_APP_ID=CHANGEME
 . Create a ServiceEntry allowing API gateway WASM to invoke 3scale Admin Provider URL: 
 +
 -----
-$ sed "s|%TENANT_ADMIN_HOST%|$TENANT_ADMIN_HOST|" ./ossm/apimgmt/serviceentry-adminURL.yml |  oc apply -n user1-services -f -
+$ sed "s|%TENANT_ADMIN_HOST%|$TENANT_ADMIN_HOST|" ./ossm/3scale-wasm/serviceentry-adminURL.yml |  oc apply -n user1-services -f -
 -----
 
 . Create a ServiceEntry allowing API gateway WASM to invoke 3scale backend URL: 
 +
 -----
-$ sed "s|%API_MGMT_BACKEND_HOST%|$API_MGMT_BACKEND_HOST|" ./ossm/apimgmt/serviceentry-backendURL.yml |  oc apply -n user1-services -f -
+$ sed "s|%API_MGMT_BACKEND_HOST%|$API_MGMT_BACKEND_HOST|" ./ossm/3scale-wasm/serviceentry-backendURL.yml |  oc apply -n user1-services -f -
 -----
 +
-NOTE:  Without this ServiceEntry, an error should appear in the _envoy-proxy_ logs similar to the following: 
+NOTE:  Without this ServiceEntry, an error will appear in the _envoy-proxy_ logs similar to the following: 
 +
 -----
 error	envoy wasm	wasm log:    233614343 (1/http): on_http_request_headers: could not dispatch HTTP call to outbound|443||backend-3scale.apps.den.ratwater.xyz: did you create the cluster to do so? - "failed to dispatch HTTP (https) call to cluster outbound|443||backend-3scale.apps.den.ratwater.xyz with authority backend-3scale.apps.den.ratwater.xyz: BadArgument"
 
 -----
 
-. Set the log level of the _wasm_ and _http_ modules of _istio-proxy_ to debug: 
-+
------
-$ oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?wasm=debug \
-  && oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?http=debug
------
 
-. In a new terminal, tail the log file of the _frontend_ pod's _istio-proxy_ container: 
-+
------
-$ oc logs -c istio-proxy -f $(oc get pod | grep "^frontend" | awk '{print $1}')
------
 
 . Create a new ServiceMeshExtension: 
 +
 -----
-$ . ossm/apimgmt/servicemeshextension.yml | oc apply -n user1-services -f -
+$ . ossm/3scale-wasm/servicemeshextension.yml | oc apply -n user1-services -f -
 -----
 +
 NOTE: In the logs of the _istio-proxy_, you might see warnings such as the following: 
@@ -251,13 +268,7 @@ NOTE: In the logs of the _istio-proxy_, you might see warnings such as the follo
 These warnings are benign and can be ignored.
 What you should not see are any errors in the log.
 
-. Optional:  Advanced envoy debugging:
-.. Using the _istioctl_ utility, execute the following:
-+
------
-$ istioctl dashboard envoy $(oc get pod | grep "^frontend" | awk '{print $1}').user1-services
------
-.. Navigate to _config_dump_
+
 
 . Retrieve token from RH-SSO:
 +
@@ -275,7 +286,7 @@ $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
 . Invoke frontend service via istio ingress gateway:
 +
 -----
-$ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$FHOST/frontend
+$ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$INGRESS_HOST/frontend
 -----
 
 . Existing error when servicemeshextension configured to use https to backend:

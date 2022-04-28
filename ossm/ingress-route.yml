@@ -5,10 +5,10 @@ metadata:
   annotations:
     openshift.io/host.generated: \"true\"
   labels:
-    app: frontend
-  name: frontend-route
+    app: ingress-gateway
+  name: secure-ingress
 spec:
-  host: %FHOST%
+  host: %INGRESS_HOST%
   port:
     targetPort: http2
   tls:
