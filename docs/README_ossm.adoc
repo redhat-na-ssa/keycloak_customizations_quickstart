@@ -8,20 +8,7 @@
 
 :numbered:
 
-== Pre-reqs
-
-=== Download `istioctl`
-
-Some exercises in this course use the `istioctl` Istio command line tool. +
-Download the upstream Istio distribution from link:https://github.com/istio/istio/releases/tag/1.9.9[]. 
-
-Make sure to download the _1.9.9_ version, which corresponds with the upstream Istio version that Red Hat Service Mesh is based on.
-
-Extract the archive to a directory on your $PATH.
-
-== Restrict User Access Via Service Mesh 2.0 & RH-SSO
-
-
+== OSSM Pre-reqs
 
 === Environment Variables
 
@@ -36,7 +23,176 @@ export REALM_ID=user1-ldap
 export SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
 export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 export INGRESS_HOST=secure-ingress.$OCP_DOMAIN
+export SM_CP_NS=admin1-istio-system
 -----
+
+=== `istioctl`
+
+Some exercises in this quickstart use the `istioctl` Istio command line tool. +
+You can ownload the upstream Istio distribution from link:https://github.com/istio/istio/releases/tag/1.9.9[]. 
+
+Make sure to download the _1.9.9_ version, which corresponds with the upstream Istio version that Red Hat Service Mesh is based on.
+
+Extract the archive to a directory on your $PATH.
+
+
+=== OSSM Control Plane
+You'll need _OpenShift Service Mesh_ installed in your OCP cluster.
+
+For the purpose of this quickstart documentation, the istio control plane is installed in a namespace called:  `admin1-istio-system`.  Notice you previously set an environment variable called `SM_CP_NS` to the name of this namespace.
+
+Verify the version of OSSM that is installed by executing the following at the command line: 
+
+-----
+$ istioctl version --remote=true -i $SM_CP_NS
+
+
+client version: 1.9.9
+control plane version: OSSM_2.1.2-4.el8
+data plane version: 1.9.9 (4 proxies)
+-----
+
+=== `ServiceMeshMemberRoll`
+
+. Register the `user1-services` namespace as a member to be monitored and managed by your service mesh control plane:
++
+-----
+$ echo "apiVersion: maistra.io/v1
+kind: ServiceMeshMemberRoll
+metadata:
+  name: default
+spec:
+  members:
+  - user1-services" | oc apply -n $SM_CP_NS -f -
+-----
+
+* NOTE:  The `ServiceMeshMemberRoll` resource exists in the service mesh control plane, which is typically owned by either a cluster-admin or service mesh admin.
+
+. Verify that your `user1-services` namespace now includes `kiali` and `maistra` annotations:
++
+-----
+$ echo -en "\n\n$(oc get project user1-services -o template --template='{{.metadata.labels}}')\n\n"
+-----
++
+.Sample Output
+-----
+map[kiali.io/member-of:admin1-istio-system kubernetes.io/metadata.name:user1-services maistra.io/member-of:admin1-istio-system olm.operatorgroup.uid/df105b19-bc40-4fcc-8fe2-f2c41bb19999:]
+-----
+
+. Verify that your `user1-services` namespace now includes namespace-scoped `RoleBinding` resources associated with the Istio-related service accounts from your specific service mesh control plane:
++
+-----
+$ oc get RoleBinding  -n user1-services -l release=istio
+NAME                                       ROLE                                                       AGE
+istio-egressgateway-sds                    Role/istio-egressgateway-sds                               13d
+istio-ingressgateway-sds                   Role/istio-ingressgateway-sds                              13d
+istiod-full-install-admin1-istio-system    ClusterRole/istiod-full-install-admin1-istio-system        13d
+istiod-internal-full-install               Role/istiod-internal-full-install                          13d
+prometheus-admin1-istio-system             ClusterRole/prometheus-admin1-istio-system                 13d
+wasm-cacher-full-install                   ClusterRole/wasm-cacher-full-install-admin1-istio-system   13d
+wasm-cacher-registry-viewer-full-install   ClusterRole/registry-viewer                                13d
+-----
+* The use of a project-scoped `RoleBinding` resource, rather than a cluster-scoped `ClusterRoleBinding` resource, is a key enabler of the _multi-tenant_ capabilities of Red Hat^(R)^ OpenShift^(R)^ Service Mesh.
+
+* OpenShift Service Mesh configures each member project to ensure network access between itself, the control plane, and other member projects.
+
+. Verify that your `$ERDEMO_NS` namespace now also includes a `NetworkPolicy` resource called `istio-mesh`:
++
+-----
+$ oc get NetworkPolicy istio-mesh-full-install -n $ERDEMO_NS
+-----
++
+.Sample Output
+-----
+NAME                      POD-SELECTOR   AGE
+istio-mesh-full-install   <none>         59m
+-----
+* This `NetworkPolicy` resource allows ingress to all pods specific to this namespace from all other registered members of the same OpenShift Service Mesh control plane.
+
+
+=== Opt In Auto-Injection Annotations
+
+When deploying an application into Red Hat OpenShift Service Mesh, you must opt in to injection of the Envoy _data plane_ for each deployment.
+You do so by specifying the `sidecar.istio.io/inject=true` annotation in your deployment.
+
+Opting in ensures that the sidecar injection does not interfere with other OpenShift capabilities (such as S2I builder pods) that likely do not need to be managed by the service mesh.
+
+In this section of the lab, you, as the owner of the Emergency Response Demo application, opt in a selective list of deployments for auto injection of a sidecar.
+
+. Switch to the `$ERDEMO_USER` user:
++
+-----
+$ oc login -u $ERDEMO_USER
+-----
+* `$ERDEMO_USER` is the admin of the `$ERDEMO_NS` namespace where your Emergency Response Demo application resides.
+
+. Review the contents of link:https://github.com/gpe-mw-training/ocp_service_mesh_advanced/blob/master/utils/inject_istio_annotation.sh[this script], which iterates through the DeploymentConfig of your Emergency Response Demo application and adds the `sidecar.istio.io/inject: "true"` annotation.
++
+****
+*Questions*:
+
+* Which DeploymentConfig resources of the Emergency Response Demo application are to be opted into your service mesh?
+* Which resources of the Emergency Response Demo application will not be managed by your service mesh?
+****
+
+. Execute the shell script that adds Envoy auto-injection annotations to Emergency Response Demo deployments:
++
+-----
+$ curl https://raw.githubusercontent.com/gpe-mw-training/ocp_service_mesh_advanced/master/utils/inject_istio_annotation.sh \
+    -o $HOME/lab/inject_istio_annotation.sh && \
+    chmod 775 $HOME/lab/inject_istio_annotation.sh && \
+    $HOME/lab/inject_istio_annotation.sh
+-----
+
+. After completion of the script, review the list of Emergency Response-related pods:
++
+-----
+$ oc get pods -l group=erd-services -n $ERDEMO_NS
+-----
++
+.Sample Output
+-----
+user50-disaster-simulator-1-p9gfl          2/2     Running   7          9h
+user50-incident-priority-service-1-hgmdn   2/2     Running   4          9h
+user50-incident-service-1-sz4dk            2/2     Running   3          9h
+user50-mission-service-1-jz2r8             2/2     Running   9          9h
+user50-process-service-4-cz5sz             2/2     Running   5          7h17m
+user50-responder-service-1-qm5gn           2/2     Running   3          7h14m
+user50-responder-simulator-1-tdrz2         2/2     Running   6          7h13m
+-----
+* Note that each of these pods indicates that two containers have started.
+
+. Use a script similar to this to identify a list of container names for each of the pods:
++
+-----
+$ for POD_NAME in $(oc get pods -n $ERDEMO_NS -l group=erd-services -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}')
+do
+    oc get pod $POD_NAME  -n $ERDEMO_NS -o jsonpath='{.metadata.name}{"    :\t\t"}{.spec.containers[*].name}{"\n"}'
+done
+-----
++
+.Sample Output
+-----
+[...]
+user50-disaster-simulator-1-p9gfl    :          user50-disaster-simulator        istio-proxy
+user50-incident-priority-service-1-hgmdn    :   user50-incident-priority-service istio-proxy
+user50-incident-service-1-sz4dk    :            user50-incident-service          istio-proxy
+user50-mission-service-1-jz2r8    :             user50-mission-service           istio-proxy
+user50-process-service-4-cz5sz    :             user50-process-service           istio-proxy
+user50-responder-service-1-qm5gn    :           user50-responder-service         istio-proxy
+user50-responder-simulator-1-tdrz2    :         user50-responder-simulator       istio-proxy
+-----
+
+* Note that each pod now contains an additional `istio-proxy` container colocated with the primary business service container.
+* Recall from a previous lab that OpenShift Service Mesh uses a Kubernetes link:https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook[`MutatingAdmissionWebhook`] for automatically injecting the sidecar proxy into user pods.
+
+
+
+== Restrict User Access Via Service Mesh 2.0 & RH-SSO
+
+
+
+
 
 === Add Services to Mesh
 
