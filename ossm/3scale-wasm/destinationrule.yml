@@ -1,0 +1,10 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: destinationrule-apimgr-backend
+spec:
+  host: %API_MGMT_BACKEND_HOST%
+  trafficPolicy:
+    tls:
+      mode: SIMPLE
+      sni: %API_MGMT_BACKEND_HOST%

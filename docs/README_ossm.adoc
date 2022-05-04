@@ -39,7 +39,7 @@ Extract the archive to a directory on your $PATH.
 === OSSM Control Plane
 You'll need _OpenShift Service Mesh_ installed in your OCP cluster.
 
-For the purpose of this quickstart documentation, the istio control plane is installed in a namespace called:  `admin1-istio-system`.  Notice you previously set an environment variable called `SM_CP_NS` to the name of this namespace.
+For the purpose of this quickstart, the istio control plane is installed in a namespace called:  `admin1-istio-system`.  If your service mesh control plane is not in the `admin1-istio-system`, change the value of `$SM_CP_NS` (set in the previous section).
 
 Verify the version of OSSM that is installed by executing the following at the command line: 
 
@@ -52,7 +52,20 @@ control plane version: OSSM_2.1.2-4.el8
 data plane version: 1.9.9 (4 proxies)
 -----
 
+A more detailed review of the OSSM control plane can be found in the Appendix of this quickstart.
+
 === `ServiceMeshMemberRoll`
+
+
+. Note the existence of an empty ServiceMeshMemberRoll resource called default:
++
+-----
+$ oc get ServiceMeshMemberRoll default -o template --template='{{"\n"}}{{.spec}}{{"\n\n"}}' -n $SM_CP_NS
+
+
+map[]
+-----
+
 
 . Register the `user1-services` namespace as a member to be monitored and managed by your service mesh control plane:
 +
@@ -113,91 +126,16 @@ istio-mesh-full-install   <none>         59m
 === Opt In Auto-Injection Annotations
 
 When deploying an application into Red Hat OpenShift Service Mesh, you must opt in to injection of the Envoy _data plane_ for each deployment.
-You do so by specifying the `sidecar.istio.io/inject=true` annotation in your deployment.
+You do so by specifying the `sidecar.istio.io/inject: "true"` annotation in your deployment.
 
 Opting in ensures that the sidecar injection does not interfere with other OpenShift capabilities (such as S2I builder pods) that likely do not need to be managed by the service mesh.
 
-In this section of the lab, you, as the owner of the Emergency Response Demo application, opt in a selective list of deployments for auto injection of a sidecar.
+In this section of the quickstart, you opt in a selective list of deployments for auto injection of a sidecar.
 
-. Switch to the `$ERDEMO_USER` user:
+. Add the _frontend_ deployment to the service mesh:
 +
 -----
-$ oc login -u $ERDEMO_USER
------
-* `$ERDEMO_USER` is the admin of the `$ERDEMO_NS` namespace where your Emergency Response Demo application resides.
-
-. Review the contents of link:https://github.com/gpe-mw-training/ocp_service_mesh_advanced/blob/master/utils/inject_istio_annotation.sh[this script], which iterates through the DeploymentConfig of your Emergency Response Demo application and adds the `sidecar.istio.io/inject: "true"` annotation.
-+
-****
-*Questions*:
-
-* Which DeploymentConfig resources of the Emergency Response Demo application are to be opted into your service mesh?
-* Which resources of the Emergency Response Demo application will not be managed by your service mesh?
-****
-
-. Execute the shell script that adds Envoy auto-injection annotations to Emergency Response Demo deployments:
-+
------
-$ curl https://raw.githubusercontent.com/gpe-mw-training/ocp_service_mesh_advanced/master/utils/inject_istio_annotation.sh \
-    -o $HOME/lab/inject_istio_annotation.sh && \
-    chmod 775 $HOME/lab/inject_istio_annotation.sh && \
-    $HOME/lab/inject_istio_annotation.sh
------
-
-. After completion of the script, review the list of Emergency Response-related pods:
-+
------
-$ oc get pods -l group=erd-services -n $ERDEMO_NS
------
-+
-.Sample Output
------
-user50-disaster-simulator-1-p9gfl          2/2     Running   7          9h
-user50-incident-priority-service-1-hgmdn   2/2     Running   4          9h
-user50-incident-service-1-sz4dk            2/2     Running   3          9h
-user50-mission-service-1-jz2r8             2/2     Running   9          9h
-user50-process-service-4-cz5sz             2/2     Running   5          7h17m
-user50-responder-service-1-qm5gn           2/2     Running   3          7h14m
-user50-responder-simulator-1-tdrz2         2/2     Running   6          7h13m
------
-* Note that each of these pods indicates that two containers have started.
-
-. Use a script similar to this to identify a list of container names for each of the pods:
-+
------
-$ for POD_NAME in $(oc get pods -n $ERDEMO_NS -l group=erd-services -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}')
-do
-    oc get pod $POD_NAME  -n $ERDEMO_NS -o jsonpath='{.metadata.name}{"    :\t\t"}{.spec.containers[*].name}{"\n"}'
-done
------
-+
-.Sample Output
------
-[...]
-user50-disaster-simulator-1-p9gfl    :          user50-disaster-simulator        istio-proxy
-user50-incident-priority-service-1-hgmdn    :   user50-incident-priority-service istio-proxy
-user50-incident-service-1-sz4dk    :            user50-incident-service          istio-proxy
-user50-mission-service-1-jz2r8    :             user50-mission-service           istio-proxy
-user50-process-service-4-cz5sz    :             user50-process-service           istio-proxy
-user50-responder-service-1-qm5gn    :           user50-responder-service         istio-proxy
-user50-responder-simulator-1-tdrz2    :         user50-responder-simulator       istio-proxy
------
-
-* Note that each pod now contains an additional `istio-proxy` container colocated with the primary business service container.
-* Recall from a previous lab that OpenShift Service Mesh uses a Kubernetes link:https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook[`MutatingAdmissionWebhook`] for automatically injecting the sidecar proxy into user pods.
-
-
-
-== Restrict User Access Via Service Mesh 2.0 & RH-SSO
-
-
-
-
-
-=== Add Services to Mesh
-
------
-echo "apiVersion: apps.openshift.io/v1
+  echo "apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
 metadata:
   name: frontend
@@ -209,6 +147,8 @@ spec:
   | oc apply -n user1-services -f -
 -----
 
+. Add the _backend_ deployment to the service mesh:
++
 -----
 echo "apiVersion: apps.openshift.io/v1
 kind: DeploymentConfig
@@ -221,6 +161,89 @@ spec:
         sidecar.istio.io/inject: \"true\"" \
   | oc apply -n user1-services -f -
 -----
+
+
+. After adding the annotations, the list of application pods should be similar to the following:
++
+-----
+$ oc get pods -l appgroup=quarkus -n user1-services
+-----
++
+.Sample Output
+-----
+NAME                   READY   STATUS    RESTARTS   AGE
+backend-oidc-2-b6rzs   2/2     Running   0          82s
+frontend-2-8zq5q       2/2     Running   0          93s
+-----
+* Note that each of these pods indicates that two containers have started.
+
+. Use a script similar to this to identify a list of container names for each of the pods:
++
+-----
+$ for POD_NAME in $(oc get pods -n user1-services -l appgroup=quarkus -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}')
+do
+    oc get pod $POD_NAME  -n user1-services -o jsonpath='{.metadata.name}{"    :\t\t"}{.spec.containers[*].name}{"\n"}'
+done
+-----
++
+.Sample Output
+-----
+backend-oidc-2-b6rzs    :		backend-oidc     istio-proxy
+frontend-2-8zq5q        :		frontend         istio-proxy
+-----
+
+* Note that each pod now contains an additional `istio-proxy` container colocated with the primary business service container.
+* OpenShift Service Mesh uses a Kubernetes link:https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook[`MutatingAdmissionWebhook`] for automatically injecting the sidecar proxy into user pods.  More information can be found in the Appendix of this quickstart.
+
+
+== Explore Envoy Data Plane
+
+=== Review Architecture
+Envoy has many features useful for inter-service communication.
+To help understand Envoy's features and capabilities, you need to be familiar with the following terminology:
+
+* *Listeners*: Listeners expose a port to the outside world into which an application can connect--for example, a listener on port 8080 accepts traffic and applies any configured behavior to that traffic.
+
+* *Routes*: Routes are rules for how to handle traffic that comes in on listeners--for example, if a request comes in and matches `/backend-oidc`, the route directs that traffic to the backend-oidc _cluster_.
+
+* *DestinationRule*: A `DestinationRule` resource defines policies that apply to traffic intended for a service after routing has occurred.
+
+* *Clusters*: Clusters are specific upstream services to which Envoy can direct traffic--for example, if `backend-oidc-v1` and `backend-oidc-v2` are separate clusters, _routes_ can specify rules about how traffic is directed to either `v1` or `v2` of the _backend-oidc_ service.
+
+
+Traffic comes from a downstream system into Envoy via a listener.
+This traffic is routed to one of Envoy's clusters, which is responsible for sending that traffic to an upstream system.
+Downstream to upstream is how traffic always flows through Envoy.
+
+{nbsp}
+{nbsp}
+
+image::images/envoy_architecture.png[]
+
+=== Envoy Proxy troubleshooting
+
+. Set the log level of the _wasm_ and _http_ modules of _istio-proxy_ to debug: 
++
+-----
+$ oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?wasm=debug \
+  && oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?http=debug
+-----
+
+. In a new terminal, tail the log file of the _frontend_ pod's _istio-proxy_ container: 
++
+-----
+$ oc logs -c istio-proxy -f $(oc get pod | grep "^frontend" | awk '{print $1}')
+-----
+
+. Optional:  Advanced envoy debugging:
+.. Using the _istioctl_ utility, execute the following:
++
+-----
+$ istioctl dashboard envoy $(oc get pod | grep "^frontend" | awk '{print $1}').user1-services
+-----
+.. Navigate to _config_dump_
+
+== Restrict User Access Via OSSM & RH-SSO
 
 
 === Use Istio native mechanisms for JWT-based authorization
@@ -345,31 +368,6 @@ Uses what seems to be an old container image:  quay.io/pusher/oauth2_proxy:v4.1.
 . https://github.com/3scale/threescale-wasm-auth/[github: threescale-wasm-auth]
 . link:https://quay.io/repository/3scale/threescale-wasm-auth?tab=tags&tag=latest[3scale WASM container images]
 
-=== Prereqs
-
-=== Envoy Proxy troubleshooting
-
-. Set the log level of the _wasm_ and _http_ modules of _istio-proxy_ to debug: 
-+
------
-$ oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?wasm=debug \
-  && oc rsh $(oc get pod | grep "^frontend" | awk '{print $1}') curl -X POST http://localhost:15000/logging?http=debug
------
-
-. In a new terminal, tail the log file of the _frontend_ pod's _istio-proxy_ container: 
-+
------
-$ oc logs -c istio-proxy -f $(oc get pod | grep "^frontend" | awk '{print $1}')
------
-
-. Optional:  Advanced envoy debugging:
-.. Using the _istioctl_ utility, execute the following:
-+
------
-$ istioctl dashboard envoy $(oc get pod | grep "^frontend" | awk '{print $1}').user1-services
------
-.. Navigate to _config_dump_
-
 
 === Procedure
 
@@ -412,6 +410,12 @@ NOTE:  Without this ServiceEntry, an error will appear in the _envoy-proxy_ logs
 -----
 error	envoy wasm	wasm log:    233614343 (1/http): on_http_request_headers: could not dispatch HTTP call to outbound|443||backend-3scale.apps.den.ratwater.xyz: did you create the cluster to do so? - "failed to dispatch HTTP (https) call to cluster outbound|443||backend-3scale.apps.den.ratwater.xyz with authority backend-3scale.apps.den.ratwater.xyz: BadArgument"
 
+-----
+
+. Create DestinationRule :
++
+-----
+$ sed "s|%API_MGMT_BACKEND_HOST%|$API_MGMT_BACKEND_HOST|" ./ossm/3scale-wasm/destinationrule.yml |  oc apply -n user1-services -f -
 -----
 
 
@@ -475,3 +479,242 @@ $ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$INGRESS_HOST/fr
 
 ... link:https://github.com/3scale/threescale-wasm-auth/issues/79[79].
 ... link:https://issues.redhat.com/browse/THREESCALE-7919[THREESCALE-7919]
+
+== Appendix
+
+=== Optional: Review OSSM Resources
+. Examine the service mesh control plane deployments:
++
+-----
+$ oc get deployments -n $SM_CP_NS
+-----
++
+.Sample Output
+-----
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
+grafana                     1/1     1            1           163m
+istio-egressgateway         1/1     1            1           163m
+istio-ingressgateway        1/1     1            1           163m
+istiod-full-install         1/1     1            1           167m
+jaeger                      1/1     1            1           163m
+kiali                       1/1     1            1           162m
+prometheus                  1/1     1            1           163m
+wasm-cacher-full-install    1/1     1            1           163m
+-----
+
+. Examine the `ServiceMeshControlPlane` custom resource:
++
+-----
+$ oc get ServiceMeshControlPlane -n $SM_CP_NS
+-----
++
+.Sample Output
+-----
+NAME           READY     STATUS            PROFILES    VERSION   AGE
+full-install   10/10     ComponentsReady   ["default"] 2.1.2   168m
+-----
+
+. Note the existence of a _PeerAuthentication_ resource called `default` in the service mesh control plane. This resource manages mesh-wide MUTUAL TLS mode, which is set to `PERMISSIVE`:
++
+-----
+$ oc get PeerAuthentication -n $SM_CP_NS
+-----
++
+.Sample Output
+-----
+NAME                            MODE         AGE
+default                         PERMISSIVE   35m
+disable-mtls-jaeger-collector   DISABLE      34m
+grafana-ports-mtls-disabled     PERMISSIVE   34m
+-----
+
+
+. Examine the various namespace-scoped `RoleBinding` resources in the service mesh control plane:
++
+-----
+$ oc get RoleBinding -n $SM_CP_NS
+-----
++
+.Sample Output
+-----
+NAME                                       ROLE                                                       AGE
+admin                                      ClusterRole/admin                                          15d
+istio-egressgateway-sds                    Role/istio-egressgateway-sds                               15d
+istio-ingressgateway-sds                   Role/istio-ingressgateway-sds                              15d
+istiod-full-install-admin1-istio-system    ClusterRole/istiod-full-install-admin1-istio-system        15d
+istiod-internal-full-install               Role/istiod-internal-full-install                          15d
+kiali                                      Role/kiali                                                 15d
+kiali-controlplane                         Role/kiali-controlplane                                    15d
+mesh-users                                 Role/mesh-user                                             15d
+prometheus-admin1-istio-system             ClusterRole/prometheus-admin1-istio-system                 15d
+system:deployers                           ClusterRole/system:deployer                                15d
+system:image-builders                      ClusterRole/system:image-builder                           15d
+system:image-pullers                       ClusterRole/system:image-puller                            15d
+wasm-cacher-full-install                   ClusterRole/wasm-cacher-full-install-admin1-istio-system   15d
+wasm-cacher-registry-viewer-full-install   ClusterRole/registry-viewer                                15d
+-----
++
+NOTE: The use of a project-scoped `RoleBinding` resource rather than a cluster-scoped `ClusterRoleBinding` resource is a key enabler of the multi-tenant capabilities of the OpenShift Service Mesh component.
+
+
+
+=== Optional: Explore Mutating Webhooks
+
+You can inject the Envoy sidecar container into a deployment manually or automatically.
+Most of the time, you use automatic injection, which requires an OpenShift _admission controller_.
+
+An OpenShift admission controller is a piece of code that intercepts requests to the Kubernetes API server prior to persistence of the object, but after the request is authenticated and authorized.
+You can define two types of admission webhooks:
+
+* *Validating admission webhook*: Allows you to reject requests to enforce custom admission policies.
+
+* *Mutating admission webhook*: Allows you to change requests to enforce custom defaults.
+
+In this section, you explore the mutating admission webhook.
+
+. Get a list of `mutatingwebhookconfiguration` resources on the OpenShift cluster:
++
+-----
+$ oc get mutatingwebhookconfiguration --as=system:admin | grep $SM_CP_NS
+-----
++
+.Sample Output
+-----
+[...]
+
+istiod-full-install-admin50-istio-system        1          19h
+-----
+
+. Extract the details of `mutatingwebhookconfiguration` specific to your OpenShift Service Mesh installation:
++
+-----
+$ oc get mutatingwebhookconfiguration istiod-full-install-$SM_CP_NS \
+       -o yaml \
+       --as=system:admin \
+       > /tmp/$SM_CP_NS-mutatingwebhookconfiguration.yaml
+-----
+
+. Study the content of the output file and note the following:
+
+* The `/inject` endpoint of the `istiod` service from your service mesh control plane is invoked when auto-injecting the Envoy service proxy into an application pod:
++
+-----
+    service:
+      name: istiod-full-install
+      namespace: admin1-istio-system
+      path: /inject
+      port: 443
+-----
+
+* The scope of your mutating webhook are the namespaces of your service mesh data plane. Namespaces belonging to a service mesh instance have a label `maistra.io/member-of` with value equal to the namespace of the service mesh control plane.
++
+-----
+  namespaceSelector:
+    matchExpressions:
+    - key: maistra.io/member-of
+      operator: In
+      values:
+      - admin1-istio-system
+    - key: maistra.io/ignore-namespace
+      operator: DoesNotExist
+    - key: istio-injection
+      operator: NotIn
+      values:
+      - disabled
+    - key: istio-env
+      operator: DoesNotExist
+-----
+
+
+
+=== Optional: Demonstrate Modified iptables
+
+When an Envoy service proxy is injected into an application pod, the `istio-cni` resource modifies iptables on the node that the pod lands on.
+Recall from a previous lab that the `istio-cni` resource is deployed as a DaemonSet and subsequently runs one pod for all of the nodes in an OpenShift cluster.
+
+In particular, the `istio-cni` resource creates iptable rules so that all ingress to and egress from the application container is redirected to port 15001 of the pod.
+The Envoy service proxy has its listener bound to port 15001.
+
+
+Have your instructor demonstrate these modified iptable rules in a manner similar to the following:
+
+. Identify the OpenShift Container Platform worker node that one of the Emergency Response Demo application pods is running on:
++
+-----
+$ oc project user1-services
+$ oc get pod frontend-2-8zq5q -o json | jq .spec.nodeName
+-----
++
+.Sample Output
+-----
+[...]
+ip-10-0-136-113.eu-central-1.compute.internal
+-----
+
+. Identify the ID of either container (application container or `envoy-proxy`) in that pod:
++
+-----
+$ oc describe pod user50-responder-service-6-5xr86 | grep cri-o
+-----
++
+.Sample Output
+-----
+[...]
+Container ID:  cri-o://397fea50eb8ecd03db9fe8c9a7657c7980f23c8462e9cf2554e9a4493308e651
+Container ID:  cri-o://90260d3d7ece810bb4c44a8aee3e23ebe50fd6b1225d48e6e103da070194c53a
+-----
+
+. Set up a debug session into the node where the target Emergency Response pod runs:
++
+-----
+$ oc debug node/ip-10-0-136-113.eu-central-1.compute.internal
+-----
+
+. On that OpenShift node, switch to the host operating system shell that runs host operating system binaries:
++
+-----
+sh-4.4# chroot /host
+-----
+
+. Using the previously determined container ID, determine the operating system process ID of the container on the OpenShift node:
++
+-----
+sh-4.4# crictl inspect --output json  90260d3d7ece810bb4c44a8aee3e23ebe50fd6b1225d48e6e103da070194c53a | grep pid
+-----
++
+.Sample Output
+-----
+45315
+-----
+
+. Using the process ID of the container, view the iptable rules on that host machine:
++
+-----
+sh-4.4# nsenter -t 45315 -n iptables -t nat -S
+-----
++
+.Sample Output
+-----
+-P PREROUTING ACCEPT
+-P INPUT ACCEPT
+-P POSTROUTING ACCEPT
+-P OUTPUT ACCEPT
+-N ISTIO_REDIRECT
+-N ISTIO_IN_REDIRECT
+-N ISTIO_INBOUND
+-N ISTIO_OUTPUT
+-A PREROUTING -p tcp -j ISTIO_INBOUND
+-A OUTPUT -p tcp -j ISTIO_OUTPUT
+-A ISTIO_REDIRECT -p tcp -j REDIRECT --to-ports 15001
+-A ISTIO_IN_REDIRECT -p tcp -j REDIRECT --to-ports 15001
+-A ISTIO_INBOUND -p tcp -m tcp --dport 8080 -j ISTIO_IN_REDIRECT
+-A ISTIO_OUTPUT ! -d 127.0.0.1/32 -o lo -j ISTIO_REDIRECT
+-A ISTIO_OUTPUT -m owner --uid-owner 1000710001 -j RETURN
+-A ISTIO_OUTPUT -m owner --gid-owner 1000710001 -j RETURN
+-A ISTIO_OUTPUT -d 127.0.0.1/32 -j RETURN
+-A ISTIO_OUTPUT -j ISTIO_REDIRECT
+-----
+* Note that all of the incoming traffic for this operating system process to port 8080--the port on which the Emergency Response `response-service` is listening--is being redirected to port 15001--the port on which the `istio-proxy` is listening.
+The same holds true for the outgoing traffic.
+
+

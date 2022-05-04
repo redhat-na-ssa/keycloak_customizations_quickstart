@@ -9,6 +9,7 @@ items:
   metadata:
     labels:
       app: {{ application_name }}
+      group: quarkus
     name: {{ application_name }}
   spec:
     port:
@@ -66,6 +67,7 @@ items:
         labels:
           group: oidc
           app: {{ application_name }}
+          appgroup: quarkus
       spec:
         containers:
           - env:
