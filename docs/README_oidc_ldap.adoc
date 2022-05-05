@@ -151,8 +151,6 @@ $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" 
 $ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
 -----
 
-
-
 . Retrieve an OAuth2 _access token_ using OAuth2 link:https://tools.ietf.org/html/rfc6749#section-4.3[Resource Owner Password Credentials] flow :
 +
 -----
@@ -441,3 +439,45 @@ All of the same tests conducted previously in your local environment can be exec
 
 . link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.10/html/operating_3scale/provision-threescale-services-via-operator[3scale Config & Provision of 3scale via Operator]
 
+
+== Appendix
+
+=== Optional:  Inspect JSON Web Tokens
+
+. View keys of a response from RH-SSO when its `/token` endpoint is invoked:
++
+-----
+$ curl -X POST "$ACCESS_TOKEN_URL" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "username=jbrown" \
+    -d "password=password" \
+    -d "grant_type=password" \
+    -d "client_id=$SSO_CLIENT_ID" \
+    -d "scope=openid" \
+    | jq -r 'keys[]'
+
+
+
+access_token
+expires_in
+id_token
+not-before-policy
+refresh_expires_in
+refresh_token
+scope
+session_state
+token_type
+-----
++
+NOTE: The token format is of type link:https://datatracker.ietf.org/doc/html/rfc7515[JSON Web Signature]
+
+
+
+. View the header of an access token: 
++
+-----
+$ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
+-----
+
+.. Notice a `typ` of: _JWT_ .
+.. Because the access token is a JSON Web Token, its header, payload and signature can be viewed in:  https://jwt.io/

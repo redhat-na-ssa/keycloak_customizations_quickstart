@@ -337,6 +337,8 @@ TO-DO
 
 === Reference
 
+. link:https://rpscodes.github.io/OpenShift-Service-Mesh-and-3scale-API-Management-Integration/rhs-openshift-starter-guides/4/introduction.html[OSSM & 3scale Integration];  May 2022
+
 . link:https://cloud.redhat.com/blog/restricting-user-access-via-service-mesh-2.0-and-red-hat-single-sign-on[Restricting User Access Via Service Mesh 2.0 & RH-SSO]
 +
 Appears need to upgrade to:
