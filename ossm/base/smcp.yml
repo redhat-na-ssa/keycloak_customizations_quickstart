@@ -1,0 +1,10 @@
+apiVersion: maistra.io/v2
+kind: ServiceMeshControlPlane
+metadata:
+  name: full-install
+spec:
+  version: v2.1
+  runtime:
+    defaults:
+      container:
+        imagePullPolicy: Always

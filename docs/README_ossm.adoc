@@ -26,6 +26,16 @@ export INGRESS_HOST=secure-ingress.$OCP_DOMAIN
 export SM_CP_NS=admin1-istio-system
 -----
 
+=== OSSM Control Plane
+You'll need _OpenShift Service Mesh_ installed in your OCP cluster.
+
+For the purpose of this quickstart, it's assumed that the istio control plane is installed in a namespace called:  `admin1-istio-system`.  
+If your service mesh control plane is not in the `admin1-istio-system`, change the value of `$SM_CP_NS` (set in the previous section).
+
+If you have not yet installed OSSM on your cluster, please see the Appendix of this quickstart.
+
+Optional: A more detailed review of the OSSM control plane can be found in the Appendix of this quickstart.
+
 === `istioctl`
 
 Some exercises in this quickstart use the `istioctl` Istio command line tool. +
@@ -35,11 +45,6 @@ Make sure to download the _1.9.9_ version, which corresponds with the upstream I
 
 Extract the archive to a directory on your $PATH.
 
-
-=== OSSM Control Plane
-You'll need _OpenShift Service Mesh_ installed in your OCP cluster.
-
-For the purpose of this quickstart, the istio control plane is installed in a namespace called:  `admin1-istio-system`.  If your service mesh control plane is not in the `admin1-istio-system`, change the value of `$SM_CP_NS` (set in the previous section).
 
 Verify the version of OSSM that is installed by executing the following at the command line: 
 
@@ -52,7 +57,6 @@ control plane version: OSSM_2.1.2-4.el8
 data plane version: 1.9.9 (4 proxies)
 -----
 
-A more detailed review of the OSSM control plane can be found in the Appendix of this quickstart.
 
 === `ServiceMeshMemberRoll`
 
@@ -258,19 +262,19 @@ $ oc delete route frontend -n user1-services
 . Create route that targets istio ingress gateway:
 +
 -----
-$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/ingress-route.yml |  oc apply -n admin1-istio-system -f -
+$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/base/ingress-route.yml |  oc apply -n admin1-istio-system -f -
 -----
 
 . Create gateway:
 +
 -----
-$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/frontend-gw.yml |  oc apply -n user1-services -f -
+$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/app/frontend-gw.yml |  oc apply -n user1-services -f -
 -----
 
 . Create virtual service:
 +
 -----
-$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/frontend-vs.yml |  oc apply -n user1-services -f -
+$ sed "s|%INGRESS_HOST%|$INGRESS_HOST|" ./ossm/app/frontend-vs.yml |  oc apply -n user1-services -f -
 -----
 
 . Retrieve token from RH-SSO:
@@ -303,7 +307,7 @@ $ cat /tmp/jwt.json
 . Create RequestAuthentication and AuthorizationPolicy to only allow requests with valid JWT:
 +
 -----
-$ sed "s|%RHSSO_URL%|$RHSSO_URL|" ./ossm/frontend-request-auth.yml \
+$ sed "s|%RHSSO_URL%|$RHSSO_URL|" ./ossm/app/frontend-request-auth.yml \
     | sed "s|%REALM_ID%|$REALM_ID|" \
     |  oc apply -n user1-services -f -
 -----
@@ -311,7 +315,7 @@ $ sed "s|%RHSSO_URL%|$RHSSO_URL|" ./ossm/frontend-request-auth.yml \
 . NOT NEEDED:  Create external serviceentry to RH-SSO:
 +
 -----
-$ sed "s|%RHSSO_HOST%|$RHSSO_HOST|" ./ossm/keycloak-serviceentry.yml \
+$ sed "s|%RHSSO_HOST%|$RHSSO_HOST|" ./ossm/sso/keycloak-serviceentry.yml \
     |  oc apply -n user1-services -f -
 -----
 
@@ -481,6 +485,28 @@ $ curl -v -H "Authorization: Bearer $TKN"        -X GET https://$INGRESS_HOST/fr
 ... link:https://issues.redhat.com/browse/THREESCALE-7919[THREESCALE-7919]
 
 == Appendix
+
+
+=== Optional: Install OSSM
+Instructions for installing OpenShift Service Mesh are as follows:
+
+. Install operators:
++
+-----
+$ oc apply -f ossm/base/0-operator-subscription.yaml 
+-----
+
+. Create namespace where OSSM control plane will reside:
++
+-----
+$ oc new-project admin1-istio-system
+-----
+
+. Create ServiceMeshControlPlane resource:
++
+-----
+$ oc apply -f ossm/base/smcp.yml -n admin1-istio-system
+-----
 
 === Optional: Review OSSM Resources
 . Examine the service mesh control plane deployments:
