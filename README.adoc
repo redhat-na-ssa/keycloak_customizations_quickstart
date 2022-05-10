@@ -1,6 +1,6 @@
-= RH-SSO Integrations Quickstarts
+= RH-SSO Customizations Quickstarts
 
-The purpose of this project is to demonstrate various security related use cases that involve Red Hat SSO and other Red Hat products.
+The purpose of this project is to demonstrate customizations to Red Hat SSO and integrations with other Red Hat products.
 
 The use cases build on each other.
 
