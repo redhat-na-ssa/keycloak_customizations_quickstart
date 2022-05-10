@@ -3,33 +3,31 @@
 :toc2:
 :linkattrs:
 
-= RH-SSO / LDAP Quickstart
+= RH-SSO / Federation Quickstart
 
-The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based security where the system of record of user and role data is in an LDAP server.
-
-In addition, this quickstart can further be used to investigate details of the JSON Web Token (JWT) based _access token_ required by the API Gateway of 3scale.
+The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based security where the system of record of user and role data is maintained in external identity providers.
 
 :numbered:
 
 == Quickstart Highlights
 
-. Use of Quarkus based RH-SSO
+. *Quarkus based RH-SSO*
 +
 Keycloak 17 is quarkus based.  In this quickstart, this version of keycloak is used and backed by a PostgreSQL database.
 
-. _org.eclipse.microprofile.rest.client.propagateHeaders_ system property
+. *Authorization header propogation*
 +
-Quarkus provides a convenient approach to specify request headers that should be propogated to downstream RESTful services via the REST client.
+Via the _org.eclipse.microprofile.rest.client.propagateHeaders_ system property, Quarkus provides a convenient approach to specify request headers that should be propogated to downstream RESTful services via the REST client.  In this quickstart, this system property is utilzied to propogate the `Authorization` header between backend services.
 
-. _User Federation_ capabilities of RH-SSO.
+. *_User Federation_ capabilities of RH-SSO*
 +
 In particular, the _WRITABLE_ strategy can be used to replicate any changes made to federated user data in RH-SSO back to the LDAP directory.
 
-. Exploration of Broker Federation using RH-SSO and Github
+. *Broker Federation using RH-SSO and Github*
 
-. OIDC enabled web app development in local environment via _docker-compose_
+. *OIDC enabled web app development via _docker-compose_*
 
-. OIDC enabled web app deployment to OpenShift via ansible
+. *OIDC enabled web app deployment to OpenShift via ansible*
 
 
 

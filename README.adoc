@@ -7,8 +7,8 @@ The use cases build on each other.
 This project includes the following documentation that should be viewed in order:
 
 
-. link:docs/README_oidc_ldap.adoc[RH-SSO / LDAP Integrations Quickstart]
-. link:docs/README_oidc_api.adoc[RH-SSO / API Mgmt Integrations Quickstart]
+. link:docs/README_oidc_federation.adoc[RH-SSO / LDAP/ Identity Broker Integrations Quickstart]
+. link:docs/README_oidc_apiMgmt.adoc[RH-SSO / API Mgmt Integrations Quickstart]
 . link:docs/README_ossm.adoc[RH-SSO / OSSM / API Mgmt Integrations Quickstart]
 
 == TO-DO
