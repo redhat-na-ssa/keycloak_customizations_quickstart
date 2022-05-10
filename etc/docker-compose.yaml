@@ -35,7 +35,10 @@ services:
 
   sso:
     container_name: sso
-    image: quay.io/jbride/keycloak:17.0.0-2-psql
+
+    # https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile
+    image: quay.io/jbride/keycloak:17.0.0-4-psql
+
     restart: always
     ports:
       - "4443:4443"
