@@ -120,6 +120,8 @@ Customize, link:https://developers.redhat.com/blog/2020/11/09/openid-connect-int
 
 === Reference:
 
+. link:https://access.redhat.com/documentation/en-us/red_hat_3scale_api_management/2.10/html/operating_3scale/provision-threescale-services-via-operator[3scale Config & Provision of 3scale via Operator]
+
 . link:https://datatracker.ietf.org/doc/html/rfc7519.html#section-4.1.3[Audience Claim as described in JWT specification]
 . link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[keycloak - Audience Support]
 . link:https://www.pingidentity.com/en/company/blog/posts/2019/oauth2-access-token-multiple-resources-usage-strategies.html[Ping Identity: OAuth2 Token Usage Strategies for Multiple Resources]
