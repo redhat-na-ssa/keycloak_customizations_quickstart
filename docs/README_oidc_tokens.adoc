@@ -57,10 +57,17 @@ Once provisioned, you'll use the _curl_ utility to smoke test as per the followi
 image::images/quickstart_data_flow.png[]
 
 
-== Local Environment
+== Deployment Environments
+The exercises in this quickstart can be run locally (via `docker-compose`) or in OpenShift.
+The following sections provide details for each environment.
+
+It's typical to execute the exercises from just one of the two options.
+
+
+=== docker-compose
 This quickstart includes a _docker-compose_ to facilitate development and testing in your local environment.
 
-=== Pre-reqs
+==== Pre-reqs
 
 . *docker* or *podman*
 
@@ -72,28 +79,8 @@ This quickstart includes a _docker-compose_ to facilitate development and testin
 
 . *jq*
 
-=== Environment Variables
 
-. Set the following environment variables with values similar to the following:
-+
------
-export RHSSO_HOST=sso.local
-export RHSSO_URL=http://$RHSSO_HOST:4080
-export RHSSO_MASTER_PASSWD=admin
-export REALM_ID=ldap-demo
-export SSO_CLIENT_ID=ldap-app
-export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
-export BACKEND_ROUTE=http://localhost:6080
-export FRONTEND_ROUTE=http://localhost:7080
------
-
-. Add the following entry to your `/etc/hosts`:
-+
------
-127.0.0.1   sso.local
------
-
-=== Startup
+==== Startup
 
 . Start all linux containers for this quickstart:
 +
@@ -115,8 +102,87 @@ quay.io/redhat_naps_da/frontend-oidc:0.0.4              0.0.0.0:7080->7080/tcp  
 quay.io/jbride/keycloak-token-inspector:0.0.1           0.0.0.0:8000->8000/tcp                          token-inspector
 -----
 
-=== Console and Endpoints
-. Open a web browser and navigate to the console of the `master` realm :
+==== Environment Variables
+
+. Set the following environment variables with values similar to the following:
++
+-----
+export RHSSO_HOST=sso.local
+export RHSSO_URL=http://$RHSSO_HOST:4080
+export RHSSO_MASTER_PASSWD=admin
+export REALM_ID=ldap-demo
+export SSO_CLIENT_ID=ldap-app
+export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+export BACKEND_ROUTE=http://localhost:6080
+export FRONTEND_ROUTE=http://localhost:7080
+-----
+
+. Add the following entry to your `/etc/hosts`:
++
+-----
+127.0.0.1   sso.local
+-----
+
+=== OpenShift
+This quickstart includes _ansible_ to deploy to an OpenShift environment.  All of the same tests conducted in your local environment can be executed in your OpenShift environment.
+
+
+==== Pre-reqs:
+. _OpenShift_ cluster ( >= v 4.6 )
++
+The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of this quickstart.
+
+. link:https://mirror.openshift.com/pub/openshift-v4/clients/ocp/?C=M;O=D[oc utility] corresponding to the version of your OpenShift cluster.
+
+. _ansible-playbook_ utility installed
+
+
+==== Startup
+
+
+. Change directory into the _ansible_ directory of this project: 
++
+-----
+$ cd ansible
+-----
+
+. Execute _ansible_playbook_
++
+-----
+$ ansible-playbook playbooks/install.yml
+-----
+
+. The playbook provisions the following in OpenShift:
+
+.. *rhi_idm* namespace:
+... *openldap*
+... *RH-SSO*
+
+.. *user1-services* namespace: 
+... *frontend* service
+... *backend* service
+... *token-inspector* web app
+
+
+==== Environment Variables
+
+
+. Set the following environment variables with values similar to the following:
++
+-----
+export OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
+export RHSSO_HOST=sso-rhi-idm.$OCP_DOMAIN
+export RHSSO_URL=https://$RHSSO_HOST/auth
+export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
+export REALM_ID=user1-ldap
+export SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
+export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+export FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
+-----
+
+
+== Console and Endpoints
+. Open a web browser and navigate to the RH-SSO console of the `master` realm :
 +
 -----
 $ echo -en "\n$RHSSO_URL/admin/master/console\n\n"
@@ -135,7 +201,7 @@ $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" 
 -----
 
 
-=== Smoke Test
+== Token Propogation
 
 . View all users and roles in openldap:
 +
@@ -197,7 +263,7 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 Hello jbrown with roles: ldap-user ldap-admin
 -----
 
-=== Code Review Questions
+=== Review Questions
 
 . Regarding the value of $ACCESS_TOKEN_URL, what alternative REST endpoint does RH-SSO provide to authenticate as per the OIDC specification ?
 .. What is included in the response when invoking that alternative OIDC endpoint ?
@@ -221,7 +287,7 @@ Answers:
 /////
 
 
-=== Token Inspector webapp
+== Token Inspector webapp
 This lab includes a simple javascript based web app to view the details of OAuth2 and OIDC tokens.
 
 This web app was plagarized from the lab assets provided by the link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
@@ -242,67 +308,44 @@ image::images/browser_network_tools.png[]
 In the request to the _/token_ endpoint, what are the request parameters and what is included in the response ?
 
 
+== Custom Protocol Mapper
 
-== OpenShift
-This quickstart includes _ansible_ to deploy to an OpenShift environment.  All of the same tests conducted in your local environment can be executed in your OpenShift environment.
-
-
-=== Pre-reqs:
-. _OpenShift_ cluster ( >= v 4.6 )
-+
-The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of this quickstart.
-
-. link:https://mirror.openshift.com/pub/openshift-v4/clients/ocp/?C=M;O=D[oc utility] corresponding to the version of your OpenShift cluster.
-
-. _ansible-playbook_ utility installed
-
-
-=== Startup
-
-
-. Change directory into the _ansible_ directory of this project: 
+. Review the source code for the `lucky-number-mapper` project.
+. Notice the inclusion of the compiled project jar file in the `/opt/keycloak/providers` directory:
 +
 -----
-$ cd ansible
------
+...
 
-. Execute _ansible_playbook_
+COPY etc/sso/providers/org.acme-lucky-number-mapper-0.0.1.jar /opt/keycloak/providers/org.acme-lucky-number-mapper-0.0.1.jar
+
+...
+-----
 +
------
-$ ansible-playbook playbooks/install.yml
------
-
-. The playbook provisions the following in OpenShift:
-
-.. *rhi_idm* namespace:
-... *openldap*
-... *RH-SSO*
-
-.. *user1-services* namespace: 
-... *frontend* service
-... *backend* service
-... *token-inspector* web app
+NOTE:  The complete Dockerfile can be found link:https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile[here].
 
 
-=== Environment Variables
-
-
-. Set the following environment variables with values similar to the following:
+. In the console of your RH-SSO, navigate to: `ldap-demo -> Configure -> Clients -> ldap-app -> Mappers`
 +
------
-export OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
-export RHSSO_HOST=sso-rhi-idm.$OCP_DOMAIN
-export RHSSO_URL=https://$RHSSO_HOST/auth
-export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
-export REALM_ID=user1-ldap
-export SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
-export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
-export FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
------
+image::images/Create_PM.png[]
 
-=== Testing 
+. From the `Mapper Type` drop down, select: _Lucky Number_ .
+. Populate the remaining fields as follows:app-name:
+.. *Name*: luckyNumber
+.. *Token Claim Name*: luckyNumber
++
+image::images/luckyNumber_mapper.png[]
+. Click: `Save`
 
-All of the same tests conducted previously in your local environment can be executed in your OpenShift environment.
+. Verify existence of a _luckyNumber_ in the various tokens:
+
+.. Navigate to the `Clients -> ldap-app -> Client Scopes -> Evaluate`
+.. In the `User` text box, enter: `jbrown`
++
+image::images/evaluate_jbrown_token.png[]
+
+. Switch to the `Generated Access Token` panel and locate a random value for the `luckyNumber` claim:app-name:
++
+image::images/generated_luckyNumber.png[]
 
 
 == Reference
