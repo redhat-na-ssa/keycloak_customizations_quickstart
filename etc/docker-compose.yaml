@@ -37,7 +37,7 @@ services:
     container_name: sso
 
     # https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile
-    image: quay.io/jbride/keycloak:17.0.0-4-psql
+    image: quay.io/jbride/keycloak:18.0.0-5-psql
 
     restart: always
     ports:
@@ -47,7 +47,7 @@ services:
     environment:
 
       # Add the following entry in your /etc/hosts:  127.0.0.1  sso.local
-      KC_HOSTNAME: sso.local:4080
+      KC_HOSTNAME: sso.local
 
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
