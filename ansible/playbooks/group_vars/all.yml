@@ -12,6 +12,8 @@ openshift_cli: oc
 # The OCP user that will own all resources in the generated OCP namespace
 project_admin: user1
 
+project_annotations:
+
 #################################################
 
 

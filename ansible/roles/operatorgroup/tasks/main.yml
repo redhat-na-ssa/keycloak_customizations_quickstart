@@ -6,11 +6,8 @@
     dest: "{{ work_dir }}/operatorgroup.yml"
 
 - name: "Create operatorgroup in {{ operatorgroup_namespace }}"
-  oc_obj:
+  k8s:
     state: present
-    oc_binary: "{{ openshift_cli }}"
     name: "{{ operatorgroup_name }}"
     namespace: "{{ operatorgroup_namespace }}"
-    kind: operatorgroup
-    files:
-      - "{{ work_dir }}/operatorgroup.yml"
+    definition: "{{ lookup('file', work_dir+'/operatorgroup.yml') | from_yaml }}"
