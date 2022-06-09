@@ -33,9 +33,11 @@
   register: sso_admin_credentials
 
 - set_fact:
-    sso_admin_user: "{{ sso_admin_credentials.ansible_module_results.decoded[\"ADMIN_USERNAME\"] }}"
-    sso_admin_password: "{{ sso_admin_credentials.ansible_module_results.decoded[\"ADMIN_PASSWORD\"] }}"
+    sso_admin_user: "{{ sso_admin_credentials.resources[0].data.ADMIN_USERNAME  | b64decode }}"
+    sso_admin_password: "{{ sso_admin_credentials.resources[0].data.ADMIN_PASSWORD | b64decode }}"
     sso_url: "https://{{ sso_route_cmd.stdout }}"
+- debug:
+    msg: "sso_admin_user = {{ sso_admin_user }}  ;  sso_admin_password = {{ sso_admin_password }}"
 
 - name: get admin token
   uri:
@@ -119,13 +121,15 @@
   vars:
     shell1: !unsafe "$((${#_m} % 4))"
 
-- name: create client configmap
+- name: "create {{ sso_config_configmap }} configmap"
   k8s:
     state: present
-    namespace: "{{ namespace }}"
-    name: "{{ sso_config_configmap }}"
+    namespace: "{{ namespace_sso }}"
     definition:
       apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ sso_config_configmap }}"
       data:
         AUTH_URL: "{{ sso_url }}/auth"
         KEYCLOAK: "true"

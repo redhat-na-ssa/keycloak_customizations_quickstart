@@ -13,6 +13,15 @@ This project includes the following documentation that should be viewed in order
 . link:docs/README_ossm.adoc[RH-SSO / OSSM / API Mgmt Integrations Quickstart]
 
 
+== OpenShift Install
+
+. Ensure the `kubernetes.core` ansible galaxy collection is installed locally:
++
+-----
+$ ansible-galaxy collection install kubernetes.core
+-----
+
+
 == TO-DO
 
 . link:https://cloud.redhat.com/blog/restricting-user-access-via-service-mesh-2.0-and-red-hat-single-sign-on[Restricting User Access Via Service Mesh 2.0 & RH-SSO]
