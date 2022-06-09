@@ -25,17 +25,12 @@
   debug:
     msg: "{{ operator_name }} operator channel to be installed: {{ subscription_channel }}"
 
-- name: "copy template for {{ subscription_name }} subscription resource"
-  template:
-    src: "{{ resources_base_dir }}/operator-olm/subscription.yml"
-    dest: "{{ work_dir }}/{{ operator_name }}-subscription.yml"
-
 - name: "create subscription for {{ operator_name }} operator in {{ subscription_namespace }} namespace"
   k8s:
     state: present
     namespace: "{{ subscription_namespace }}"
     name: "{{ subscription_name }}"
-    definition: "{{ lookup('file', work_dir+'/'+ operator_name +'-subscription.yml') | from_yaml }}"
+    definition: "{{ lookup('template', 'templates/subscription.yml') | from_yaml }}"
 
 - name: wait until installplan is created
   kubernetes.core.k8s_info:

@@ -1,13 +1,8 @@
 ---
 
-- name: "copy {{ resources_base_dir }}/operatorgroup/operatorgroup.yml"
-  template:
-    src: "{{ resources_base_dir }}/operatorgroup/operatorgroup.yml"
-    dest: "{{ work_dir }}/operatorgroup.yml"
-
 - name: "Create operatorgroup in {{ operatorgroup_namespace }}"
   k8s:
     state: present
     name: "{{ operatorgroup_name }}"
     namespace: "{{ operatorgroup_namespace }}"
-    definition: "{{ lookup('file', work_dir+'/operatorgroup.yml') | from_yaml }}"
+    definition: "{{ lookup('template', 'templates/operatorgroup.yml') | from_yaml }}"
