@@ -31,7 +31,7 @@
 - name: "deploy ldap in {{ namespace_ldap }}"
   k8s:
     state: present
-    kind: 
+    kind: Deployment
     definition: "{{ lookup('template', 'templates/ldap_app.yml') | from_yaml }}"
     namespace: "{{ namespace_ldap }}"
 
