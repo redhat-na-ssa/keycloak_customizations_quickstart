@@ -3,19 +3,21 @@
 ########    Frontend Service    #############
 
 - name: copy application properties template
-  template:
-    src: "{{ resources_dir }}/{{ application_properties }}"
-    dest: "{{ work_dir }}/{{ application_properties }}"
+  set_fact:
+    aprops: "{{ lookup('template', 'templates/application.properties')  }}"
 
 - name: create {{ application_configmap }} application configmap
-  oc_configmap:
-    oc_binary: "{{ openshift_cli }}"
+  k8s:
     state: present
     name: "{{ application_configmap }}"
     namespace: "{{ namespace }}"
-    from_file:
-      dir: "{{ work_dir }}/{{ application_properties }}"
-
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ application_configmap }}"
+      data:
+        application.properties: "{{ aprops }}"
 
 - import_tasks: deploy_from_image.yml
 
