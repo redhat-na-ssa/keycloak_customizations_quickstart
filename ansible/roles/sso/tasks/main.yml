@@ -29,6 +29,10 @@
     wait_sleep: 10
     wait_timeout: 360
 
+- name:  pause 10 seconds to wait for sso related CSVs to be registered with kubernetes
+  ansible.builtin.pause:
+    seconds: 10
+
 - name: "create keycloak custom resource"
   k8s:
     state: present

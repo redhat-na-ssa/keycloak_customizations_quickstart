@@ -8,7 +8,9 @@ delete_tenant: false
 
 tenant_admin_email:
 
-tenant_access_token_secret: "{{ tenant_name }}-atoken-secret"
+tenant_access_token_secret: "{{ tenant_name }}-generated-secret"
+
+tenant_id: 0
 #####################################
 
 
