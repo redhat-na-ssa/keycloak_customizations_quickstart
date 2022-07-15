@@ -45,6 +45,8 @@ set_realm_admin_as_default: false
 sso_realm_id: "{{ project_admin }}-ldap"
 
 sso_clientId: ldap-app
+
+zync_sso_client_secret: 21b503a3-0b50-4e17-8ef7-167ab973c171
 #################################################
 
 

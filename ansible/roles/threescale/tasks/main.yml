@@ -3,7 +3,7 @@
 - name: set threescale facts
   set_fact:
     api_gw_url: "https://{{ apigw_hostname_subcontext }}.{{ ocp_domain }}"
-    sso_confidential_realm_url: "https://sso-{{ namespace_sso }}.{{ ocp_domain }}"
+    sso_confidential_realm_url: "https://zyncsso:{{ zync_sso_client_secret }}@sso-{{ namespace_sso }}.{{ ocp_domain }}"
 
 ########    Tenant    #############
 
@@ -15,12 +15,15 @@
     api_version: capabilities.3scale.net/v1alpha1
   register: tenant_resource
 
-- debug:
-    msg: tenant_id = "{{ tenant_resource.resources[0].status.tenantId }}"
-- set_fact:
-    tenant_id: "{{ tenant_resource.resources[0].status.tenantId }}"
+- block:
+  - debug:
+      msg: temp tenant_id = "{{ tenant_resource.resources[0].status.tenantId }}"
+  - set_fact:
+      tenant_id: "{{ tenant_resource.resources[0].status.tenantId }}"
   when: 
     tenant_resource.resources[] is defined
+- debug:
+    msg: tenant_id = "{{ tenant_id }}" 
 
 - block:
 
@@ -144,8 +147,8 @@
 #    when: atoken_not_exists is defined
 
   when: >
-    create_tenant|bool and
-    tenant_id > 0
+    use_custom_tenant|bool and
+    tenant_id == 0
 
 ###################################
 

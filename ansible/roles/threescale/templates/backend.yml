@@ -12,7 +12,7 @@ spec:
   privateBaseURL: {{ frontend_url }}
   systemName: {{ backend_name }}
 
-  {% if create_tenant|bool %}
+  {% if use_custom_tenant|bool %}
 
   providerAccountRef:
     name: {{ tenant_access_token_secret }}

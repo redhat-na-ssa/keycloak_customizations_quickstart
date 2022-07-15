@@ -156,7 +156,7 @@ However, deletion of product and backend resources does not actually delete corr
 +
 -----
 $ ansible-playbook playbooks/threescale.yml \
-    -e create_tenant=true \
+    -e use_custom_tenant=true \
     -e tenant_admin_email=jbride+50@ratwater.xyz \
     -e tenant_access_token_secret=adprod-generated-secret
 ----- 
@@ -184,7 +184,7 @@ NOTE:  This problem is link:https://github.com/3scale/3scale-operator/pull/725[r
 +
 -----
 $ ansible-playbook playbooks/threescale.yml \
-    -e create_tenant=true \
+    -e use_custom_tenant=true \
     -e tenant_admin_email=jbride+50@ratwater.xyz
 ----- 
 

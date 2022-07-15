@@ -9,15 +9,15 @@ spec:
     apicastSelfManaged:
       stagingPublicBaseURL: {{ api_gw_url }}
       productionPublicBaseURL: {{ api_gw_url }}
-    authentication:
-      oidc:
-      issuerEndpoint: {{ sso_confidential_realm_url }}
-      issuerType: keycloak
-      authenticationFlow:
-        standardFlowEnabled: true
-        implicitFlowEnabled: false
-        serviceAccountsEnabled: true
-        directAccessGrantsEnabled: true
+      authentication:
+        oidc:
+          issuerEndpoint: {{ sso_confidential_realm_url }}
+          issuerType: keycloak
+          authenticationFlow:
+            standardFlowEnabled: true
+            implicitFlowEnabled: false
+            serviceAccountsEnabled: false
+            directAccessGrantsEnabled: true
   backendUsages:
     {{ backend_name }}:
       path: /frontend
@@ -30,7 +30,7 @@ spec:
     name: apicast
     version: builtin  
 
-  {% if create_tenant|bool %}
+  {% if use_custom_tenant|bool %}
 
   providerAccountRef:
     name: {{ tenant_access_token_secret }}

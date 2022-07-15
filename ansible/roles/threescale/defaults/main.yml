@@ -2,8 +2,8 @@
 
 
 # #######     tenant    #############
-tenant_name: adprod
-create_tenant: true
+tenant_name: adprod2
+use_custom_tenant: true
 delete_tenant: false
 
 tenant_admin_email:
