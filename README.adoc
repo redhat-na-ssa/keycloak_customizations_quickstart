@@ -25,6 +25,6 @@ $ ansible-galaxy collection install kubernetes.core
 == TO-DO
 
 . link:https://cloud.redhat.com/blog/restricting-user-access-via-service-mesh-2.0-and-red-hat-single-sign-on[Restricting User Access Via Service Mesh 2.0 & RH-SSO]
-. link:https://redhat.highspot.com/items/5fa02438628ba20e0fd010b5?lfrm=srp.3#30[RH-SSO integration w/ HashiCorp Vaut]
+. link:https://redhat.highspot.com/items/5fa02438628ba20e0fd010b5?lfrm=srp.3#30[RH-SSO integration w/ HashiCorp Vault]
 . link:https://stackoverflow.com/questions/42186537/resources-scopes-permissions-and-policies-in-keycloak[RH-SSO Authorization quickstart]
 . link:https://developers.redhat.com/blog/2021/02/19/x-509-user-certificate-authentication-with-red-hats-single-sign-on-technology#overview[RH-SSO using X.509 certs quickstart]

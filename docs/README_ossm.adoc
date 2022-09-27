@@ -319,10 +319,10 @@ $ sed "s|%RHSSO_HOST%|$RHSSO_HOST|" ./ossm/sso/keycloak-serviceentry.yml \
     |  oc apply -n user1-services -f -
 -----
 
-. Start webapp:
+. Start keycloak-token-inspector:
 +
 -----
-$ cd webapp
+$ cd keycloak-token-inspector
 
 $ export KC_URL=$RHSSO_URL \
   && export KC_REALM_ID=$REALM_ID \
