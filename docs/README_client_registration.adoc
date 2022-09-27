@@ -1,0 +1,110 @@
+:scrollbar:
+:data-uri:
+:toc2:
+:linkattrs:
+
+= Dynamic Client Registration
+
+:numbered:
+
+== Quickstart Highlights
+
+TO-DO
+
+== Retrieve Initial Access Token
+Red Hat SSO exposes a RESTful API that among other functions allows for the creation of SSO clients.
+Creation of the _zync-sso_ client will occur by invoking RHT-SSO's _client registration service_ API.
+
+To invoke the Red Hat SSO _client registration service_ API, you need to use an  _Initial Access Token_.
+This _Initial Access Token_ can be retrieved as follows:
+
+. Log in to the Red Hat SSO admin console as the administrator that you created in the previous lab.  Recall that the URL to your SSO realm is the output of the following:
++
+-----
+$ echo -en "\nhttps://$RHSSO_URL/admin/$api_data_plane_realm/console\n\n"
+-----
+
+. Navigate to *Realm Settings -> Client Registration -> Initial Access Tokens*.
+. On the far right, click *Create*.
+. Set an *Expiration* of 5 days or more and a *Count* of 100 or more, then click *Save*.
+* An Initial Access Token appears:
++
+image::images/initial_access_token.png[]
+
+. Copy the entire Initial Access Token and set it as a shell environment variable:
++
+-----
+export RHSSO_INITIAL_ACCESS_TOKEN=<generated access token from RH-SSO>
+-----
+
+=== Create _zync-sso_ client
+
+. Set the desired name of the new SSO client as an environment variable:
++
+-----
+$ export ZYNC_SSO_CLIENT_NAME=zync-sso
+-----
+
+. Study the following HTTP POST request and then execute it:
++
+-----
+$ mkdir -p $API_RESPONSE_DIR
+
+
+$ curl -v -X POST \
+    -d "{ \"clientId\": \"$ZYNC_SSO_CLIENT_NAME\", \"standardFlowEnabled\":\"false\", \"directAccessGrantsEnabled\":\"false\",  \"serviceAccountsEnabled\":\"true\", \"publicClient\":\"false\" }" \
+    -H "Content-Type:application/json" \
+    -H "Accept: application/json" \
+    -H "Authorization: Bearer $RHSSO_INITIAL_ACCESS_TOKEN" \
+    https://$rhsso_url/auth/realms/$api_data_plane_realm/clients-registrations/default \
+    | python -m json.tool > $API_RESPONSE_DIR/zync_sso_client_details.json
+
+
+# Review the output
+$ cat $API_RESPONSE_DIR/zync_sso_client_details.json | more
+-----
++
+Execution of this command creates an SSO client called _zync-sso_ that is enabled for the _client credentials_ OAuth2 flow.
+
+. Determine generated clientId :
++
+-----
+$ eval ZYNC_SSO_CLIENT_ID=`cat $API_RESPONSE_DIR/zync_sso_client_details.json | jq '.id'`
+
+$ echo $ZYNC_SSO_CLIENT_ID
+-----
+
+. Determine generated client secret
++
+-----
+$ eval ZYNC_SSO_CLIENT_SECRET=`cat $API_RESPONSE_DIR/zync_sso_client_details.json | jq '.secret'`
+
+$ echo $ZYNC_SSO_CLIENT_SECRET
+-----
++
+This client secret will be used by the _zync_ component later in the lab when it invokes the  _zync-sso_ client.
+
+=== Verify ability to manage other SSO clients
+. Return to the Admin Portal user interface of RHT-SSO
+. Navigate to the _service account roles_ tab of the _zync-sso_ client.
++
+image::images/zync_sa_roles.png[]
+
+. In the _client roles_ dropdown, select: _realm management_.
+. Ensure the _manage-clients_ list item is listed as one of the _Assigned Roles_.
++
+image::images/zync_assigned_roles.png[]
+
+You now have a _client credentials_ based OAuth2 client that when invoked by the zync component allows for the creation and update of new SSO clients.
+
+
+== Reference
+
+. link:https://access.redhat.com/documentation/en-us/red_hat_single_sign-on/7.6/html-single/securing_applications_and_services_guide/index#client_registration[Using RH-SSO Client Registration Services]
+. link:https://openid.net/specs/openid-connect-registration-1_0.html[OIDC Dynamic Client Registration 1.0]
+. link:https://openid.net/wordpress-content/uploads/2018/06/OpenID-Connect-Conformance-Profiles.pdf[Dynamic OIDC provider certification, Section 2.2.5]
+. link:https://datatracker.ietf.org/doc/html/rfc7591[OAuth2 Dynamic Client Registration Protocol]
+. link:https://datatracker.ietf.org/doc/html/rfc7592[OAuth2 Dynamic Client Registration Management Protocol]
+
+== Appendix
+
