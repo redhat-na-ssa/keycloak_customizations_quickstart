@@ -111,6 +111,8 @@ export RHSSO_HOST=sso.local
 export RHSSO_URL=http://$RHSSO_HOST:4080
 export RHSSO_MASTER_PASSWD=admin
 export REALM_ID=ldap-demo
+export REALM_ADMIN=ssoRealmAdmin
+export REALM_ADMIN_PASSWD=admin
 export SSO_CLIENT_ID=ldap-app
 export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 export BACKEND_ROUTE=http://localhost:6080
@@ -121,6 +123,16 @@ export FRONTEND_ROUTE=http://localhost:7080
 +
 -----
 127.0.0.1   sso.local
+-----
+
+==== Configure keycloak utility
+
+-----
+$ podman exec -it sso /opt/keycloak/bin/kcadm.sh config credentials \
+    --server http://127.0.0.1:4080 \
+    --realm $REALM_ID \
+    --user $REALM_ADMIN \
+    --password $REALM_ADMIN_PASSWD
 -----
 
 === OpenShift

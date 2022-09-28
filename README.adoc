@@ -8,8 +8,8 @@ This project includes the following documentation that should be viewed in order
 
 
 . link:docs/README_oidc_tokens.adoc[RH-SSO Token Propogation and Customization Quickstart]
-. link:docs/README_client_registration.adoc[RH-SSO Dynamic Client Registration]
 . link:docs/README_oidc_federation.adoc[RH-SSO Federation & Identity Provider Integrations Quickstart]
+. link:docs/README_client_registration.adoc[RH-SSO Dynamic Client Registration]
 . link:docs/README_oidc_apiMgmt.adoc[RH-SSO / API Mgmt Integrations Quickstart]
 . link:docs/README_ossm.adoc[RH-SSO / OSSM / API Mgmt Integrations Quickstart]
 
@@ -25,6 +25,10 @@ $ ansible-galaxy collection install kubernetes.core
 
 == TO-DO
 
+. Introduction to RH-SSO APIs
+.. Admin API
+.. link:https://www.marcus-povey.co.uk/2020/10/12/using-the-keycloak-accounts-management-api/[Account Management API]
+.. openid-connect API
 . link:https://cloud.redhat.com/blog/restricting-user-access-via-service-mesh-2.0-and-red-hat-single-sign-on[Restricting User Access Via Service Mesh 2.0 & RH-SSO]
 . link:https://redhat.highspot.com/items/5fa02438628ba20e0fd010b5?lfrm=srp.3#30[RH-SSO integration w/ HashiCorp Vault]
 . link:https://stackoverflow.com/questions/42186537/resources-scopes-permissions-and-policies-in-keycloak[RH-SSO Authorization quickstart]
