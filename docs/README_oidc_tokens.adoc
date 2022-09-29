@@ -5,8 +5,6 @@
 
 = Token Propogation & Customization
 
-The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based security where tokens are propogated between backend services.  In addition, this quickstart also demonstrates some customizations to those tokens.
-
 :numbered:
 
 == Quickstart Highlights
@@ -16,13 +14,17 @@ The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based sec
 In this quickstart, keycloak 18 is used and backed by a PostgreSQL database.
 Keycloak 18 is based on `quarkus`. 
 
+. *OIDC enabled web app development via _docker-compose_*
+
+. *OIDC enabled web app deployment to OpenShift via ansible*
+
+. *OAuth2 and OIDC Token Inspection*
+
 . *Authorization header propogation*
 +
 Via the _org.eclipse.microprofile.rest.client.propagateHeaders_ system property, Quarkus provides a convenient approach to specify request headers that should be propogated to downstream RESTful services via the REST client.  In this quickstart, this system property is utilzied to propogate the `Authorization` header between backend services.
 
-. *OIDC enabled web app development via _docker-compose_*
-
-. *OIDC enabled web app deployment to OpenShift via ansible*
+. *Custom Protocol Mapper and Client Scopes*
 
 
 == Architecture
@@ -52,7 +54,7 @@ The service is enabled with a _keycloak adapter_.
 At start-up, this _keycloak adapter_ acquires the SSO public key.
 When a request is sent to this service, the _access token_ in the request is validated using this SSO public key. 
 
-Once provisioned, you'll use the _curl_ utility to smoke test as per the following: 
+Later in this lab, you'll use the _curl_ utility to smoke test as per the following: 
 
 image::images/quickstart_data_flow.png[]
 
@@ -125,7 +127,7 @@ export FRONTEND_ROUTE=http://localhost:7080
 127.0.0.1   sso.local
 -----
 
-==== Configure keycloak utility
+==== keycloak admin utility
 
 -----
 $ podman exec -it sso /opt/keycloak/bin/kcadm.sh config credentials \
@@ -133,6 +135,32 @@ $ podman exec -it sso /opt/keycloak/bin/kcadm.sh config credentials \
     --realm $REALM_ID \
     --user $REALM_ADMIN \
     --password $REALM_ADMIN_PASSWD
+-----
+
+. Also notice that a new corresponding _service account_ user is also created: 
++
+-----
+$ podman exec -it sso /opt/keycloak/bin/kcadm.sh get users -q username=service-account-$ZYNC_SSO_CLIENT_NAME
+
+
+[ {
+  "id" : "cc5f961a-4006-41cc-9b4f-c1e8740502ea",
+  "createdTimestamp" : 1664385801502,
+  "username" : "service-account-zyncsso",
+  "enabled" : true,
+  "totp" : false,
+  "emailVerified" : false,
+  "disableableCredentialTypes" : [ ],
+  "requiredActions" : [ ],
+  "notBefore" : 0,
+  "access" : {
+    "manageGroupMembership" : true,
+    "view" : true,
+    "mapRoles" : true,
+    "impersonate" : true,
+    "manage" : true
+  }
+} ]
 -----
 
 === OpenShift
@@ -194,6 +222,8 @@ export FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 
 
 == Console and Endpoints
+
+=== RH-SSO Site Admin
 . Open a web browser and navigate to the RH-SSO console of the `master` realm :
 +
 -----
@@ -206,14 +236,58 @@ $ echo -en "\n$RHSSO_URL/admin/master/console\n\n"
 image::images/master_homepage.png[]
 
 
-. Invoke _Discovery Endpoint_ of RH-SSO to view details of OIDC related REST APIs:
+=== RH-SSO Realm Admin
+
+. Open a web browser and navigate to the console of your realm :
++
+-----
+$ echo -en "\n$RHSSO_URL/admin/$REALM_ID/console\n\n"
+-----
+
+. Authenticate using `ssoRealmAdmin` as the userId and the value of the `admin` environment variable as the password.
+. As the RH-SSO realm admin, you have full access to all resources pertaining to your realm.
++
+image::images/realm_homepage.png[]
+
+. Invoke _Discovery Endpoint_ of RH-SSO to view details of OIDC related REST APIs specific to your realm:
 +
 -----
 $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" | jq .
 -----
 
 
+
+
+== Token Inspector webapp
+This lab includes a simple javascript based web app to display the OAuth2 _access_ and _refresh_ tokens.
+It also allows for display of the OIDC _Id_ token.
+
+The reason the _Token Inspector Webapp_ can display the _access_ and _refresh_ tokens is becauase it is a Javascript based _Single-Page App_ (SPA) with no intermediary REST API that supports it.  That means that this app is a _public_ SSO client that interacts directly with the SSO _authorization server_ and as such retrieves the _access_ and _refresh_ tokens as per the _Authorization Code_ flow.
+
+This architecture, although easy to implement, is not particularly secure.
+For more secure architectures involving an SPA, please read the section entitled _Securing a SPA with an intermediary REST API_ in Chapter 6 of the link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
+
+This web app was plagarized from the lab assets provided by the link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
+Subsequently, all credit for the _token inspector_ web app goes to the author of that book.  Thank you!
+
+. Open a web browser and navigate to:  http://localhost:8000
+. Switch to the _Network_ tab of your _Web Developer Tools_ on that page.
++
+image::images/browser_network_tools.png[]
+
+. Click the `Login` button at the top-left corner of the page
+. Notice the re-direction to the URL of the app's _SSO Realm_.  What are the request parameters?
+. in the RH-SSO login form, authenticate using the following credentials:
+.. *UserId* :  jbrown
+.. *Password* :  password
+. Notice the re-direction back to the _Token Inspector_ web app.
++
+In the request to the _/token_ endpoint, what are the request parameters and what is included in the response ?
+
+
 == Token Propogation
+
+=== Procedure
 
 . View all users and roles in openldap:
 +
@@ -297,28 +371,6 @@ Answers:
 
 3) quarkus.oidc.auth-server-url=http://sso:4080/realms/ldap-demo
 /////
-
-
-== Token Inspector webapp
-This lab includes a simple javascript based web app to view the details of OAuth2 and OIDC tokens.
-
-This web app was plagarized from the lab assets provided by the link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
-Subsequently, all credit for that web app goes to the author of that book.  Thank you!
-
-. Open a web browser and navigate to:  http://localhost:8000
-. Switch to the _Network_ tab of your _Web Developer Tools_ on that page.
-+
-image::images/browser_network_tools.png[]
-
-. Click the `Login` button at the top-left corner of the page
-. Notice the re-direction to the URL of the app's _SSO Realm_.  What are the request parameters?
-. in the RH-SSO login form, authenticate using the following credentials:
-.. *UserId* :  jbrown
-.. *Password* :  password
-. Notice the re-direction back to the _Token Inspector_ web app.
-+
-In the request to the _/token_ endpoint, what are the request parameters and what is included in the response ?
-
 
 == Custom Protocol Mapper
 
@@ -468,11 +520,34 @@ NOTE: The token format is of type link:https://datatracker.ietf.org/doc/html/rfc
 
 
 
-. View the header of an access token: 
+. View the header of an access token:
+
+.. Retrieve an OAuth2 access token using OAuth2 Resource Owner Password Credentials flow :
++
+-----
+TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=$SSO_CLIENT_ID" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+.. View the JWT header:
 +
 -----
 $ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
+
+
+{
+  "alg": "RS256",
+  "typ": "JWT",
+  "kid": "mcjna6MSzQQVz6sjI_gOQYj0ByrbDLT7DthD4TnMy2U"
+}
+
 -----
 
-.. Notice a `typ` of: _JWT_ .
+.. Notice a `typ` of:   _JWT_ .
 .. Because the access token is a JSON Web Token, its header, payload and signature can be viewed in:  https://jwt.io/

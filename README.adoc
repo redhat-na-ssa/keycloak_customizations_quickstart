@@ -25,6 +25,7 @@ $ ansible-galaxy collection install kubernetes.core
 
 == TO-DO
 
+. RH-SSO link:https://www.keycloak.org/docs/latest/securing_apps/#_client_registration_policies[Client Registration Policies] --> link:https://www.keycloak.org/docs/latest/server_admin/#_client_policies[Client Policies]
 . Introduction to RH-SSO APIs
 .. Admin API
 .. link:https://www.marcus-povey.co.uk/2020/10/12/using-the-keycloak-accounts-management-api/[Account Management API]

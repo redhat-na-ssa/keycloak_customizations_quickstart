@@ -981,7 +981,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "zyncsso",
       "redirectUris": [],
       "webOrigins": [],
       "notBefore": 0,
@@ -1974,7 +1974,7 @@
                   "false"
                 ],
                 "client.id": [
-                  "finance"
+                  "ldap-app"
                 ],
                 "role.object.classes": [
                   "groupOfNames"
@@ -2038,7 +2038,7 @@
             "cn=admin,dc=example,dc=org"
           ],
           "bindCredential": [
-            "**********"
+            "admin"
           ],
           "changedSyncPeriod": [
             "-1"
@@ -2053,7 +2053,7 @@
             "other"
           ],
           "editMode": [
-            "WRITABLE"
+            "READ_ONLY"
           ],
           "uuidLDAPAttribute": [
             "uid"
