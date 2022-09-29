@@ -16,42 +16,45 @@
 
 === Use Case
 
+=== Goals
+In this quickstart, a SSO client called _zyncsso_ will be configured with privildges to _manage-clients_ within the SSO realm.
+Once created, this SSO client can facilitate the management of all other SSO clients within the realm.
 
-=== RH-SSO Providers
+
+=== Client Registration Providers
 Red Hat SSO exposes a RESTful API that among other functions allows for the creation of SSO clients.
 This API is called the _Client Registration Service_.
 
 The RH-SSO Client Registration Service includes multiple implementations (aka: _providers_) as follows: 
 
 
-[%header, cols=2*]
+[%header, cols="3,4,6"]
 |===
 |Provider Name
 |Request Payload Format
-|default|RH-SSO Client Representation (JSON)
-|install|RH-SSO Adapter Configuration (JSON)
-|openid-connect|OIDC Client Metadata Description (JSON)
-|saml2-entity-descriptor| SAML Entity Descriptor (XML)
+|Notes
+|default|RH-SSO Client Representation (JSON)|Use when your functionality to dynamically create clients will only need to work with RH-SOO.  RH-SSO Client Representation format provides support for configuring clients exactly as they can be configured through the admin console, including for example configuring protocol mappers.
+|openid-connect|OIDC link:https://openid.net/specs/openid-connect-registration-1_0.html#ClientMetadata[Client Metadata Description (JSON)]|Use when functionality to dynamically create clients needs to interoperate with multiple OIDC providers
+|install|RH-SSO Adapter Configuration (JSON)|
+|saml2-entity-descriptor| SAML Entity Descriptor (XML)|
 |===
 
 The endpoint exposed by the Client Registration Service is as follows: 
 
 -----
-$RHSSO_URL/<realm_name>/clients-regisration/<provider name>
+$RHSSO_URL/realms/<realm_name>/clients-regisrations/<provider name>
 -----
-
-
-=== Quickstart Overview
-In this quickstart, a SSO client called _zync-sso_ will be configured with privildges to _manage-clients_ within the SSO realm.
-Once created, this SSO client can facilitate the management of all other SSO clients within the realm.
 
 
 == Create Initial Access Token
 
-Creation of the _zync-sso_ client will occur by invoking the _default_ provider of RH-SSO's _client registration service_ API.
+Creation of the _zyncsso_ client will occur by invoking the _default_ provider of RH-SSO's _client registration service_ API.
 
-To invoke the _default_ provider of Red Hat SSO _client registration service_ API, you need to use an  _Initial Access Token_.
-This _Initial Access Token_ can be retrieved as follows:
+To invoke either the _default_ or _openid-connect_ providers of Red Hat SSO _client registration service_ API, you need to use an  _Initial Access Token_.
+In RH-SSO, an _Initial Access Token_ is configured at the _realm_ level (it's not associated with a SSO _client_ ) with an expiration time and maximum count of invocations.
+
+
+This _Initial Access Token_ can be created as follows:
 
 
 . Using _Resource Owner Password Credentials_ flow on the _admin-cli_ SSO client, acquire a OAuth2 Bearer Access Token: 
@@ -110,15 +113,17 @@ export INITIAL_ACCESS_TOKEN=<generated access token from RH-SSO>
 endif::showscript[]
 
 
-=== Create _zync-sso_ client
-In this section, you will invoke the RH-SSO _/clients-registrations/default_ API using the _initial access token_ to create a new SSO client (called _zync-sso_ ).
+== _zyncsso_ client
+
+=== Create
+In this section, you will invoke the RH-SSO _/clients-registrations/default_ API using the _initial access token_ to create a new SSO client (called _zyncsso_ ).
 
 This SSO client is configured with _manage-client_ privledges that subsequently allow it to create other SSO clients.
 
 . Set the desired name of the new SSO client as an environment variable:
 +
 -----
-$ export ZYNC_SSO_CLIENT_NAME=zync-sso
+$ export ZYNC_SSO_CLIENT_NAME=zyncsso
 -----
 
 . Study the following HTTP POST request and then execute it:
@@ -138,7 +143,7 @@ $ curl -v -X POST \
 $ cat $API_RESPONSE_DIR/zync_sso_client_details.json | more
 -----
 +
-Execution of this command creates an SSO client called _zync-sso_ that is enabled for the _client credentials_ OAuth2 flow.
+Execution of this command creates an SSO client called _zyncsso_ that is enabled for the _client credentials_ OAuth2 flow.
 
 . Also notice that a new corresponding _service account_ user is also created: 
 +
@@ -149,7 +154,7 @@ $ podman exec -it sso /opt/keycloak/bin/kcadm.sh get users -q username=service-a
 [ {
   "id" : "cc5f961a-4006-41cc-9b4f-c1e8740502ea",
   "createdTimestamp" : 1664385801502,
-  "username" : "service-account-zync-sso",
+  "username" : "service-account-zyncsso",
   "enabled" : true,
   "totp" : false,
   "emailVerified" : false,
@@ -166,25 +171,35 @@ $ podman exec -it sso /opt/keycloak/bin/kcadm.sh get users -q username=service-a
 } ]
 -----
 
-. Determine generated clientId :
+. Set generated clientId :
 +
 -----
 $ ZYNC_SSO_CLIENT_ID=$( cat /tmp/zync_sso_client_details.json | jq -r '.id' )
+
   echo $ZYNC_SSO_CLIENT_ID
 -----
 
-. Determine generated client secret
+. Set generated client secret
 +
 -----
 $ ZYNC_SSO_CLIENT_SECRET=$( cat /tmp/zync_sso_client_details.json | jq -r '.secret' )
+
   echo $ZYNC_SSO_CLIENT_SECRET
 -----
+
+. Set generated _registration access token_
 +
-This client secret will be used by the _zync_ component later in the lab when it invokes the  _zync-sso_ client.
+-----
+$ ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN=$( cat /tmp/zync_sso_client_details.json | jq -r '.registrationAccessToken' )
+
+  echo $ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN
+-----
+
+As you'll see later, both the $ZYNC_SSO_CLIENT_SECRET and $ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN can be used by functionality that dynamically creates other additional SSO clients (via the _zyncsso_ client).
 
 === Verify ability to manage other SSO clients
 . Return to the Admin Portal user interface of RHT-SSO
-. Navigate to the _service account roles_ tab of the _zync-sso_ client.
+. Navigate to the _service account roles_ tab of the _zyncsso_ client.
 +
 image::images/zync_sa_roles.png[]
 
@@ -196,6 +211,28 @@ image::images/zync_assigned_roles.png[]
 You now have a _client credentials_ based OAuth2 client that allows for the creation and update of new SSO clients.
 
 The credentials of this SSO client can now be distributed as necessary.
+
+== Dynamically Create Clients
+
+-----
+$ ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN=$( curl -v -X POST $RHSSO_URL/realms/$REALM_ID/clients-registrations/default \
+    -H "Authorization: Bearer $ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN" \
+    -H "Content-Type:application/json" \
+    -H "Accept: application/json" \
+    -d "{ \"clientId\": \"default-$RANDOM\", \"standardFlowEnabled\":\"true\", \"directAccessGrantsEnabled\":\"false\",  \"serviceAccountsEnabled\":\"false\", \"publicClient\":\"false\" }" \
+    | jq -r .registrationAccessToken
+  )
+    
+-----
+
+. Seems that Client Registration Service is allowing for creation of clients without event including a Client Registration Access Token: 
++
+-----
+$ curl -v -X POST $RHSSO_URL/realms/$REALM_ID/clients-registrations/default \
+    -H "Content-Type:application/json" \
+    -H "Accept: application/json" \
+    -d "{ \"clientId\": \"default-$RANDOM\", \"standardFlowEnabled\":\"true\", \"directAccessGrantsEnabled\":\"false\",  \"serviceAccountsEnabled\":\"false\", \"publicClient\":\"false\" }"
+-----
 
 
 == Reference

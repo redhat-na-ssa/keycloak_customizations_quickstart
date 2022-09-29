@@ -54,11 +54,11 @@ services:
       KC_DB_URL: 'jdbc:postgresql://psql_sso:4432/sso'
       KC_DB_USERNAME: sso
       KC_DB_PASSWORD: sso
-      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/ldaprealm.json
+      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/realm.json
       KC_HTTP_PORT: 4080
       KC_HTTPS_PORT: 4443
     volumes:
-      - ./sso/ldaprealm.json:/opt/ldaprealm.json:bind
+      - ./sso/realm.json:/opt/realm.json:bind
     depends_on:
       - psql_sso
       - openldap
