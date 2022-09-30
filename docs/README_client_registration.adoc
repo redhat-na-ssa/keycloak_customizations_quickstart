@@ -48,19 +48,44 @@ $RHSSO_URL/realms/<realm_name>/clients-regisrations/<provider name>
 
 == Dynamically Create Clients
 
-=== Anonymous
+=== As anonymous user
 
-. Seems that Client Registration Service is allowing for creation of clients without event including a Client Registration Access Token: 
+. Attempt to dynamically create a SSO client using the _default Keycloak Representations_  as an anonymous user :
 +
 -----
 $ curl -v -X POST $RHSSO_URL/realms/$REALM_ID/clients-registrations/default \
-    -H "Authorization: Bearer $INITIAL_ACCESS_TOKEN" \
     -H "Content-Type:application/json" \
     -H "Accept: application/json" \
-    -d "{ \"clientId\": \"default-$RANDOM\", \"redirectUris\":[\"http://changeme:4080\", \"https://changemetoo:443\"],\"standardFlowEnabled\":\"true\", \"directAccessGrantsEnabled\":\"false\",  \"serviceAccountsEnabled\":\"false\", \"publicClient\":\"false\" }"
+    -d "{ \"clientId\": \"default-anon-$RANDOM\", \"redirectUris\":[\"http://changeme:4080\", \"https://changemetoo:443\"],\"standardFlowEnabled\":\"true\", \"directAccessGrantsEnabled\":\"false\",  \"serviceAccountsEnabled\":\"false\", \"publicClient\":\"false\" }"
+
+
+ ...
+
+HTTP/1.1 403 Forbidden
+
+{"error":"insufficient_scope","error_description":"Policy 'Trusted Hosts' rejected request to client-registration service. Details: URL doesn't match any trusted host or trusted domain"}
 -----
 
-=== SSO Client with _manage-clients_ role
+. View configs for "Trusted Hosts"
++
+-----
+$ podman exec -it sso /opt/keycloak/bin/kcadm.sh get components -r ldap-demo -F "name,id,config(*)" -q name="Trusted Hosts"
+
+[ {
+  "id" : "439a5d2b-436f-43eb-a152-7edda257df14",
+  "name" : "Trusted Hosts",
+  "config" : {
+    "host-sending-registration-request-must-match" : [ "false" ],
+    "client-uris-must-match" : [ "true" ]
+  }
+} ]
+
+-----
+
+. Retry to POST to the _default Client Representation_ endpoint (as previous), but this time do so without specifying _redirectUris_ in the payload.  What are the results ?
+
+
+=== As SSO Client with _manage-clients_ role
 In this section, you will invoke the RH-SSO _/clients-registrations/default_ API using the _initial access token_ to create a new SSO client (called _zyncsso_ ).
 
 This SSO client is configured with _manage-client_ privledges that subsequently allow it to create other SSO clients.
@@ -97,16 +122,15 @@ $ curl -v -X POST $RHSSO_URL/realms/$REALM_ID/clients-registrations/default \
     -H "Authorization: Bearer $ZYNCSSO_TKN" \
     -H "Content-Type:application/json" \
     -H "Accept: application/json" \
-    -d "{ \"clientId\": \"default-manage-client-$RANDOM\", \"redirectUris\":[\"http://changeme:4080\", \"https://changemetoo:443\"],\"standardFlowEnabled\":\"true\", \"directAccessGrantsEnabled\":\"false\",  \"serviceAccountsEnabled\":\"false\", \"publicClient\":\"false\" }"
+    -d "{ \"client_name\": \"oidc-manage-client-$RANDOM\", \"redirect_uris\":[\"http://changeme:4080\"] }" 
+
 -----
 
-To create more SSO clients, you could continue to utilize $ZYNCSSO_TKN (until it expires in which case you need to acquire a new access token).
+. To create more SSO clients, you could continue to utilize $ZYNCSSO_TKN (until it expires in which case you need to acquire a new access token).  Try repeating the previous command a few times.  What are the results ?
 
-=== _Initial_ and _Registration_ Access Tokens
+=== Using _Initial_ and _Registration_ Access Tokens
 
 ==== Create Initial Access Token
-
-Creation of the _zyncsso_ client will occur by invoking the _default_ provider of RH-SSO's _client registration service_ API.
 
 To invoke either the _default_ or _openid-connect_ providers of Red Hat SSO _client registration service_ API, you need to use an  _Initial Access Token_.
 In RH-SSO, an _Initial Access Token_ is configured at the _realm_ level (it's not associated with a SSO _client_ ) with an expiration time and maximum count of invocations.
@@ -134,40 +158,52 @@ $ echo $ADMIN_API_TKN
 +
 -----
 $ INITIAL_ACCESS_TOKEN=$(curl -X POST $RHSSO_URL/admin/realms/$REALM_ID/clients-initial-access \
-    -d "{\"expiration\": 432000, \"count\": 1}" \
+    -d "{\"expiration\": 432000, \"count\": 10}" \
     -H "Content-Type:application/json" \
     -H "Accept: application/json" \
     -H "Authorization: Bearer $ADMIN_API_TKN" \
-    | jq -r '.token'
-    )
+    | jq -r '.token' )
 -----
 
-==== Dynamically Create SSO Clients
+==== Dynamically Create & Update SSO Client
+
+. Generate a unique identifier for the client_id: 
++
+-----
+$ CLIENT_ID=default-initial-reg-$RANDOM
+-----
 
 . Dynamically create a SSO client using the _openid-connect_ endpoint with the _initial access token_ : 
 +
 -----
-$ ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN=$( curl -v -X POST $RHSSO_URL/realms/$REALM_ID/clients-registrations/openid-connect \
+$ ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN=$( curl -X POST $RHSSO_URL/realms/$REALM_ID/clients-registrations/default \
     -H "Authorization: Bearer $INITIAL_ACCESS_TOKEN" \
     -H "Content-Type:application/json" \
     -H "Accept: application/json" \
-    -d "{ \"client_name\": \"oidc-initial-token-$RANDOM\", \"redirect_uris\":[\"http://changeme:4080\"] }" \
-    | jq -r .registrationAccessToken
-  ) 
+    -d "{ \"clientId\": \"$CLIENT_ID\", \"redirectUris\":[\"http://changeme:4080\", \"https://changeme:443\"],\"standardFlowEnabled\":\"true\", \"directAccessGrantsEnabled\":\"false\",  \"serviceAccountsEnabled\":\"false\", \"publicClient\":\"false\" }" \
+    | jq -r .registrationAccessToken  )
+-----
+
+. View the newly generated _Registration Access Token_: 
++
+-----
+$ echo $ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN
 -----
 
 . Dynamically create a SSO client using the _openid-connect_ endpoint with the _registration access token_ : 
 +
 -----
-$ ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN=$( curl -v -X POST $RHSSO_URL/realms/$REALM_ID/clients-registrations/openid-connect \
+$ ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN=$( curl -X PUT $RHSSO_URL/realms/$REALM_ID/clients-registrations/default/$CLIENT_ID \
     -H "Authorization: Bearer $ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN" \
     -H "Content-Type:application/json" \
     -H "Accept: application/json" \
-    -d "{ \"client_name\": \"oidc-initial-token-$RANDOM\", \"redirect_uris\":[\"http://changeme:4080\"] }" \
-    | jq -r .registrationAccessToken
-  )
-    
+    -d "{ \"clientId\": \"$CLIENT_ID\", \"redirectUris\":[\"http://ichangedyou:4080\", \"https://ichangedyou:443\"],\"standardFlowEnabled\":\"true\", \"directAccessGrantsEnabled\":\"false\",  \"serviceAccountsEnabled\":\"false\", \"publicClient\":\"false\" }" \
+    | jq -r .registrationAccessToken  )
 -----
+
+. Return to the console of the _ldap-demo_ realm and notice the updated _redirect URIs_ on your dynamically generated SSO client: 
++
+image::images/client_reg_update.png[]
 
 
 == Reference

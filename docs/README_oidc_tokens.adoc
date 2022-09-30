@@ -186,6 +186,12 @@ The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of t
 $ cd ansible
 -----
 
+. Ensure the `kubernetes.core` ansible galaxy collection is installed locally:
++
+-----
+$ ansible-galaxy collection install kubernetes.core
+-----
+
 . Execute _ansible_playbook_
 +
 -----
