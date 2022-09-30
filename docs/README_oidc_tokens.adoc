@@ -250,7 +250,7 @@ image::images/master_homepage.png[]
 $ echo -en "\n$RHSSO_URL/admin/$REALM_ID/console\n\n"
 -----
 
-. Authenticate using `ssoRealmAdmin` as the userId and the value of the `admin` environment variable as the password.
+. Authenticate using `ssoRealmAdmin` as the userId and `admin` as the password.
 . As the RH-SSO realm admin, you have full access to all resources pertaining to your realm.
 +
 image::images/realm_homepage.png[]
@@ -262,6 +262,17 @@ $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" 
 -----
 
 
+=== RH-SSO Account Console
+
+. Open a web browser and navigate to the console of your realm :
++
+-----
+$ echo -en "\n$RHSSO_URL/realms/$REALM_ID/console\n\n"
+-----
+
+. Authenticate using `jbrown` as the userId and `password` as the password.
++
+image::images/account_console.png[]
 
 
 == Token Inspector webapp
