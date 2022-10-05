@@ -461,7 +461,7 @@
             }
          ],
          "realmRoles":[
-            "admin"
+            "ldap-demo-admin"
          ],
          "clientRoles":{
             "account":[
@@ -472,14 +472,6 @@
                "read-token"
             ],
             "realm-management":[
-               "create-client",
-               "manage-authorization",
-               "manage-clients",
-               "manage-events",
-               "manage-realm",
-               "manage-users",
-               "query-clients",
-               "query-realms",
                "realm-admin"
             ]
          },
@@ -583,6 +575,7 @@
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
+        "https://www.keycloak.org/app/*",
         "/realms/ldap-demo/account/*"
       ],
       "webOrigins": [],
@@ -706,15 +699,15 @@
     {
       "id": "846f5d7b-6be9-4319-800a-b0a1cc9410a2",
       "clientId": "ldap-app",
-      "adminUrl": "/ldap-portal",
-      "baseUrl": "/ldap-portal",
+      "adminUrl": "http://localhost:8000/",
+      "baseUrl": "http://localhost:8000/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "secret": "**********",
       "redirectUris": [
-        "/ldap-portal/*",
+        "https://www.keycloak.org/app/*",
         "http://localhost:8000/*"
       ],
       "webOrigins": [

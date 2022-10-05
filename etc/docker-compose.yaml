@@ -47,6 +47,7 @@ services:
     environment:
 
       # Add the following entry in your /etc/hosts:  127.0.0.1  sso.local
+      # NOTE: no longer need to specify port (ie:  :4080)
       KC_HOSTNAME: sso.local
 
       KEYCLOAK_ADMIN: admin
