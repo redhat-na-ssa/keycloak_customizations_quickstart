@@ -43,7 +43,7 @@ services:
     ports:
       - "4443:4443"
       - "4080:4080"
-    command: [start-dev]
+    command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz"']
     environment:
 
       # Add the following entry in your /etc/hosts:  127.0.0.1  sso.local
