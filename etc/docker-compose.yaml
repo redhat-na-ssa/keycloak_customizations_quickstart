@@ -55,11 +55,19 @@ services:
       KC_DB_URL: 'jdbc:postgresql://psql_sso:4432/sso'
       KC_DB_USERNAME: sso
       KC_DB_PASSWORD: sso
+
+      # Alternative approach to import a realm:  https://github.com/keycloak/kc-sig-fapi/blob/main/docker-compose-keycloak.yml#L41-L57
       JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/realm.json
+
       KC_HTTP_PORT: 4080
       KC_HTTPS_PORT: 4443
     volumes:
       - ./sso/realm.json:/opt/realm.json:bind
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4080/auth/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     depends_on:
       - psql_sso
       - openldap
