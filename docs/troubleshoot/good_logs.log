@@ -13,7 +13,7 @@ Updating the configuration and installing your custom providers, if any. Please 
 2022-04-28 22:06:07,697 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_315644, Site name: null
 2022-04-28 22:06:09,066 INFO  [org.keycloak.quarkus.runtime.storage.database.liquibase.QuarkusJpaUpdaterProvider] (main) Initializing database schema. Using changelog META-INF/jpa-changelog-master.xml
 2022-04-28 22:06:11,077 INFO  [org.keycloak.services] (main) KC-SERVICES0050: Initializing master realm
-2022-04-28 22:06:14,004 INFO  [org.keycloak.services] (main) KC-SERVICES0004: Imported realm ldap-demo from file /opt/ldaprealm.json.
+2022-04-28 22:06:14,004 INFO  [org.keycloak.services] (main) KC-SERVICES0004: Imported realm kc-demo from file /opt/ldaprealm.json.
 2022-04-28 22:06:14,297 INFO  [org.keycloak.services] (main) KC-SERVICES0009: Added user 'admin' to realm 'master'
 2022-04-28 22:06:14,384 INFO  [io.quarkus] (main) Keycloak 17.0.0 on JVM (powered by Quarkus 2.7.0.Final) started in 10.465s. Listening on: http://0.0.0.0:4080
 2022-04-28 22:06:14,384 INFO  [io.quarkus] (main) Profile dev activated. 

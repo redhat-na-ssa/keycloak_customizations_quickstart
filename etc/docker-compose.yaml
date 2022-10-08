@@ -116,8 +116,8 @@ services:
       - "8000:8000"
     environment:
       KC_URL: 'http://sso.local:4080'
-      KC_REALM_ID: ldap-demo
-      KC_CLIENT_ID: ldap-app
+      KC_REALM_ID: kc-demo
+      KC_CLIENT_ID: t-inspect
       SERVICE_URL: 'http://localhost:7080/frontend'
     depends_on:
       - sso

@@ -108,7 +108,7 @@ HTTP/1.1 403 Forbidden
 . View configs for "Trusted Hosts"
 +
 -----
-$ podman exec -it sso /opt/keycloak/bin/kcadm.sh get components -r ldap-demo -F "name,id,config(*)" -q name="Trusted Hosts"
+$ podman exec -it sso /opt/keycloak/bin/kcadm.sh get components -r kc-demo -F "name,id,config(*)" -q name="Trusted Hosts"
 
 [ {
   "id" : "439a5d2b-436f-43eb-a152-7edda257df14",
@@ -291,7 +291,7 @@ $ ZYNC_SSO_CLIENT_REG_ACCESS_TOKEN=$( curl -X PUT $RHSSO_URL/realms/$REALM_ID/cl
     | jq -r .registrationAccessToken  )
 -----
 
-. Return to the console of the _ldap-demo_ realm and notice the updated _redirect URIs_ on your dynamically generated SSO client: 
+. Return to the console of the _kc-demo_ realm and notice the updated _redirect URIs_ on your dynamically generated SSO client: 
 +
 image::images/client_reg_update.png[]
 

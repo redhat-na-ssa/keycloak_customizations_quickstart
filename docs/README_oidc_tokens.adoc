@@ -112,10 +112,10 @@ quay.io/jbride/keycloak-token-inspector:0.0.1           0.0.0.0:8000->8000/tcp  
 export RHSSO_HOST=sso.local
 export RHSSO_URL=http://$RHSSO_HOST:4080
 export RHSSO_MASTER_PASSWD=admin
-export REALM_ID=ldap-demo
+export REALM_ID=kc-demo
 export REALM_ADMIN=ssoRealmAdmin
 export REALM_ADMIN_PASSWD=admin
-export SSO_CLIENT_ID=ldap-app
+export SSO_CLIENT_ID=t-inspect
 export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 export BACKEND_ROUTE=http://localhost:6080
 export FRONTEND_ROUTE=http://localhost:7080
@@ -221,7 +221,7 @@ export RHSSO_HOST=sso-rhi-idm.$OCP_DOMAIN
 export RHSSO_URL=https://$RHSSO_HOST/auth
 export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
 export REALM_ID=user1-ldap
-export SSO_CLIENT_ID=ldap-app      # preset in realm deployed by project ansible
+export SSO_CLIENT_ID=t-inspect      # preset in realm deployed by project ansible
 export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 export FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 -----
@@ -386,7 +386,7 @@ Answers:
 
 2) org.eclipse.microprofile.rest.client.propagateHeaders=Authorization
 
-3) quarkus.oidc.auth-server-url=http://sso:4080/realms/ldap-demo
+3) quarkus.oidc.auth-server-url=http://sso:4080/realms/kc-demo
 /////
 
 == Custom Protocol Mapper
@@ -405,7 +405,7 @@ COPY etc/sso/providers/org.acme-lucky-number-mapper-0.0.1.jar /opt/keycloak/prov
 NOTE:  The complete Dockerfile can be found link:https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile[here].
 
 
-. In the console of your RH-SSO, navigate to: `ldap-demo -> Configure -> Clients -> ldap-app -> Mappers`
+. In the console of your RH-SSO, navigate to: `kc-demo -> Configure -> Clients -> t-inspect -> Mappers`
 +
 image::images/Create_PM.png[]
 
@@ -419,7 +419,7 @@ image::images/luckyNumber_mapper.png[]
 
 . Verify existence of a _luckyNumber_ in the various tokens:
 
-.. Navigate to the `Clients -> ldap-app -> Client Scopes -> Evaluate`
+.. Navigate to the `Clients -> t-inspect -> Client Scopes -> Evaluate`
 .. In the `User` text box, enter: `jbrown`
 +
 image::images/evaluate_jbrown_token.png[]
@@ -436,7 +436,7 @@ In the previous section, you created a custom protocol mapper to include a _luck
 
 Limitations with this approach are as follows: 
 
-. _luckyNumber_ claim will only be included in OAuth/OIDC tokens generated for the _ldap-app_ SSO client.  What if you want tokens from other SSO clients to also include this custom claim ?
+. _luckyNumber_ claim will only be included in OAuth/OIDC tokens generated for the _t-inspect_ SSO client.  What if you want tokens from other SSO clients to also include this custom claim ?
 
 . The user has no ability to consent to revealing this claim to downstream SSO clients.
 
@@ -445,7 +445,7 @@ As an alternative, RH-SSO provides for creation of a _client scope_ which will a
 
 === Create Client Scope
 
-. In the console of your RH-SSO, navigate to: `ldap-demo -> Configure -> Client Scopes`
+. In the console of your RH-SSO, navigate to: `kc-demo -> Configure -> Client Scopes`
 . In the top-right corner, click `Create`.
 . Populate the form as follows: 
 .. *Name*: luckyNumber
@@ -473,7 +473,7 @@ You can find an excellent discussion of _OAuth2 scopes_ in chapter 8 of the book
 
 === Add _Client Scope_ to clients
 
-. Return to the edit page of the _ldap-app_ SSO client.
+. Return to the edit page of the _t-inspect_ SSO client.
 . In the _Settings_ tab, enable `Consent Required`: 
 +
 image::images/consent_required_flag.png[]

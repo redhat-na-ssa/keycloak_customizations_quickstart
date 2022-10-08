@@ -67,7 +67,7 @@ In this section of the lab, you will modify the synchronization strategy to allo
 
 === Change synchronization to: Writable
 . Your SSO Realm includes a _User Federation_ config called:  `ldap-apacheds`.
-. In the _ldap-demo_ realm of RH-SSO, navigate to: `User Federation -> ldap-apacheds -> edit`
+. In the _kc-demo_ realm of RH-SSO, navigate to: `User Federation -> ldap-apacheds -> edit`
 +
 image::images/edit_user_federation.png[]
 
@@ -76,7 +76,7 @@ image::images/edit_user_federation.png[]
 
 
 === Test synchronization to LDAP
-. In the _ldap-demo_ realm, add a new realm role called:  _new_role_ 
+. In the _kc-demo_ realm, add a new realm role called:  _new_role_ 
 +
 Roles -> Add Role -> Role Name -> _new_role_
 

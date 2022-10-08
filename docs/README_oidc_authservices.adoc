@@ -1,0 +1,3 @@
+-----
+INFO  [io.qu.oi.de.de.OidcDevConsoleProcessor] (build-57) OIDC Dev Console: discovering the provider metadata at http://sso.local:4080/realms/kc-demo/.well-known/openid-configuration
+-----

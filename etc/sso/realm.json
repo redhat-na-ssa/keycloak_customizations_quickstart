@@ -1,6 +1,6 @@
 {
-  "id": "ldap-demo",
-  "realm": "ldap-demo",
+  "id": "kc-demo",
+  "realm": "kc-demo",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": false,
@@ -51,7 +51,7 @@
         "description": "${role_offline-access}",
         "composite": false,
         "clientRole": false,
-        "containerId": "ldap-demo",
+        "containerId": "kc-demo",
         "attributes": {}
       },
       {
@@ -59,7 +59,7 @@
         "name": "admin",
         "composite": false,
         "clientRole": false,
-        "containerId": "ldap-demo",
+        "containerId": "kc-demo",
         "attributes": {}
       },
       {
@@ -68,12 +68,12 @@
         "description": "${role_uma_authorization}",
         "composite": false,
         "clientRole": false,
-        "containerId": "ldap-demo",
+        "containerId": "kc-demo",
         "attributes": {}
       },
       {
         "id": "b3645820-3e19-4d09-8c71-6d800cd915a0",
-        "name": "default-roles-ldap-demo",
+        "name": "default-roles-kc-demo",
         "description": "${role_default-roles}",
         "composite": true,
         "composites": {
@@ -89,7 +89,7 @@
           }
         },
         "clientRole": false,
-        "containerId": "ldap-demo",
+        "containerId": "kc-demo",
         "attributes": {}
       }
     ],
@@ -400,17 +400,17 @@
           "attributes": {}
         }
       ],
-      "ldap-app": []
+      "t-inspect": []
     }
   },
   "groups": [],
   "defaultRole": {
     "id": "b3645820-3e19-4d09-8c71-6d800cd915a0",
-    "name": "default-roles-ldap-demo",
+    "name": "default-roles-kc-demo",
     "description": "${role_default-roles}",
     "composite": true,
     "clientRole": false,
-    "containerId": "ldap-demo"
+    "containerId": "kc-demo"
   },
   "requiredCredentials": [
     "password"
@@ -461,7 +461,7 @@
             }
          ],
          "realmRoles":[
-            "ldap-demo-admin"
+            "kc-demo-admin"
          ],
          "clientRoles":{
             "account":[
@@ -490,7 +490,7 @@
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
-        "default-roles-ldap-demo"
+        "default-roles-kc-demo"
       ],
       "clientRoles": {
         "realm-management": [
@@ -525,13 +525,13 @@
       "clientId": "account",
       "name": "${client_account}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/ldap-demo/account/",
+      "baseUrl": "/realms/kc-demo/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/realms/ldap-demo/account/*"
+        "/realms/kc-demo/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -569,14 +569,14 @@
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
-      "baseUrl": "/realms/ldap-demo/account/",
+      "baseUrl": "/realms/kc-demo/account/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "https://www.keycloak.org/app/*",
-        "/realms/ldap-demo/account/*"
+        "/realms/kc-demo/account/*"
       ],
       "webOrigins": [],
       "notBefore": 0,
@@ -698,7 +698,7 @@
     },
     {
       "id": "846f5d7b-6be9-4319-800a-b0a1cc9410a2",
-      "clientId": "ldap-app",
+      "clientId": "t-inspect",
       "adminUrl": "http://localhost:8000/",
       "baseUrl": "http://localhost:8000/",
       "surrogateAuthRequired": false,
@@ -708,7 +708,8 @@
       "secret": "**********",
       "redirectUris": [
         "https://www.keycloak.org/app/*",
-        "http://localhost:8000/*"
+        "http://localhost:8000/*",
+        "http://localhost:8080/q/dev/io.quarkus.quarkus-oidc/provider/*"
       ],
       "webOrigins": [
         "+"
@@ -908,13 +909,13 @@
       "clientId": "security-admin-console",
       "name": "${client_security-admin-console}",
       "rootUrl": "${authAdminUrl}",
-      "baseUrl": "/admin/ldap-demo/console/",
+      "baseUrl": "/admin/kc-demo/console/",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
-        "/admin/ldap-demo/console/*"
+        "/admin/kc-demo/console/*"
       ],
       "webOrigins": [
         "+"
@@ -1967,7 +1968,7 @@
                   "false"
                 ],
                 "client.id": [
-                  "ldap-app"
+                  "t-inspect"
                 ],
                 "role.object.classes": [
                   "groupOfNames"
