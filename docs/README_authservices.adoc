@@ -1,0 +1,256 @@
+:scrollbar:
+:data-uri:
+:toc2:
+:linkattrs:
+
+= Keycloak Authorization Services
+
+:numbered:
+
+== RBAC in the Resource Server
+
+-----
+@Path("/backend")
+public class GreetingResource {
+
+    @Inject
+    SecurityIdentity securityIdentity;
+
+    @GET
+    @RolesAllowed("ldap-user")
+    @NoCache
+    @Path("/secured")
+    public String secured() {
+        String userName = securityIdentity.getPrincipal().getName();
+
+        ...
+    }
+-----
+
+
+== Quarkus Dev Services UI for Keycloak
+
+. config/application.properties:
++
+-----
+# https://quarkus.io/guides/security-openid-connect-dev-services#dev-ui-all-oidc-providers
+#   Enable authorization code grant in Quarkus Dev Service UI
+quarkus.oidc.devui.grant.type=CODE
+
+# https://quarkus.io/guides/security-openid-connect#quarkus-oidc_quarkus.oidc.application-type
+%dev.quarkus.oidc.application-type=service
+
+# Client secret which is used for a client_secret_basic authentication method. Note that a 'client-secret.value' can be used instead but both properties are mutually exclusive.
+# https://quarkus.io/guides/security-openid-connect#quarkus-oidc_quarkus.oidc.credentials.client-secret.method   ?????
+# https://quarkus.io/guides/security-openid-connect#quarkus-oidc_quarkus.oidc.credentials.client-secret.value    ?????
+# %dev.quarkus.oidc.credentials.secret=bservice
+%dev.quarkus.oidc.credentials.client-secret.value=bservice
+%dev.quarkus.oidc.credentials.client-secret.method=post-jwt
+
+# https://quarkus.io/guides/security-keycloak-authorization
+# Allow for injection of AuthZClient
+%dev.quarkus.keycloak.policy-enforcer.enable=true
+-----
+
+-----
+INFO  [io.qu.oi.de.de.OidcDevConsoleProcessor] (build-57) OIDC Dev Console: discovering the provider metadata at http://sso.local:4080/realms/kc-demo/.well-known/openid-configuration
+-----
+
+-----
+INFO  [io.qu.oi.de.de.OidcAuthorizationCodePostHandler] (DEV Console action) Using authorization_code grant to get a token from 'http://sso.local:4080/realms/kc-demo/protocol/openid-connect/token' with client id 'bservice'
+-----
+
+image::images/quarkus_devui_keycloak.png[]
+
+
+== Keycloak Authorization Services
+
+=== Overview
+
+Read through the entire link:https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_client_api[Overview of Keycloak's Authorization Services] functionality.
+
+=== Enable PEP in Quarkus
+Policy Enforcement involves the necessary steps to actually enforce authorization decisions to a resource server. 
+This is achieved by enabling a Policy Enforcement Point (PEP) at the resource server that is capable of communicating with the authorization server, ask for authorization data and control access to protected resources based on the decisions and permissions returned by the server.
+
+. src/main/resources/application.services:
++
+-----
+# Allow for injection of AuthZClient
+# https://quarkus.io/guides/security-keycloak-authorization
+# https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_client_api
+%dev.quarkus.keycloak.policy-enforcer.enable=true
+-----
+
+=== Obtain Permissions
+To obtain permissions from Keycloak you send an authorization request to the token endpoint. 
+As a result, Keycloak will evaluate all policies associated with the resource(s) and scope(s) being requested and issue a Requesting Party Token (RPT) with all permissions granted by the server.
++
+A RPT is a JWT digitally signed using JWS.
++
+The token is built based on the OAuth2 access token previously issued by keycloak to a specific client acting on behalf of a user or on its own behalf.
+
+. Via Bearer Token:
+
+.. Acquire access token from `bservice` SSO client:
++
+-----
+$ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=client_credentials" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "client_id=bservice" \
+            -d "client_secret=bservice" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+.. Acquire RPT from Access Token:
++
+-----
+$ RPT=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Authorization: Bearer ${TKN}" \
+            -d "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" \
+            -d "audience=bservice" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+            
+-----
+
+or
+
+. View _Client_Credentials_
++
+-----
+$ RPT=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            --user "bservice:bservice" \
+            -d "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" \
+            -d "audience=bservice" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+            
+-----
+
+. View _Permissions_:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $RPT | jq .authorization
+
+{
+  "permissions": [
+    {
+      "rsid": "2bdb4e54-5087-418a-b43d-79026ff640ff",
+      "rsname": "Default Resource"
+    }
+  ]
+}
+-----
+
+=== Protection API
+
+https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_protection_api
+
+. Acquire PAT from `bservice` SSO client:
++
+-----
+$ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=bservice" \
+            -d "client_secret=bservice" \
+            -d "scope=openid email" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
++
+A Protection API Token (PAT) is a special OAuth2 access token with a scope defined as _uma_protection_. 
++
+When you create a resource server, Keycloak automatically creates a role, uma_protection, for the corresponding client application and associates it with the client’s service account.
++
+Seems like it adds a realm role, uma_authorization.
++
+In addition:
+
+.. The scope is only:  email profile
+.. _resource_access_ is follows:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .resource_access
+{
+  "bservice": {
+    "roles": [
+      "uma_protection"
+    ]
+  },
+  "account": {
+    "roles": [
+      "manage-account",
+      "manage-account-links",
+      "view-profile"
+    ]
+  }
+}
+-----
+
+=== Backend Quarkus Service
+
+. Invoke secured endpoint:
++
+-----
+$ curl -v -H "Authorization: Bearer $TKN" \
+    -H "Accept: text/plain" \
+    -X GET localhost:8080/backend/secured
+-----
+
+
+. Exception thrown in Quarkus app:
++
+-----
+Caused by: org.keycloak.authorization.client.util.HttpResponseException: Unexpected response from server: 401 / Unauthorized / Response from server: {"error":"unauthorized_client","error_description":"Invalid client secret"}
+	at org.keycloak.authorization.client.util.HttpMethod.execute(HttpMethod.java:95)
+	at org.keycloak.authorization.client.util.HttpMethodResponse$2.execute(HttpMethodResponse.java:50)
+	at org.keycloak.authorization.client.util.TokenCallable.clientCredentialsGrant(TokenCallable.java:123)
+	at org.keycloak.authorization.client.util.TokenCallable.obtainTokens(TokenCallable.java:154)
+	at org.keycloak.authorization.client.util.TokenCallable.call(TokenCallable.java:64)
+	at org.keycloak.authorization.client.resource.ProtectedResource.createFindRequest(ProtectedResource.java:296)
+-----
+
+. Wireshark
++
+-----
+POST /realms/kc-demo/protocol/openid-connect/token HTTP/1.1
+Authorization: Basic YnNlcnZpY2U6YnNlcnZpY2U
+Content-Length: 29
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Host: sso.local:4080
+Connection: Keep-Alive
+User-Agent: Apache-HttpClient/4.5.13 (Java/11.0.13)
+Accept-Encoding: gzip,deflate
+grant_type=client_credentials
+
+HTTP/1.1 401 Unauthorized
+Referrer-Policy: no-referrer
+X-Frame-Options: SAMEORIGIN
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+Pragma: no-cache
+X-XSS-Protection: 1; mode=block
+Content-Type: application/json
+content-length: 75
+
+{"error":"unauthorized_client","error_description":"Invalid client secret"}
+-----
+
+=== Check Permissions Programmatically
+
+https://quarkus.io/guides/security-keycloak-authorization#checking-permissions-programmatically
+
+=== Inject the Authorization Client
+
+https://quarkus.io/guides/security-keycloak-authorization#injecting-the-authorization-client
+
+== Reference
+
+. link:https://quarkus.io/guides/#security[Quarkus: Security Guides]
+. link:https://quarkus.io/guides/security-openid-connect#configuring-the-application[Quarkus: OIDC configuration properties]
+. link:https://quarkus.io/guides/security-openid-connect-dev-services#dev-ui-all-oidc-providers[Quarkus: Dev Services & UI for OIDC]
+. link:https://quarkus.io/guides/security-keycloak-authorization[Quarkus: Using OIDC & Keycloak to Centralize Authorization]
