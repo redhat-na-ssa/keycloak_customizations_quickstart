@@ -11,8 +11,8 @@
 
 . *Quarkus based RH-SSO*
 +
-In this quickstart, keycloak 18 is used and backed by a PostgreSQL database.
-Keycloak 18 is based on `quarkus`. 
+In this quickstart, keycloak 19 is used and backed by a PostgreSQL database.
+Keycloak 19 is based on `quarkus`. 
 
 . *OIDC enabled web app development via _docker-compose_*
 
@@ -303,6 +303,7 @@ In the request to the _/token_ endpoint, what are the request parameters and wha
 
 
 == Token Propogation
+This section of the lab is based on the following documentation:  link:https://quarkus.io/guides/security-openid-connect[Quarkus: Using OIDC to Protect Service Apps Using Bearer Token Authorization]
 
 === Procedure
 

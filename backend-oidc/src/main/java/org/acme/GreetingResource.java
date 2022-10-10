@@ -40,7 +40,7 @@ public class GreetingResource {
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
-    @RolesAllowed("ldap-user")
+    @RolesAllowed("ldap-user")          // App based RBAC (as opposed to centralized UMA based Authorization Services provided by Keycloak)
     @NoCache
     @Path("/secured")
     public String secured() {

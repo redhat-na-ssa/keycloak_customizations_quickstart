@@ -7,18 +7,18 @@
 #
 # Then, build the image with:
 #
-# docker build -f src/main/docker/Dockerfile.jvm -t quay.io/redhat_naps_da/backend-oidc:0.0.2 .
+# podman build -f src/main/docker/Dockerfile.jvm -t quay.io/redhat_naps_da/backend-oidc:0.0.2 .
 #
 # Then run the container using:
 #
-# docker run -i --rm -p 8080:8080 quarkus/backend-oidc-jvm
+# podman run -i --rm -p 8080:8080 quarkus/backend-oidc-jvm
 #
 # If you want to include the debug port into your docker image
 # you will have to expose the debug port (default 5005) like this :  EXPOSE 8080 5005
 #
 # Then run the container using :
 #
-# docker run -i --rm -p 8080:8080 quarkus/backend-oidc-jvm
+# podman run -i --rm -p 8080:8080 quarkus/backend-oidc-jvm
 #
 ###
 FROM registry.access.redhat.com/ubi8/openjdk-11-runtime:1.10
