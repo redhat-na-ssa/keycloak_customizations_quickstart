@@ -148,6 +148,7 @@ $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $RPT | jq .authorization
 === Protection API
 
 https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_protection_api
+https://www.keycloak.org/docs/latest/authorization_services/index.html#protection-api
 
 . Acquire PAT from `bservice` SSO client:
 +
@@ -254,3 +255,138 @@ https://quarkus.io/guides/security-keycloak-authorization#injecting-the-authoriz
 . link:https://quarkus.io/guides/security-openid-connect#configuring-the-application[Quarkus: OIDC configuration properties]
 . link:https://quarkus.io/guides/security-openid-connect-dev-services#dev-ui-all-oidc-providers[Quarkus: Dev Services & UI for OIDC]
 . link:https://quarkus.io/guides/security-keycloak-authorization[Quarkus: Using OIDC & Keycloak to Centralize Authorization]
+
+
+== app-authz-photoz
+
+=== Initial login
+. Get access token
++
+-----
+POST /realms/photoz/protocol/openid-connect/token HTTP/1.1
+Authorization: Basic cGhvdG96LXJlc3RmdWwtYXBpOnNlY3JldA==
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Host: sso.local:4080
+grant_type=client_credentials
+-----
+
+. Get resource_set 
++
+-----
+GET /realms/photoz/authz/protection/resource_set?owner=photoz-restful-api&matchingUri=false&deep=true&max=-1&name=Album+Resource&exactName=true
+Authorization: Bearer eyJhbGciOiJSUzI1N ....
+
+
+
+[{"name":"Album Resource","type":"http://photoz.com/album","owner":{"id":"4314218d-d991-4580-a10b-2fd1e09884a7","name":"photoz-restful-api"},"ownerManagedAccess":false,"attributes":{},"_id":"9fa05f48-8420-43d0-80e1-0130632fa73f","uris":["/album/{id}"],"scopes":[{"id":"70122bd0-2d4b-4bf9-9842-e0be34030a36","name":"album:view"},{"id":"130a4397-cc09-4a3a-a059-4276f5c57ca1","name":"album:delete"}]}]
+----- 
+
+. Get resource_set again ??
++
+-----
+GET /realms/photoz/authz/protection/resource_set?owner=photoz-restful-api&matchingUri=false&deep=true&max=-1&name=Album+Resource&exactName=true
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIg ....
+
+[{"name":"Album Resource","type":"http://photoz.com/album","owner":{"id":"4314218d-d991-4580-a10b-2fd1e09884a7","name":"photoz-restful-api"},"ownerManagedAccess":false,"attributes":{},"_id":"9fa05f48-8420-43d0-80e1-0130632fa73f","uris":["/album/{id}"],"scopes":[{"id":"70122bd0-2d4b-4bf9-9842-e0be34030a36","name":"album:view"},{"id":"130a4397-cc09-4a3a-a059-4276f5c57ca1","name":"album:delete"}]}]
+----- 
+
+. Get resource_set once again ??
++
+-----
+GET /realms/photoz/authz/protection/resource_set?matchingUri=false&deep=true&max=-1&exactName=false&uri=%2Fprofile
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSld
+
+[]
+-----
+
+. Get resource_set 4 
++
+-----
+GET /realms/photoz/authz/protection/resource_set?matchingUri=true&deep=true&max=-1&exactName=false&uri=%2Fprofile HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5c
+
+[{"name":"Default Resource","owner":{"id":"4314218d-d991-4580-a10b-2fd1e09884a7","name":"photoz-restful-api"},"ownerManagedAccess":false,"attributes":{},"_id":"4c4b4a1f-326f-4742-a700-8899ae303195","uris":["/*"],"scopes":[{"id":"16bacf7d-50a7-44af-835e-874358c4e476","name":"profile:view"}]}]
+-----
+
+. Get resource_set 5
++
+-----
+GET /realms/photoz/authz/protection/resource_set?owner=photoz-restful-api&matchingUri=false&deep=true&max=-1&name=Admin+Resources&exactName=true HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cC
+
+[]
+-----
+
+. Get resource_set 6
++
+-----
+GET /realms/photoz/authz/protection/resource_set?matchingUri=false&deep=true&max=-1&exactName=false&uri=%2Falbum%2Fshares HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiI
+
+[]
+-----
+
+== All Albums
+
+. Get Albums (jdoe)
++
+-----
+GET /realms/photoz/authz/protection/resource_set?matchingUri=false&deep=true&max=-1&exactName=false&uri=%2Falbum%2Fshares HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2l
+
+HTTP/1.1 200 OK
+[]
+
+
+
+GET /realms/photoz/authz/protection/resource_set?matchingUri=false&deep=true&max=-1&exactName=false&uri=%2Falbum%2Fshares HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiS
+
+HTTP/1.1 200 OK
+[]
+
+
+
+GET /realms/photoz/authz/protection/permission/ticket?requester=f543dece-7de6-4fee-ac6a-923530dc036f&returnNames=true&granted=true HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cC
+
+HTTP/1.1 200 OK
+[]
+-----
+
+. Get Albums (as admin):
++
+-----
+GET /photoz-restful-api/admin/album
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAi
+
+HTTP/1.1 403 Forbidden
+-----
+
+. Get token:
++
+-----
+POST /realms/photoz/protocol/openid-connect/token HTTP/1.1
+Authorization: Basic cGhvdG96LXJlc3RmdWwtYXBpOnNlY3JldA==
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+audience=photoz-restful-api&grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Auma-ticket&permission=&subject_token=eyJhbGciOiJ
+
+{"error":"access_denied","error_description":"not_authorized"}
+-----
++
+SSO Logs:
++
+-----
+WARN  [org.keycloak.events] (executor-thread-73) type=PERMISSION_TOKEN_ERROR, realmId=b5d6a46d-a694-449d-b615-114aa5f53365, clientId=photoz-restful-api, userId=6cbda6c3-202a-4c00-9956-8966b604a4ce, ipAddress=10.88.2.4, error=access_denied, reason=not_authorized, auth_method=oauth_credentials, audience=photoz-restful-api, grant_type=urn:ietf:params:oauth:grant-type:uma-ticket, client_auth_method=client-secret
+-----
+
+== Create Album
+
+-----
+POST /realms/photoz/authz/protection/resource_set HTTP/1.1
+Authorization: Bearer eyJhbGciOiJS
+{"name":"jeff","type":"http://photoz.com/album","owner":{"id":"f543dece-7de6-4fee-ac6a-923530dc036f"},"ownerManagedAccess":true,"uris":["/album/fd49faf5-503f-4020-bac9-530b878f35f9"],"scopes":[{"name":"album:view"},{"name":"album:delete"}]}
+
+
+{"name":"jeff","type":"http://photoz.com/album","owner":{"id":"f543dece-7de6-4fee-ac6a-923530dc036f","name":"jdoe"},"ownerManagedAccess":true,"_id":"0f405f4a-abd4-46ee-b4fa-b2738b7317d7","uris":["/album/fd49faf5-503f-4020-bac9-530b878f35f9"],"resource_scopes":[{"id":"70122bd0-2d4b-4bf9-9842-e0be34030a36","name":"album:view"},{"id":"130a4397-cc09-4a3a-a059-4276f5c57ca1","name":"album:delete"}],"scopes":[{"id":"70122bd0-2d4b-4bf9-9842-e0be34030a36","name":"album:view"},{"id":"130a4397-cc09-4a3a-a059-4276f5c57ca1","name":"album:delete"}]}
+-----

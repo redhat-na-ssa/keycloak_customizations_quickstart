@@ -1,4 +1,4 @@
-# podman build --rm -f etc/sso/Dockerfile -t quay.io/jbride/keycloak:19.0.2-1-psql .
+# podman build --rm -f etc/sso/Dockerfile -t quay.io/jbride/keycloak:19.0.2-2-psql .
 
 # https://www.keycloak.org/2022/07/keycloak-1900-released
 FROM quay.io/keycloak/keycloak:19.0.2
@@ -15,6 +15,10 @@ RUN curl -sL https://github.com/aerogear/keycloak-metrics-spi/releases/download/
 # Used to demonstrate custom protocol mapper
 COPY etc/sso/providers/org.acme-lucky-number-mapper-0.0.1.jar /opt/keycloak/providers/org.acme-lucky-number-mapper-0.0.1.jar
 
+# Used to demonstrate javascript based policies
+COPY etc/sso/providers/photoz-js-policies.jar /opt/keycloak/providers/photoz-js-policies.jar
+
+# Execute a build after adding customer providers
 RUN /opt/keycloak/bin/kc.sh build
 
 CMD ["sh", "/opt/keycloak/bin/kc.sh", "start-dev"]

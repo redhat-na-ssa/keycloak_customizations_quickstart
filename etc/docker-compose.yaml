@@ -37,12 +37,13 @@ services:
     container_name: sso
 
     # https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile
-    image: quay.io/jbride/keycloak:19.0.2-1-psql
+    image: quay.io/jbride/keycloak:19.0.2-2-psql
 
     restart: always
     ports:
       - "4443:4443"
       - "4080:4080"
+      - "5005:5005"
     command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz"']
     environment:
 
@@ -57,10 +58,14 @@ services:
       KC_DB_PASSWORD: sso
 
       # Alternative approach to import a realm:  https://github.com/keycloak/kc-sig-fapi/blob/main/docker-compose-keycloak.yml#L41-L57
-      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/realm.json
+      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/realm.json -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
 
       KC_HTTP_PORT: 4080
       KC_HTTPS_PORT: 4443
+
+      QUARKUS_LOG_LEVEL: INFO
+      QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_AUTHORIZATION__LEVEL: DEBUG
+      QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_PROTOCOL_OIDC_ENDPOINTS__LEVEL: DEBUG
     volumes:
       - ./sso/realm.json:/opt/realm.json:bind
     healthcheck:
