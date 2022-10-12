@@ -704,7 +704,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "password",
       "redirectUris": [
         "http://localhost:8080/q/dev/io.quarkus.quarkus-oidc/provider/*"
       ],
@@ -716,10 +716,9 @@
       "consentRequired": false,
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
-      "clientAuthenticatorType": "client-secret",
-      "secret": "bservice",
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
       "publicClient": false,
       "frontchannelLogout": false,
       "protocol": "openid-connect",

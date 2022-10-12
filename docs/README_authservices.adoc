@@ -43,12 +43,13 @@ quarkus.oidc.devui.grant.type=CODE
 # Client secret which is used for a client_secret_basic authentication method. Note that a 'client-secret.value' can be used instead but both properties are mutually exclusive.
 # https://quarkus.io/guides/security-openid-connect#quarkus-oidc_quarkus.oidc.credentials.client-secret.method   ?????
 # https://quarkus.io/guides/security-openid-connect#quarkus-oidc_quarkus.oidc.credentials.client-secret.value    ?????
-# %dev.quarkus.oidc.credentials.secret=bservice
-%dev.quarkus.oidc.credentials.client-secret.value=bservice
-%dev.quarkus.oidc.credentials.client-secret.method=post-jwt
+quarkus.oidc.credentials.secret=password
+#%dev.quarkus.oidc.credentials.client-secret.value=bservice
+#%dev.quarkus.oidc.credentials.client-secret.method=post-jwt
 
-# https://quarkus.io/guides/security-keycloak-authorization
 # Allow for injection of AuthZClient
+# https://quarkus.io/guides/security-keycloak-authorization
+# https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_client_api
 %dev.quarkus.keycloak.policy-enforcer.enable=true
 -----
 
@@ -73,17 +74,9 @@ Read through the entire link:https://www.keycloak.org/docs/latest/authorization_
 Policy Enforcement involves the necessary steps to actually enforce authorization decisions to a resource server. 
 This is achieved by enabling a Policy Enforcement Point (PEP) at the resource server that is capable of communicating with the authorization server, ask for authorization data and control access to protected resources based on the decisions and permissions returned by the server.
 
-. src/main/resources/application.services:
-+
------
-# Allow for injection of AuthZClient
-# https://quarkus.io/guides/security-keycloak-authorization
-# https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_client_api
-%dev.quarkus.keycloak.policy-enforcer.enable=true
------
 
 === Obtain Permissions
-To obtain permissions from Keycloak you send an authorization request to the token endpoint. 
+To obtain permissions from Keycloak you send an authorization request to the /token endpoint. 
 As a result, Keycloak will evaluate all policies associated with the resource(s) and scope(s) being requested and issue a Requesting Party Token (RPT) with all permissions granted by the server.
 +
 A RPT is a JWT digitally signed using JWS.
@@ -101,12 +94,12 @@ $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
             -d "username=jbrown" \
             -d "password=password" \
             -d "client_id=bservice" \
-            -d "client_secret=bservice" \
+            -d "client_secret=password" \
             -d "scope=openid" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 -----
 
-.. Acquire RPT from Access Token:
+.. Using an access token, obtain RPT:
 +
 -----
 $ RPT=$(curl -X POST "$ACCESS_TOKEN_URL" \
@@ -114,23 +107,21 @@ $ RPT=$(curl -X POST "$ACCESS_TOKEN_URL" \
             -d "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" \
             -d "audience=bservice" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
-            
 -----
 
 or
 
-. View _Client_Credentials_
+. Using the credentials of your SSO client to initiate BASIC authentication, obtain RPT:
 +
 -----
 $ RPT=$(curl -X POST "$ACCESS_TOKEN_URL" \
-            --user "bservice:bservice" \
+            --user "bservice:password" \
             -d "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" \
             -d "audience=bservice" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
-            
 -----
 
-. View _Permissions_:
+. View _Permissions_ associated with _bservice_ protected resource:
 +
 -----
 $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $RPT | jq .authorization
@@ -145,6 +136,35 @@ $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $RPT | jq .authorization
 }
 -----
 
+. View _realm_access_ roles associated with the _bservice_ protected resource:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $RPT | jq .realm_access.roles
+[
+  "offline_access",
+  "uma_authorization",
+  "default-roles-kc-demo"
+]
+-----
+
+. The RPT can then be used to invoke the resource server that maintains the protected resource as follows:
++
+-----
+$ curl -v -H "Authorization: Bearer $RPT" \
+    -H "Accept: text/plain" \
+    -X GET localhost:8080/backend/secured
+-----
+
+
+. View GET requests made by keycloak client in Quarkus to retrieve latest _resource_set:
++
+-----
+GET /realms/kc-demo/authz/protection/resource_set?matchingUri=true&deep=true&max=-1&exactName=false&uri=%2Fbackend%2Fsecured HTTP/1.1
+Authorization: Bearer eyJhbGciOiJSUzI1NiIs
+
+[{"name":"Default Resource","type":"urn:bservice:resources:default","owner":{"id":"2dde291e-8de5-4dc1-8163-2477931bbeee","name":"bservice"},"ownerManagedAccess":false,"attributes":{},"_id":"ed1b6721-79f7-4f19-9216-e55590748df8","uris":["/*"]}]
+-----
+
 === Protection API
 
 https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_protection_api
@@ -157,7 +177,7 @@ $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials" \
             -d "client_id=bservice" \
-            -d "client_secret=bservice" \
+            -d "client_secret=password" \
             -d "scope=openid email" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 -----
@@ -238,7 +258,6 @@ X-XSS-Protection: 1; mode=block
 Content-Type: application/json
 content-length: 75
 
-{"error":"unauthorized_client","error_description":"Invalid client secret"}
 -----
 
 === Check Permissions Programmatically
@@ -260,6 +279,7 @@ https://quarkus.io/guides/security-keycloak-authorization#injecting-the-authoriz
 == app-authz-photoz
 
 === Initial login
+
 . Get access token
 +
 -----
@@ -288,42 +308,6 @@ GET /realms/photoz/authz/protection/resource_set?owner=photoz-restful-api&matchi
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIg ....
 
 [{"name":"Album Resource","type":"http://photoz.com/album","owner":{"id":"4314218d-d991-4580-a10b-2fd1e09884a7","name":"photoz-restful-api"},"ownerManagedAccess":false,"attributes":{},"_id":"9fa05f48-8420-43d0-80e1-0130632fa73f","uris":["/album/{id}"],"scopes":[{"id":"70122bd0-2d4b-4bf9-9842-e0be34030a36","name":"album:view"},{"id":"130a4397-cc09-4a3a-a059-4276f5c57ca1","name":"album:delete"}]}]
------ 
-
-. Get resource_set once again ??
-+
------
-GET /realms/photoz/authz/protection/resource_set?matchingUri=false&deep=true&max=-1&exactName=false&uri=%2Fprofile
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSld
-
-[]
------
-
-. Get resource_set 4 
-+
------
-GET /realms/photoz/authz/protection/resource_set?matchingUri=true&deep=true&max=-1&exactName=false&uri=%2Fprofile HTTP/1.1
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5c
-
-[{"name":"Default Resource","owner":{"id":"4314218d-d991-4580-a10b-2fd1e09884a7","name":"photoz-restful-api"},"ownerManagedAccess":false,"attributes":{},"_id":"4c4b4a1f-326f-4742-a700-8899ae303195","uris":["/*"],"scopes":[{"id":"16bacf7d-50a7-44af-835e-874358c4e476","name":"profile:view"}]}]
------
-
-. Get resource_set 5
-+
------
-GET /realms/photoz/authz/protection/resource_set?owner=photoz-restful-api&matchingUri=false&deep=true&max=-1&name=Admin+Resources&exactName=true HTTP/1.1
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cC
-
-[]
------
-
-. Get resource_set 6
-+
------
-GET /realms/photoz/authz/protection/resource_set?matchingUri=false&deep=true&max=-1&exactName=false&uri=%2Falbum%2Fshares HTTP/1.1
-Authorization: Bearer eyJhbGciOiJSUzI1NiI
-
-[]
 -----
 
 == All Albums
@@ -336,16 +320,6 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2l
 
 HTTP/1.1 200 OK
 []
-
-
-
-GET /realms/photoz/authz/protection/resource_set?matchingUri=false&deep=true&max=-1&exactName=false&uri=%2Falbum%2Fshares HTTP/1.1
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiS
-
-HTTP/1.1 200 OK
-[]
-
-
 
 GET /realms/photoz/authz/protection/permission/ticket?requester=f543dece-7de6-4fee-ac6a-923530dc036f&returnNames=true&granted=true HTTP/1.1
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cC
@@ -380,6 +354,10 @@ SSO Logs:
 WARN  [org.keycloak.events] (executor-thread-73) type=PERMISSION_TOKEN_ERROR, realmId=b5d6a46d-a694-449d-b615-114aa5f53365, clientId=photoz-restful-api, userId=6cbda6c3-202a-4c00-9956-8966b604a4ce, ipAddress=10.88.2.4, error=access_denied, reason=not_authorized, auth_method=oauth_credentials, audience=photoz-restful-api, grant_type=urn:ietf:params:oauth:grant-type:uma-ticket, client_auth_method=client-secret
 -----
 
+PROBLEM:
+TokenEndpoint.java:905
+    - List of permissions is zero
+
 == Create Album
 
 -----
@@ -389,4 +367,22 @@ Authorization: Bearer eyJhbGciOiJS
 
 
 {"name":"jeff","type":"http://photoz.com/album","owner":{"id":"f543dece-7de6-4fee-ac6a-923530dc036f","name":"jdoe"},"ownerManagedAccess":true,"_id":"0f405f4a-abd4-46ee-b4fa-b2738b7317d7","uris":["/album/fd49faf5-503f-4020-bac9-530b878f35f9"],"resource_scopes":[{"id":"70122bd0-2d4b-4bf9-9842-e0be34030a36","name":"album:view"},{"id":"130a4397-cc09-4a3a-a059-4276f5c57ca1","name":"album:delete"}],"scopes":[{"id":"70122bd0-2d4b-4bf9-9842-e0be34030a36","name":"album:view"},{"id":"130a4397-cc09-4a3a-a059-4276f5c57ca1","name":"album:delete"}]}
+-----
+
+== Keycloak incompatibilities
+
+With Authorization Services, the following error is thrown when attempting to use a keycloak 19.0.1 client (as a dependency of Quarkus 2.13.Final) with a keycloak 19.0.2 server:
+
+-----
+{"error":"unauthorized_client","error_description":"Invalid client secret"}
+-----
+
+This error occured when client library invoked /token endpoint using BASIC auth and client_credentials grant_type.
+
+Changing the server version to match the client library version solved the problem
+
+== Wireshark filters
+
+-----
+tcp.port == 4080  && !(tcp.flags.ack && tcp.len <= 1)
 -----
