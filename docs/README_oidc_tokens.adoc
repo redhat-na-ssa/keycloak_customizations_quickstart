@@ -579,3 +579,16 @@ $ curl -X GET "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo" \
     | jq -r .
 
 -----
+
+. Invoke the _/token/introspect_ endpoint:
++
+If a resource server needs to verify that an access token is active or wants more metadata about it, especially for link:https://auth0.com/docs/secure/tokens/access-tokens#opaque-access-tokens[opaque access tokens], then the token introspect endpoint is the answer. In this case, the resource server integrates the introspect process with the security configuration.
++
+-----
+$ curl -X POST "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token/introspect" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "client_id=bservice" \
+    -d "client_secret=password" \
+    -d "token=$TKN" \
+    | jq -r .
+-----
