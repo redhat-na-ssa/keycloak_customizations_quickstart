@@ -569,3 +569,13 @@ $ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
 
 .. Notice a `typ` of:   _JWT_ .
 .. Because the access token is a JSON Web Token, its header, payload and signature can be viewed in:  https://jwt.io/
+
+. Invoke the _/userinfo_ endpoint:
++
+-----
+$ curl -X GET "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -H "Authorization: Bearer $TKN" \
+    | jq -r .
+
+-----
