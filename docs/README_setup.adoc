@@ -9,8 +9,8 @@
 
 == Components
 
-This quickstart includes both _docker-compose_ (for a local deployment) as well as ansible (for deployment to OpenShift).
-In both cases, the following containers are deployed (as per the above diagram) : 
+This course includes both _docker-compose_ (for a local deployment) as well as ansible (for deployment to OpenShift).
+In both cases, the following containers are deployed : 
 
 .. *openldap*
 +
@@ -19,6 +19,9 @@ System of record of user and role data.
 .. *RH-SSO*
 +
 Provisioned with a realm enabled with _User Federation_ to openldap.
++
+Keycloak 19.0.1 is used and backed by a PostgreSQL database.
+Keycloak 19.0.1 is based on link:https://quarkus.io/[Quarkus].
 
 .. *Frontend* service
 +
@@ -37,7 +40,7 @@ When a request is sent to this service, the _access token_ in the request is val
 The exercises in this quickstart can be run locally (via `docker-compose`) or in OpenShift.
 The following sections provide details for each environment.
 
-It's typical to execute the exercises from just one of the two options.
+Execute the exercises in this course from just one of the following two options.
 
 
 === docker-compose
@@ -148,7 +151,32 @@ The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of t
 
 . link:https://mirror.openshift.com/pub/openshift-v4/clients/ocp/?C=M;O=D[oc utility] corresponding to the version of your OpenShift cluster.
 
-. _ansible-playbook_ utility installed
+. *ansible* installed locally
++
+ie: dnf install ansible
+
+.. On the host machine that will run the ansible, ensure that both `kubernetes` and `jmespath` ansible galaxy collections are installed for the version of python using by ansible:
+
+... Check version of python used by ansible:
++
+-----
+$ ansible --version
+
+
+ansible [core 2.12.2]
+  ...
+
+  python version = 3.8.12 (default, Sep 16 2021, 10:46:05) [GCC 8.5.0 20210514 (Red Hat 8.5.0-3)]
+
+  ...
+
+-----
+... Install dependencies as root user:
++
+-----
+# python3.8 -m pip install kubernetes jmespath
+-----
+
 
 
 ==== Startup
@@ -158,12 +186,6 @@ The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of t
 +
 -----
 $ cd ansible
------
-
-. Ensure the `kubernetes.core` ansible galaxy collection is installed locally:
-+
------
-$ ansible-galaxy collection install kubernetes.core
 -----
 
 . Execute _ansible_playbook_
@@ -237,16 +259,26 @@ $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" 
 
 
 === RH-SSO Account Console
+Throughout this course, you'll need to access the Red Hat SSO `account` console as an authenticated user.
 
-. Open a web browser and navigate to the console of your realm :
+. Open a new private window in your browser.
++
+Doing so will ensure that there are not browser cookie related conflicts between the SSO realm admin and the user logged into the SSO account console.
+
+. Navigate to the SSO accoountconsole of your realm :
 +
 -----
 $ echo -en "\n$RHSSO_URL/realms/$REALM_ID/console\n\n"
 -----
 
-. Authenticate using `jbrown` as the userId and `password` as the password.
+. Authenticate using the following credentials: 
+
+.. UserId:  `jbrown`
+.. Password: `password`
 +
 image::images/account_console.png[]
+
+NOTE:  This user does not yet have the ability to do anything in the SSO account console.  We'll fix this in a later lab.
 
 
 == Token Inspector webapp

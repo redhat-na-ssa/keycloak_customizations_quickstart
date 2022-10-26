@@ -9,10 +9,7 @@
 
 == Quickstart Highlights
 
-. *Quarkus based RH-SSO*
-+
-In this quickstart, keycloak 19 is used and backed by a PostgreSQL database.
-Keycloak 19 is based on `quarkus`. 
+
 
 . *OIDC enabled web app development via _docker-compose_*
 
@@ -30,10 +27,8 @@ Via the _org.eclipse.microprofile.rest.client.propagateHeaders_ system property,
 == Token Propogation
 This section of the lab is based on the following documentation:  link:https://quarkus.io/guides/security-openid-connect[Quarkus: Using OIDC to Protect Service Apps Using Bearer Token Authorization]
 
-image::images/quickstart_deployment.png[]
 
-
-Later in this lab, you'll use the _curl_ utility to smoke test as per the following: 
+In this lab, you'll use the _curl_ utility to smoke test as per the following: 
 
 image::images/quickstart_data_flow.png[]
 
@@ -199,15 +194,15 @@ Notice that a `luckyNumber` claim now appears on the token:
 +
 image::images/generated_luckyNumber.png[]
 
-== Test User Consent
+== User Consent of new Claim
 
-. Navitate to the `Settings` tab of the `t-inspect` SSO client.
+. In the SSO Admin Console, navitate to the `Settings` tab of the `t-inspect` SSO client.
 . Turn on `Consent Required` and then`Save` your changes.
 . In a new private browser tab, navigate to the `Token Inspector` webapp and login with the following credentials: 
 .. *userId*:  jbrown
 .. *Password*: password
 
-. Notice that you are prompted to grant to the application access to various user attribute claims: 
+. Notice you are prompted to grant access of various user attribute claims: 
 +
 image::images/oauth_scope_consent.png[]
 
@@ -238,96 +233,4 @@ The reason for this is because upon attempted logout, the redirect request from 
 
 Not that this is a satisfactory fix, but alleviate the problem by modifying the `type` on the `picture` client-scope for the `t-inspect` SSO client.  Observe the change in logout behavior.
 
-== Reference
-
-. link:https://docs.google.com/presentation/d/1PQu6XKFLgEy6O5Tm_OeiFfY88PVHX7hHAypHZJRP8ew/edit#slide=id.g775d9c5cf4_0_717[slidedeck]
-
-
-
-== Appendix
-
-=== Optional:  Inspect JSON Web Tokens
-
-. View keys of a response from RH-SSO when its `/token` endpoint is invoked:
-+
------
-$ curl -X POST "$ACCESS_TOKEN_URL" \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -d "username=jbrown" \
-    -d "password=password" \
-    -d "grant_type=password" \
-    -d "client_id=$SSO_CLIENT_ID" \
-    -d "scope=openid" \
-    | jq -r 'keys[]'
-
-
-
-access_token
-expires_in
-id_token
-not-before-policy
-refresh_expires_in
-refresh_token
-scope
-session_state
-token_type
------
-+
-NOTE: The token format is of type link:https://datatracker.ietf.org/doc/html/rfc7515[JSON Web Signature]
-
-
-
-. View the header of an access token:
-
-.. Retrieve an OAuth2 access token using OAuth2 Resource Owner Password Credentials flow :
-+
------
-TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "username=jbrown" \
-            -d "password=password" \
-            -d "grant_type=password" \
-            -d "client_id=$SSO_CLIENT_ID" \
-            -d "scope=openid" \
-            | sed 's/.*access_token":"//g' | sed 's/".*//g')
------
-
-.. View the JWT header:
-+
------
-$ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
-
-
-{
-  "alg": "RS256",
-  "typ": "JWT",
-  "kid": "mcjna6MSzQQVz6sjI_gOQYj0ByrbDLT7DthD4TnMy2U"
-}
-
------
-
-.. Notice a `typ` of:   _JWT_ .
-.. Because the access token is a JSON Web Token, its header, payload and signature can be viewed in:  https://jwt.io/
-
-. Invoke the _/userinfo_ endpoint:
-+
------
-$ curl -X GET "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo" \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -H "Authorization: Bearer $TKN" \
-    | jq -r .
-
------
-
-. Invoke the _/token/introspect_ endpoint:
-+
-If a resource server needs to verify that an access token is active or wants more metadata about it, especially for link:https://auth0.com/docs/secure/tokens/access-tokens#opaque-access-tokens[opaque access tokens], then the token introspect endpoint is the answer. In this case, the resource server integrates the introspect process with the security configuration.
-+
------
-$ curl -X POST "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token/introspect" \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -d "client_id=bservice" \
-    -d "client_secret=password" \
-    -d "token=$TKN" \
-    | jq -r .
------
+*Next Lab*:  Proceed to the link:README_federation.adoc[RH-SSO User Federation Lab]

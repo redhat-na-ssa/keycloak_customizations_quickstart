@@ -11,7 +11,7 @@ The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based sec
 
 == Quickstart Highlights
 
-. *_User Federation_*
+. *_User Federation_ Strategies*
 +
 The system of record of user identity is maintained in an `openldap` database.
 In addition, the _WRITABLE_ strategy (provided as part of the integration between RH-SSO and ldap) can be used to replicate any changes made to federated user data in RH-SSO back to the LDAP directory.
@@ -19,44 +19,7 @@ In addition, the _WRITABLE_ strategy (provided as part of the integration betwee
 . *Broker Federation using RH-SSO and Github*
 
 
-
-== Architecture
-
-image::images/quickstart_deployment.png[]
-
-
-This quickstart includes both _docker-compose_ (for a local deployment) as well as ansible (for deployment to OpenShift).
-In both cases, the following containers are deployed (as per the above diagram) : 
-
-.. *openldap*
-+
-System of record of user and role data.
-
-.. *RH-SSO*
-+
-Provisioned with a realm enabled with _User Federation_ to openldap.
-
-.. *Frontend* service
-+
-Quarkus based app that exposes REST API and invokes _backend_ service (with _Authorization_ header propogated to _backend_ service).
-
-.. *Backend* service
-+
-Quarkus based app that exposes REST API secured using RBAC.
-The service is enabled with a _keycloak adapter_.
-At start-up, this _keycloak adapter_ acquires the SSO public key.
-When a request is sent to this service, the _access token_ in the request is validated using this SSO public key. 
-
-Once provisioned, you'll use the _curl_ utility to smoke test as per the following: 
-
-image::images/quickstart_data_flow.png[]
-
-
-
-
-
-
-== User Federation
+== User Federation Strategies
 This quickstart includes _User Federation_ configs to synchronize user data between RH-SSO and OpenLDAP.
 
 This User Federation config specifies a _READ_ONLY_ strategy for synchronizing that user data:  user data will be pulled into RH-SSO but if/when that user data in RH-SSO changes, those changes will not be propogated back to OpenLDAP.
