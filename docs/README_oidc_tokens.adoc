@@ -392,8 +392,11 @@ Answers:
 
 == Custom Protocol Mapper
 
+=== Protocol Mapper code
 . Review the source code for the `lucky-number-mapper` project.
-. Notice the inclusion of the compiled project jar file in the `/opt/keycloak/providers` directory:
+. Review the link:https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile[Dockerfile] for the RH-SSO container image.
++
+Notice the inclusion of the compiled project jar file in the `/opt/keycloak/providers` directory:
 +
 -----
 ...
@@ -402,65 +405,25 @@ COPY etc/sso/providers/org.acme-lucky-number-mapper-0.0.1.jar /opt/keycloak/prov
 
 ...
 -----
-+
-NOTE:  The complete Dockerfile can be found link:https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile[here].
-
-
-. In the console of your RH-SSO, navigate to: `kc-demo -> Configure -> Clients -> t-inspect -> Mappers`
-+
-image::images/Create_PM.png[]
-
-. From the `Mapper Type` drop down, select: _Lucky Number_ .
-. Populate the remaining fields as follows:app-name:
-.. *Name*: luckyNumber
-.. *Token Claim Name*: luckyNumber
-+
-image::images/luckyNumber_mapper.png[]
-. Click: `Save`
-
-. Verify existence of a _luckyNumber_ in the various tokens:
-
-.. Navigate to the `Clients -> t-inspect -> Client Scopes -> Evaluate`
-.. In the `User` text box, enter: `jbrown`
-+
-image::images/evaluate_jbrown_token.png[]
-
-. Switch to the `Generated Access Token` panel and locate a random value for the `luckyNumber` claim:app-name:
-+
-image::images/generated_luckyNumber.png[]
-
-
-== Custom Client Scope
-
-=== Overview
-In the previous section, you created a custom protocol mapper to include a _luckyNumber_ claim on OAuth/OIDC tokens.
-
-Limitations with this approach are as follows: 
-
-. _luckyNumber_ claim will only be included in OAuth/OIDC tokens generated for the _t-inspect_ SSO client.  What if you want tokens from other SSO clients to also include this custom claim ?
-
-. The user has no ability to consent to revealing this claim to downstream SSO clients.
-
-
-As an alternative, RH-SSO provides for creation of a _client scope_ which will address both of the above.
 
 === Create Client Scope
 
-. In the console of your RH-SSO, navigate to: `kc-demo -> Configure -> Client Scopes`
-. In the top-right corner, click `Create`.
+. In the console of your RH-SSO, navigate to: `kc-demo -> Client Scopes`
+. Click `Create client scope`.
 . Populate the form as follows: 
 .. *Name*: luckyNumber
 .. *Description*: Lucky Number generator
+.. *Type*: Optional
 .. *Protocol*: openid-connect
 .. *Display On Consent Screen*:  ON
 .. *Consent Screen Text*: Authorize addition of luckyNumber to tokens
 .. *Include in Token Scope*:  ON
-.. *GUI Order*: 1
+.. *Display Order*: 1
 . 
 Click Save.
 
-. In the *Mappers* tab of the subsequent page, click `Create`
-. Similar to what you did in the previous section, fill in the form to create a _luckyNumber_ protocol mapper
+. In the *Mappers* tab of the subsequent page, click `Configure a new mapper`
+. Select `Lucky Number` and fill in the form to create a _luckyNumber_ protocol mapper
 +
 image::images/luckyNumber_mapper.png[]
 
@@ -472,19 +435,38 @@ In addition, the user will now have the ability to consent to inclusion of a _lu
 This latter functionality is known as _OAuth2 scopes_.
 You can find an excellent discussion of _OAuth2 scopes_ in chapter 8 of the book: link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications-ebook-dp-B092KP135B/dp/B092KP135B/ref=mt_other?_encoding=UTF8&me=&qid=1652368580[Keycloak - Identity and Access Management for Modern Applications]
 
-=== Add _Client Scope_ to clients
+=== Add _Client Scope_ to SSO client
 
-. Return to the edit page of the _t-inspect_ SSO client.
-. In the _Settings_ tab, enable `Consent Required`: 
+. Navigate to: `kc-demo -> Clients -> t-inspect -> Settings`
+. In the _Settings_ tab, enable `Consent Required`.  Click `Save`.
+. Switch to the _Client Scopes -> Setup_ tabs
+. Click `Add client scope`, select `luckyNumber` and click `Add -> Optional`.
 +
-image::images/consent_required_flag.png[]
+image::images/add_client_scope.png[]
 
-. Navigate to the `Mappers` tab and delete the _luckyNumber_ mapper.
-. Switch to the _Client Scopes_ tab
-. In the _Optional Client Scopes_ section, click _luckyNumber_ and _Add selected_ to the _Assigned Optional Client Scopes_ box.
+. Notice that `luckyNumber` is now included in the list of `Client Scopes`.
 
-=== Test
+=== Verify existence of a _luckyNumber_ claim
 
+. Navigate to the `Clients -> t-inspect -> Client Scopes -> Evaluate`
+. In the `User` text box, enter: `jbrown`
++
+image::images/evaluate_jbrown_token.png[]
+
+. Notice that in the `Effictive protocol mappers` view, there are about 27 mappers included, but none of them are `luckyNumber`.
+
+. Switch to the `Generated access token` view and again notice the absence of a `luckyNumber` claim.
+
+. From the `Scope parameter` drop down, select `luckyNumber`
++
+Notice that a `luckyNumber` claim now appears on the token:
++
+image::images/generated_luckyNumber.png[]
+
+=== Test User Consent
+
+. Navitate to the `Settings` tab of the `t-inspect` SSO client.
+. Turn on `Consent Required` and then`Save` your changes.
 . Navigate to the `Token Inspector` webapp and login with the following credentials: 
 .. *userId*:  jbrown
 .. *Password*: password
