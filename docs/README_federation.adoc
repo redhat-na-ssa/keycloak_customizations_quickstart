@@ -7,6 +7,8 @@
 
 The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based security where the system of record of user and role data is maintained in external identity providers.
 
+NOTE:  Using keycloak 19.0.1, this lab is currently broken when sso realm admin navigates to `User Federation` tab of realm.  Response from the following seems to be OK:  http://sso.local:4080/admin/realms/kc-demo/components?parentId=kc-demo&type=org.keycloak.storage.UserStorageProvider .  However, there is a javascript error:  Cannot read properties of undefined (reading '0')
+
 :numbered:
 
 == Quickstart Highlights
@@ -20,6 +22,9 @@ In addition, the _WRITABLE_ strategy (provided as part of the integration betwee
 
 
 == User Federation Strategies
+
+NOTE:  Change this lab such that jbrown user is given `account` client related roles.
+
 This quickstart includes _User Federation_ configs to synchronize user data between RH-SSO and OpenLDAP.
 
 This User Federation config specifies a _READ_ONLY_ strategy for synchronizing that user data:  user data will be pulled into RH-SSO but if/when that user data in RH-SSO changes, those changes will not be propogated back to OpenLDAP.
@@ -27,6 +32,7 @@ This User Federation config specifies a _READ_ONLY_ strategy for synchronizing t
 Details regarding the various synchronization strategies supported in RH-SSO can be found in the section _Integrating with LDAP and Active Directory_ of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
 
 In this section of the lab, you will modify the synchronization strategy to allow changes of user data in RH-SSO to propogate to LDAP.
+
 
 === Change synchronization to: Writable
 . Your SSO Realm includes a _User Federation_ config called:  `ldap-apacheds`.
@@ -39,6 +45,9 @@ image::images/edit_user_federation.png[]
 
 
 === Test synchronization to LDAP
+
+image::images/jbrown_manage_account.png[]
+
 . In the _kc-demo_ realm, add a new realm role called:  _new_role_ 
 +
 Roles -> Add Role -> Role Name -> _new_role_
