@@ -414,6 +414,10 @@ COPY etc/sso/providers/org.acme-lucky-number-mapper-0.0.1.jar /opt/keycloak/prov
 .. *Name*: luckyNumber
 .. *Description*: Lucky Number generator
 .. *Type*: Optional
++
+An SSO client will need to explicity include this claim in the list of `scopes` in the token request.  If set to `Default`, this claim would not be required in the list of `scopes` in the token request.
++
+NOTE:  The value of this field can be over-written when configuring `client scopes` for a specific SSO client.
 .. *Protocol*: openid-connect
 .. *Display On Consent Screen*:  ON
 .. *Consent Screen Text*: Authorize addition of luckyNumber to tokens
@@ -463,23 +467,33 @@ Notice that a `luckyNumber` claim now appears on the token:
 +
 image::images/generated_luckyNumber.png[]
 
-=== Test User Consent
+== Test User Consent
 
 . Navitate to the `Settings` tab of the `t-inspect` SSO client.
 . Turn on `Consent Required` and then`Save` your changes.
-. Navigate to the `Token Inspector` webapp and login with the following credentials: 
+. In a new private browser tab, navigate to the `Token Inspector` webapp and login with the following credentials: 
 .. *userId*:  jbrown
 .. *Password*: password
 
-. As per `OAuth2 Scopes` functionality, consent to the addition of various claims to the OIDC tokens: 
+. Notice that you are prompted to grant to the application access to various user attribute claims: 
 +
 image::images/oauth_scope_consent.png[]
 
-
-. Click the `IDToken` tab and notice the inclusion of a _luckyNumber_: 
+.. What about the `luckyNumber` claim ?
+.. In the browser tab with your RH-SSO admin console, navigate to: `Clients -> t-inspect -> Client Scopes`.
+.. Notice the `Assigned type` on the `luckyNumber` client scope is set to `Optional`.  Switch this to `Default`.
+.. In the `token-inspector` app, re-login as the `jbrown` user.  Do you now see `luckyNumber` as a claim to grant access to ?
+. In the `token-inspect` app, click the `IDToken` tab and notice the inclusion of a _luckyNumber_: 
 +
 image::images/token_with_luckyNumber.png[]
 
+. In the browser tab of your RH-SSO admin console, navigate to the `consents` page of the `jbrown` user.
++
+image::images/jbrown_consent.png[]
+
+. Logout as the `jbrown` user in the `token inspector` app.  Re-login and notice that you are not prompted to consent to granting access to claims.  Why ?
++
+In the RH-SSO Admin Console, revoke the existing consent and re-log into the `token inspector` app.  Notice that you are now prompted to once again grant access to various consents. 
 
 == Reference
 
