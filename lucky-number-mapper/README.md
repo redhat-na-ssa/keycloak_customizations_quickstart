@@ -1,6 +1,7 @@
 # Keycloak OIDC custom protocol mapper
 
-Completely plagarized from: https://github.com/dasniko/keycloak-tokenmapper-example
+Completely plagarized from: https://github.com/dasniko/keycloak-tokenmapper-example.
+Thank you!
 
 This is an example token mapper for Keycloak using the OIDC protocol.
 

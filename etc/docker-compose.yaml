@@ -37,14 +37,24 @@ services:
     container_name: sso
 
     # https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile
-    image: quay.io/jbride/keycloak:19.0.1.3-psql
+    image: quay.io/jbride/keycloak:19.0.1.4-psql
 
     restart: always
     ports:
       - "4443:4443"
       - "4080:4080"
+
+      # jdwp debugger port
       - "5006:5006"
-    command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz"']
+
+      # Infinispan TCP "start_port"
+      - "7800:7800"
+
+    # over-rides the following:
+    #   1)  Sets custom set of features as per:  https://www.keycloak.org/server/features
+    #   2)  Explicitly sets distributed infinispan cache (which is set to local with 'start-dev'
+    command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz,scripts" --cache=ispn']
+
     environment:
 
       # Add the following entry in your /etc/hosts:  127.0.0.1  sso.local

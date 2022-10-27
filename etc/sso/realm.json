@@ -2195,7 +2195,7 @@
             "admin"
           ],
           "changedSyncPeriod": [
-            "-1"
+            "86400"
           ],
           "rdnLDAPAttribute": [
             "uid"

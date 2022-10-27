@@ -9,17 +9,24 @@ The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based sec
 
 NOTE:  Using keycloak 19.0.1, this lab is currently broken when sso realm admin navigates to `User Federation` tab of realm.  Response from the following seems to be OK:  http://sso.local:4080/admin/realms/kc-demo/components?parentId=kc-demo&type=org.keycloak.storage.UserStorageProvider .  However, there is a javascript error:  Cannot read properties of undefined (reading '0')
 
+link:https://keycloak.discourse.group/t/error-when-configuring-conditional-step/18117/2[Temporary Workaround] until apparent fix in keycloak 20.
+
 :numbered:
 
 == Quickstart Highlights
 
-. *_User Federation_ Strategies*
+. *User Synch Strategies*
+
+. *User Federation_ Strategies*
 +
 The system of record of user identity is maintained in an `openldap` database.
 In addition, the _WRITABLE_ strategy (provided as part of the integration between RH-SSO and ldap) can be used to replicate any changes made to federated user data in RH-SSO back to the LDAP directory.
 
 . *Broker Federation using RH-SSO and Github*
 
+== User Federation Synch
+
+image::images/periodic_sync_setting.png[]
 
 == User Federation Strategies
 
