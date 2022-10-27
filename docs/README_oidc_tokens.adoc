@@ -120,7 +120,10 @@ Answers:
 == Custom Protocol Mapper
 
 === Protocol Mapper code
-. Review the source code for the `lucky-number-mapper` project.
+. Review the source code for the link:../lucky-number-mapper[Lucky Number Project] project.
++
+Thank you link:https://www.n-k.de/[Niko Köbler] for this excellent link:https://github.com/dasniko/keycloak-tokenmapper-example[example]!
+
 . Review the link:https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile[Dockerfile] for the RH-SSO container image.
 +
 Notice the inclusion of the compiled project jar file in the `/opt/keycloak/providers` directory:
@@ -132,6 +135,12 @@ COPY etc/sso/providers/org.acme-lucky-number-mapper-0.0.1.jar /opt/keycloak/prov
 
 ...
 -----
+
+. Log in as a site admin to the _Master_ realm of RH-SSO.
+. Navigate to the `Provider Info` tab and scroll down to the _protocol-mapper_ section.
+. Notice the include of the _oidc-lucky-number-mapper_ entry:
++
+image::images/lucky_number_provider_list.png[]
 
 === Create Client Scope
 
