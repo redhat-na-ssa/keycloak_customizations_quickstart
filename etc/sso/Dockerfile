@@ -27,6 +27,10 @@ COPY etc/sso/providers/org.acme-lucky-number-mapper-0.0.1.jar /opt/keycloak/prov
 # https://www.keycloak.org/docs/latest/server_development/index.html#_script_providers
 COPY etc/sso/providers/photoz-js-policies.jar /opt/keycloak/providers/photoz-js-policies.jar
 
+# Used to demonstrate implementation of a transient authenticator
+# https://www.janua.fr/transient-sessions-in-keycloak/
+COPY etc/sso/providers/org.acme-transient-authn-0.0.1.jar /opt/keycloak/providers/org.acme-transient-authn-0.0.1.jar
+
 # Execute a build after adding customer providers
 RUN /opt/keycloak/bin/kc.sh build
 

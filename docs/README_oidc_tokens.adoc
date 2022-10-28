@@ -242,4 +242,44 @@ The reason for this is because upon attempted logout, the redirect request from 
 
 Not that this is a satisfactory fix, but alleviate the problem by modifying the `type` on the `picture` client-scope for the `t-inspect` SSO client.  Observe the change in logout behavior.
 
+== Transient Authentication
+
+=== Modify `Direct Grants` AuthN Flow
+
+image::images/providers_transient_authn.png[]
+
+image::images/transient_direct_grants_flow.png[]
+
+=== Test
+. Navigate to the _jbrown_ user in the RH-SSO Admin Console.  Ensure there are zero active sessions.
+
+. Acquire tokens via Direct Access Grant flow using the _bservice_ SSO client:
++
+-----
+curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=bservice" \
+            -d "client_secret=password" \
+            -d "scope=openid"
+-----
+
+. Return to the _jbrown_ user in the RH-SSO Admin Console.  Are there any sessions associated with that user ?
+
+. Acquire tokens via Direct Access Grant flow using the _t-inspect_ SSO client:
++
+-----
+curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=t-inspect" \
+            -d "scope=openid"
+-----
+
+. Return to the _jbrown_ user in the RH-SSO Admin Console.  Are there now any sessions associated with that user ?
+
 *Next Lab*:  Proceed to the link:README_federation.adoc[RH-SSO User Federation Lab]
