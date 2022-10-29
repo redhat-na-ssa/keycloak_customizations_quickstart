@@ -240,13 +240,34 @@ The reason for this is because upon attempted logout, the redirect request from 
 414 Request-URI Too Long
 -----
 
-Not that this is a satisfactory fix, but alleviate the problem by modifying the `type` on the `picture` client-scope for the `t-inspect` SSO client.  Observe the change in logout behavior.
+Not that this is a satisfactory fix, but to alleviate the problem by modifying the `type` on the `picture` client-scope for the `t-inspect` SSO client.  Observe the change in logout behavior.
 
-== Transient Authentication
+== Custom Authenticator
+This exercise is inspired by the following blog post: link:https://www.janua.fr/transient-sessions-in-keycloak/[Transient sessions in Keycloak].  Thank you!
+
+=== Review `transient-authn` project
+
+. Review the source code of the link:../transient-authn[transient-authn] project.
++
+Answer the following questions: 
+
+
+. Review the link:../etc/sso/Dockerfile[Dockerfile] used to create your RH-SSO container.
++
+Notice the jar file that includes the compiled `transient-authn` classes is copied to the directory where keycloak scans for custom providers at build time : 
++
+-----
+COPY etc/sso/providers/org.acme-transient-authn-0.0.1.jar /opt/keycloak/providers/org.acme-transient-authn-0.0.1.jar
+-----
+
+. In the RH-SSO admin console, navigate to the `Provider Info` of the `master` realm:
++
+Notice the presence of the `transient-authn` custom authenticator: 
++
+image::images/providers_transient_authn.png[]
 
 === Modify `Direct Grants` AuthN Flow
 
-image::images/providers_transient_authn.png[]
 
 image::images/transient_direct_grants_flow.png[]
 
@@ -266,7 +287,7 @@ curl -X POST "$ACCESS_TOKEN_URL" \
             -d "scope=openid"
 -----
 
-. Return to the _jbrown_ user in the RH-SSO Admin Console.  Are there any sessions associated with that user ?
+. In the RH-SSO Admin Console, return to the `sessions` tab of the _jbrown_ user.  Are there any sessions associated with that user ?
 
 . Acquire tokens via Direct Access Grant flow using the _t-inspect_ SSO client:
 +
@@ -280,6 +301,6 @@ curl -X POST "$ACCESS_TOKEN_URL" \
             -d "scope=openid"
 -----
 
-. Return to the _jbrown_ user in the RH-SSO Admin Console.  Are there now any sessions associated with that user ?
+. In the RH-SSO Admin Console, return to the `sessions` tab of the _jbrown_ user.  Are there now any sessions associated with that user ?
 
 *Next Lab*:  Proceed to the link:README_federation.adoc[RH-SSO User Federation Lab]
