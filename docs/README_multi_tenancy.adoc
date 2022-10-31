@@ -1,0 +1,50 @@
+:scrollbar:
+:data-uri:
+:toc2:
+:linkattrs:
+
+= RH-SSO Multi-tenancy
+
+https://keycloak.discourse.group/t/keycloak-multi-tenancy-extensions-for-saas-applications/15426
+
+https://github.com/p2-inc/keycloak-orgs/blob/main/README.md
+
+
+
+== Quickstart Highlights
+
+== Pre-reqs:
+
+-----
+TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=$REALM_ADMIN" \
+            -d "password=$REALM_ADMIN_PASSWD" \
+            -d "grant_type=password" \
+            -d "client_id=$SSO_CLIENT_ID" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+
+$ echo $TKN
+-----
+
+-----
+NOTE:  As per OrganizationsResource ... line 72, doesn't seem to accept id;  Instead returns the a Location header similar to the following:
+
+    Location: http://sso.local:4080/admin/realms/kc-demo/orgs/47aa7226-27e1-4d6e-b2b5-9e7b0f63a224
+
+$ org_name=acme-$RANDOM
+$ org_id=$( curl -sS -D - -X POST $RHSSO_URL/realms/$REALM_ID/orgs \
+    -H "Authorization: Bearer $TKN" \
+    -H "Content-Type:application/json" \
+    -H "Accept: application/json" \
+    -d "{ \"name\": \"$org_name\", \"displayName\": \"$org_name\", \"realm\": \"$REALM_ID\", \"domains\":[\"domain1\", \"domain2\"] }" \
+    | grep Location: | sed 's:.*/::' | sed 's/\r//' )
+
+$ org_admin=$( curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/orgs/$org_id/members" \
+    -H "Authorization: Bearer $TKN" \
+    -H "Content-Type:application/json" \
+    | jq -r .[].id )
+
+-----
+

@@ -37,7 +37,9 @@ services:
     container_name: sso
 
     # https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile
-    image: quay.io/jbride/keycloak:19.0.1.4-psql
+    # image: quay.io/jbride/keycloak:19.0.1.4-psql
+
+    image: quay.io/phasetwo/phasetwo-keycloak:19.0.3-alpha
 
     restart: always
     ports:
@@ -63,6 +65,7 @@ services:
 
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
       KC_DB_URL: 'jdbc:postgresql://psql_sso:4432/sso'
       KC_DB_USERNAME: sso
       KC_DB_PASSWORD: sso

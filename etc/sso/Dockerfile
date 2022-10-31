@@ -7,7 +7,6 @@ EXPOSE 8080
 
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
-ENV KC_DB=postgres
 
 # https://www.keycloak.org/server/features
 #  NOTE:  Can be over-written at boot with '--features="x,y,z" argument
