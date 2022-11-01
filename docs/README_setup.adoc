@@ -307,7 +307,7 @@ image::images/browser_network_tools.png[]
 +
 In the request to the _/token_ endpoint, what are the request parameters and what is included in the response ?
 
-*Next Lab*:  Proceed to the link:README_oidc_tokens.adoc[RH-SSO Token Propogation and Customization Lab]
+*Next Lab*:  Proceed to the link:README_oidc_tokens.adoc[RH-SSO Token Deep Dive Lab]
 
 == Appendix
 
