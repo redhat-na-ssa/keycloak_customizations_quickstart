@@ -259,16 +259,16 @@ $ curl -v -X GET "$RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration" 
 
 
 === RH-SSO Account Console
-Throughout this course, you'll need to access the Red Hat SSO `account` console as an authenticated user.
+Throughout this course, you'll need to access the Red Hat SSO `account console` as an authenticated user.
 
 . Open a new private window in your browser.
 +
-Doing so will ensure that there are not browser cookie related conflicts between the SSO realm admin and the user logged into the SSO account console.
+Doing so will ensure that there are not browser cookie related conflicts between users logged into the RH-SSO `admin console` and this user logged into the SSO `account console`.
 
 . Navigate to the SSO accoountconsole of your realm :
 +
 -----
-$ echo -en "\n$RHSSO_URL/realms/$REALM_ID/console\n\n"
+$ echo -en "\n$RHSSO_URL/realms/$REALM_ID/account\n\n"
 -----
 
 . Authenticate using the following credentials: 
@@ -308,91 +308,3 @@ image::images/browser_network_tools.png[]
 In the request to the _/token_ endpoint, what are the request parameters and what is included in the response ?
 
 *Next Lab*:  Proceed to the link:README_oidc_tokens.adoc[RH-SSO Token Deep Dive Lab]
-
-== Appendix
-
-=== Optional:  Inspect JSON Web Tokens
-
-. View keys of a response from RH-SSO when its `/token` endpoint is invoked:
-+
------
-$ curl -X POST "$ACCESS_TOKEN_URL" \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -d "username=jbrown" \
-    -d "password=password" \
-    -d "grant_type=password" \
-    -d "client_id=$SSO_CLIENT_ID" \
-    -d "scope=openid" \
-    | jq -r 'keys[]'
-
-
-
-access_token
-expires_in
-id_token
-not-before-policy
-refresh_expires_in
-refresh_token
-scope
-session_state
-token_type
------
-+
-NOTE: The token format is of type link:https://datatracker.ietf.org/doc/html/rfc7515[JSON Web Signature]
-
-
-
-. View the header of an access token:
-
-.. Retrieve an OAuth2 access token using OAuth2 Resource Owner Password Credentials flow :
-+
------
-TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "username=jbrown" \
-            -d "password=password" \
-            -d "grant_type=password" \
-            -d "client_id=$SSO_CLIENT_ID" \
-            -d "scope=openid" \
-            | sed 's/.*access_token":"//g' | sed 's/".*//g')
------
-
-.. View the JWT header:
-+
------
-$ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
-
-
-{
-  "alg": "RS256",
-  "typ": "JWT",
-  "kid": "mcjna6MSzQQVz6sjI_gOQYj0ByrbDLT7DthD4TnMy2U"
-}
-
------
-
-.. Notice a `typ` of:   _JWT_ .
-.. Because the access token is a JSON Web Token, its header, payload and signature can be viewed in:  https://jwt.io/
-
-. Invoke the _/userinfo_ endpoint:
-+
------
-$ curl -X GET "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo" \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -H "Authorization: Bearer $TKN" \
-    | jq -r .
-
------
-
-. Invoke the _/token/introspect_ endpoint:
-+
-If a resource server needs to verify that an access token is active or wants more metadata about it, especially for link:https://auth0.com/docs/secure/tokens/access-tokens#opaque-access-tokens[opaque access tokens], then the token introspect endpoint is the answer. In this case, the resource server integrates the introspect process with the security configuration.
-+
------
-$ curl -X POST "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token/introspect" \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -d "client_id=bservice" \
-    -d "client_secret=password" \
-    -d "token=$TKN" \
-    | jq -r .
------

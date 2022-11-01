@@ -53,8 +53,6 @@ image::images/edit_user_federation.png[]
 
 === Test synchronization to LDAP
 
-image::images/jbrown_manage_account.png[]
-
 . In the _kc-demo_ realm, add a new realm role called:  _new_role_ 
 +
 Roles -> Add Role -> Role Name -> _new_role_

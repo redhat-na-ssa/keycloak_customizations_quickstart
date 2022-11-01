@@ -268,7 +268,7 @@ https://quarkus.io/guides/security-keycloak-authorization#checking-permissions-p
 
 https://quarkus.io/guides/security-keycloak-authorization#injecting-the-authorization-client
 
-== Reference
+=== Reference
 
 . link:https://quarkus.io/guides/#security[Quarkus: Security Guides]
 . link:https://quarkus.io/guides/security-openid-connect#configuring-the-application[Quarkus: OIDC configuration properties]
@@ -310,7 +310,7 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIg ....
 [{"name":"Album Resource","type":"http://photoz.com/album","owner":{"id":"4314218d-d991-4580-a10b-2fd1e09884a7","name":"photoz-restful-api"},"ownerManagedAccess":false,"attributes":{},"_id":"9fa05f48-8420-43d0-80e1-0130632fa73f","uris":["/album/{id}"],"scopes":[{"id":"70122bd0-2d4b-4bf9-9842-e0be34030a36","name":"album:view"},{"id":"130a4397-cc09-4a3a-a059-4276f5c57ca1","name":"album:delete"}]}]
 -----
 
-== All Albums
+=== All Albums
 
 . Get Albums (jdoe)
 +
@@ -358,7 +358,7 @@ PROBLEM:
 TokenEndpoint.java:905
     - List of permissions is zero
 
-== Create Album
+=== Create Album
 
 -----
 POST /realms/photoz/authz/protection/resource_set HTTP/1.1
