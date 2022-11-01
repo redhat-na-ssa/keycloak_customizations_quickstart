@@ -1,21 +1,26 @@
 {
-  "exp": 1640650325,
-  "iat": 1640650025,
-  "jti": "83cde328-999a-429b-bcdd-bc4c820e848a",
-  "iss": "https://sso-sso.apps.den.ratwater.xyz/auth/realms/spaceAPIGWs",
+  "exp": 1667311825,
+  "iat": 1667311525,
+  "jti": "d2cdf7d1-cabd-4b1a-b4e0-10dc6adfc937",
+  "iss": "http://sso.local:4080/realms/kc-demo",
   "aud": [
     "realm-management",
     "broker",
     "account"
   ],
-  "sub": "6c101515-9cef-4c8a-bac6-789299485bac",
+  "sub": "3157351f-b8c6-4231-8631-9ac23381b243",
   "typ": "Bearer",
-  "azp": "ddf5f300",
-  "session_state": "1958b193-1d45-46ae-a838-ebabe328dd3d",
+  "azp": "t-inspect",
+  "session_state": "d3a5b258-6603-4c13-86b2-1f5fa3f39a71",
   "acr": "1",
+  "allowed-origins": [
+    "http://localhost:8080",
+    "http://localhost:8000",
+    "https://www.keycloak.org"
+  ],
   "realm_access": {
     "roles": [
-      "admin"
+      "kc-demo-admin"
     ]
   },
   "resource_access": {
@@ -55,8 +60,8 @@
       ]
     }
   },
-  "scope": "email profile",
-  "sid": "1958b193-1d45-46ae-a838-ebabe328dd3d",
+  "scope": "openid email profile",
+  "sid": "d3a5b258-6603-4c13-86b2-1f5fa3f39a71",
   "email_verified": false,
   "preferred_username": "ssorealmadmin",
   "email": "ssorealmadmin@openshift.opentlc.com"

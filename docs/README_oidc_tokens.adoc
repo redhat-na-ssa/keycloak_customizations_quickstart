@@ -27,7 +27,7 @@ Via the _org.eclipse.microprofile.rest.client.propagateHeaders_ system property,
 == Token Propogation
 This section of the lab is based on the following documentation:  link:https://quarkus.io/guides/security-openid-connect[Quarkus: Using OIDC to Protect Service Apps Using Bearer Token Authorization]
 
-
+=== Architecture
 In this lab, you'll use the _curl_ utility to smoke test as per the following: 
 
 image::images/quickstart_data_flow.png[]
@@ -117,6 +117,93 @@ Answers:
 3) quarkus.oidc.auth-server-url=http://sso:4080/realms/kc-demo
 /////
 
+== Offline Tokens
+
+. Enable the `ssoRealmAdmin` user with `offline_access` role:
++
+image::images/ssoRealmAdmin_add_offline_role.png[]
+
+
+. Acquire an offline token: 
++
+-----
+O_TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=$REALM_ADMIN" \
+            -d "password=$REALM_ADMIN_PASSWD" \
+            -d "grant_type=password" \
+            -d "client_id=$SSO_CLIENT_ID" \
+            -d "scope=openid offline_access" \
+            | sed 's/.*refresh_token":"//g' | sed 's/".*//g')
+
+$ echo $O_TKN
+-----
++
+Notice that authentication was required to acquire this _offline_ token.
+From hear on out, subsequent _access_ and _id_ tokens can be acquired with only this _offline_ token.  Authentication will not be needed.
+
+. Notice that the token's type is:  Offline 
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $O_TKN | jq -r .typ
+
+Offline
+-----
++
+Related:  What is the expiration date on your offline token ?
+
+. Creation of an offline token will create records in both the `offline_client_session` and `offline_client_tokens` tables.  These records can be viewed as follows: 
+
+.. Acquire a terminal to the PostgreSQL container corresponding to RH-SSO.
+
+.. At the command line prompt, execute:  `psql sso`
+
+.. At the `psql` prompt, execute the following: 
++
+-----
+sso=# \x on
+Expanded display is on.
+
+
+sso=# select * from offline_client_session;
+-[ RECORD 1 ]-----------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+user_session_id         | 3b067a4e-7d4d-4c11-9a4a-913f698b5244
+client_id               | 846f5d7b-6be9-4319-800a-b0a1cc9410a2
+offline_flag            | 1
+timestamp               | 1667315616
+data                    | {"authMethod":"openid-connect","notes":{"iss":"http://sso.local:4080/realms/kc-demo","startedAt":"1667315616","level-of-authentication":"-1","scope":"openid offline_access"}}
+client_storage_provider | local
+external_client_id      | local
+-----
+
+.  Using the `offline` token, acquire a new set of tokens using the _grant_type_ of _refresh_token_: 
++
+-----
+TKN=$( curl -X POST $ACCESS_TOKEN_URL \
+       -H "Content-Type: application/x-www-form-urlencoded" \
+       -d "grant_type=refresh_token" \
+       -d "client_id=$SSO_CLIENT_ID" \
+       -d "refresh_token=$O_TKN" \
+       | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+. Notice the expiration date of this access token: 
++
+-----
+$ TS=$(jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq -r '.exp') && date -d"@$TS"
+
+Tue Nov  1 09:35:54 AM MDT 2022
+-----
+
+. While this access token remains valid, use it to invoke any RESTful endpoint of the RH-SSO Admin API: 
++
+-----
+$ curl -v -X GET \
+       -H "Authorization: Bearer $TKN" \
+       -H "Accept: application/json" \
+       $RHSSO_URL/admin/realms/$REALM_ID/client-scopes | jq -r .
+-----
+
 == Custom Protocol Mapper
 
 === Protocol Mapper code
@@ -186,7 +273,7 @@ image::images/add_client_scope.png[]
 
 . Notice that `luckyNumber` is now included in the list of `Client Scopes`.
 
-=== Verify existence of a _luckyNumber_ claim
+=== Verify _luckyNumber_ claim
 
 . Navigate to the `Clients -> t-inspect -> Client Scopes -> Evaluate`
 . In the `User` text box, enter: `jbrown`
@@ -231,7 +318,7 @@ image::images/jbrown_consent.png[]
 +
 In the RH-SSO Admin Console, revoke the existing consent and re-log into the `token inspector` app.  Notice that you are now prompted to once again grant access to various consents. 
 
-== Logout
+== OIDC Logout
 
 When `picture` claim is included in ID Token, the logout flow breaks.
 The reason for this is because upon attempted logout, the redirect request from the browser includes a query parameter of `id_token_hint`.  The value of this field is the `id token`.  When the `picture` claim in included in the ID Token, the max size of the request header is exceeded and subsequently, the following error is returned: 
