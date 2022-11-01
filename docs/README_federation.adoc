@@ -24,6 +24,111 @@ In addition, the _WRITABLE_ strategy (provided as part of the integration betwee
 
 . *Broker Federation using RH-SSO and Github*
 
+== Modify and Sync LDAP Data
+
+=== Verify Account Console Problem
+. Authenticate into the `Account Console` of RH-SSO using the `jbrown` user: 
+
+.. Navigate to the RH-SSO `Account Console` of your realm :
++
+-----
+$ echo -en "\n$RHSSO_URL/realms/$REALM_ID/account\n\n"
+-----
+
+.. Authenticate using the following credentials: 
+
+... UserId:  `jbrown`
+... Password: `password`
+
+
+. Click on any of the links in the `Account Console` and notice the following error: 
++
+image::images/jbrown_account_console_forbidden.png[]
+
+. In the `Account Console`, log out and authenticate back in as the following user: 
+
+.. UserId: 'bwilson'
+.. Password: `password`
+
+. Click on any of the links in the `Account Console` and notice that user does have permissions to navigate through all functionality.  What is the difference between default roles provided to each user ?
+
+. Using the `ldapsearch` command line utility, query for members with the `manage-account` role: 
++
+-----
+$ ldapsearch -x \
+             -h localhost \
+             -p 3389 \
+             -D "cn=admin,dc=example,dc=org" \
+             -w admin \
+             -b cn=manage-account,ou=AccountConsoleRoles,dc=example,dc=org
+-----
++
+The response should include the following:
++
+-----
+dn: cn=manage-account,ou=AccountConsoleRoles,dc=example,dc=org
+objectClass: top
+objectClass: groupOfNames
+cn: manage-account
+member: uid=bwilson,ou=People,dc=example,dc=org
+
+-----
++
+Notice that the `jbrown` user is missing as a member.
+
+
+=== Modify User & Role data
+In OpenLDAP, you will need to add `jbrown` as a member of the `manage-account` role.
+You'll then need to sync these changes to the User store of RH-SSO.
+
+
+
+. Using the `ldapmodify` command line utility, add the `jbrown` user as a member of the `manage-account` role: 
++
+-----
+$ echo "dn: cn=manage-account,ou=AccountConsoleRoles,dc=example,dc=org
+changetype: modify
+add: member
+member: uid=jbrown,ou=People,dc=example,dc=org" \
+  > /tmp/jbrown_role.ldif \
+  && ldapmodify -x \
+        -h localhost \
+        -p 3389 \
+        -D "cn=admin,dc=example,dc=org" \
+        -w admin \
+        -f /tmp/jbrown_role.ldif
+-----
++
+The response should consist of the following: 
++
+-----
+modifying entry "cn=manage-account,ou=AccountConsoleRoles,dc=example,dc=org"
+-----
+
+. Sync changes to RH-SSO: 
+.. In the `Admin Console` of RH-SSO, navigate to:  `User Federation -> ldap-apacheds`
+.. Investigate the `account console roles` ldap mapper:
++
+Navigate to: `mappers -> account console roles`
++
+image::images/account_console_ldap_roles.png[]
+
+
+.. At the bottom of the page, click:  `Synch LDAP Roles to Keycloak`
++
+NOTE:  You do not have to explicitly delete the `jbrown` user in RH-SSO.  The LDAP sync functionality of RH-SSO will auto-detect a change in LDAP and update that change in RH-SSO. 
+
+=== Verify Fix
+. Verify that the `manage-account` role is now included in an `access token` associated with the `jbrown` user.
++
+You can do this numerous ways to include use of the `evaluate` screen of the RH-SSO `Admin Console`: 
++
+image::images/jbrown_add_manage_account.png[]
+
+. Authenticate into the `Account Console` of RH-SSO using the `jbrown` user.
++
+You should now see the ability to navigate through all functionality.
+
 == User Federation Synch
 
 image::images/periodic_sync_setting.png[]
@@ -69,13 +174,13 @@ image::images/new_role_added.png[]
 $ ldapsearch -x \
              -h localhost \
              -p 3389 \
-             -b cn=new_role,ou=RealmRoles,dc=example,dc=org \
              -D "cn=admin,dc=example,dc=org" \
-             -w admin
+             -w admin \
+             -b cn=new_role,ou=RealmRoles,dc=example,dc=org
 -----
 
 
-. The response should include the following:app-name:
+. The response should include the following:
 +
 -----
 
