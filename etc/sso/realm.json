@@ -2108,7 +2108,7 @@
             },
             {
               "id": "f554fae6-dc9e-47c5-9f81-386b52e0e043",
-              "name": "finance roles",
+              "name": "account console roles",
               "providerId": "role-ldap-mapper",
               "subComponents": {},
               "config": {
@@ -2116,7 +2116,7 @@
                   "LDAP_ONLY"
                 ],
                 "roles.dn": [
-                  "ou=FinanceRoles,dc=example,dc=org"
+                  "ou=AccountConsoleRoles,dc=example,dc=org"
                 ],
                 "membership.ldap.attribute": [
                   "member"
@@ -2128,7 +2128,7 @@
                   "false"
                 ],
                 "client.id": [
-                  "t-inspect"
+                  "account"
                 ],
                 "role.object.classes": [
                   "groupOfNames"
