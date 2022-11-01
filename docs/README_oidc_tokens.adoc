@@ -7,6 +7,105 @@
 
 :numbered:
 
+== OIDC Endpoints
+
+=== `/tokens`
+
+. View keys of a response from RH-SSO when its `/token` endpoint is invoked:
++
+-----
+$ curl -X POST "$ACCESS_TOKEN_URL" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "username=jbrown" \
+    -d "password=password" \
+    -d "grant_type=password" \
+    -d "client_id=$SSO_CLIENT_ID" \
+    -d "scope=openid" \
+    | jq -r 'keys[]'
+
+
+
+access_token
+expires_in
+id_token
+not-before-policy
+refresh_expires_in
+refresh_token
+scope
+session_state
+token_type
+-----
+
+. From the listing above, what are the 3 different tokens that are included in the response from the `/token` endpoint ?
+
+
+. Using the `jbrown` user, retrieve an OAuth2 access token using OAuth2 Resource Owner Password Credentials flow :
++
+-----
+TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "username=jbrown" \
+            -d "password=password" \
+            -d "grant_type=password" \
+            -d "client_id=$SSO_CLIENT_ID" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
++
+You'll use this `access token` (set to the variable: $TKN) in subsequent sections of this lab.
+
+. As per above, invocation of the `/token` endpoint did not necessiate use of a _client_secret_ data field in the request payload.  Why not ?  What would you need to modify in the SSO client such that _client_secret_ would be required in the request payload ?
+
+. View the JWT header:
++
+-----
+$ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
+
+
+{
+  "alg": "RS256",
+  "typ": "JWT",
+  "kid": "mcjna6MSzQQVz6sjI_gOQYj0ByrbDLT7DthD4TnMy2U"
+}
+-----
+
+. Notice a `typ` of : link:https://datatracker.ietf.org/doc/html/rfc7515[JWT] .
+
+.. Because the access token is a JSON Web Token, its header, payload and signature can be viewed in:  https://jwt.io/
+
+
+. View the body of the access token
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .
+-----
+
+=== _/token/introspect_:
+
+In the previous section, its been quite easy to introspect the header and payloads of tokens from RH-SSO because they are simpley in base64.
+
+If a resource server (or any other client) needs to introspect link:https://auth0.com/docs/secure/tokens/access-tokens#opaque-access-tokens[opaque access tokens] (ie: from some other Identity Provider that issues opaque access tokens), then the token introspect endpoint is the answer. 
+
+Keycloak does expose a `/token/introspect` endpoint that could be (if ever needed ... normally not) invoked as follows: 
+
+-----
+$ curl -X POST "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token/introspect" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "client_id=bservice" \
+    -d "client_secret=password" \
+    -d "token=$TKN" \
+    | jq -r .
+-----
+
+=== _/userinfo_:
+
+-----
+$ curl -X GET "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -H "Authorization: Bearer $TKN" \
+    | jq -r .
+
+-----
 
 == Token Attributes
 

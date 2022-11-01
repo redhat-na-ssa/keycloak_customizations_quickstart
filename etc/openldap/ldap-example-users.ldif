@@ -13,10 +13,10 @@ objectclass: top
 objectclass: organizationalUnit
 ou: RealmRoles
 
-dn: ou=FinanceRoles,dc=example,dc=org
+dn: ou=AccountConsoleRoles,dc=example,dc=org
 objectclass: top
 objectclass: organizationalUnit
-ou: FinanceRoles
+ou: AccountConsoleRoles
 
 dn: uid=jbrown,ou=People,dc=example,dc=org
 objectclass: top
@@ -60,8 +60,8 @@ objectclass: groupOfNames
 cn: ldap-admin
 member: uid=jbrown,ou=People,dc=example,dc=org
 
-dn: cn=accountant,ou=FinanceRoles,dc=example,dc=org
+dn: cn=manage-account,ou=AccountConsoleRoles,dc=example,dc=org
 objectclass: top
 objectclass: groupOfNames
-cn: accountant
+cn: manage-account
 member: uid=bwilson,ou=People,dc=example,dc=org
