@@ -7,7 +7,8 @@ The use cases build on each other.
 This project includes the following labs:
 
 . link:docs/README_setup.adoc[Setup]
-. link:docs/README_oidc_tokens.adoc[RH-SSO Token Propogation and Customization Lab]
+. link:docs/README_oidc_tokens.adoc[RH-SSO Token Deep-Dive Lab]
+. link:docs/README_RHSSO_Extensions.adoc[RH-SSO Extensions Lab]
 . link:docs/README_federation.adoc[RH-SSO Federation & Identity Provider Integrations Lab]
 . link:docs/README_client_registration.adoc[RH-SSO Dynamic Client Registration Lab]
 . link:docs/README_authz_services.adoc[RH-SSO Advanced Authorization Services Lab]
