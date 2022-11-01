@@ -265,7 +265,7 @@ Throughout this course, you'll need to access the Red Hat SSO `account console` 
 +
 Doing so will ensure that there are not browser cookie related conflicts between users logged into the RH-SSO `admin console` and this user logged into the SSO `account console`.
 
-. Navigate to the SSO accoountconsole of your realm :
+. Navigate to the RH-SSO `Account Console` of your realm :
 +
 -----
 $ echo -en "\n$RHSSO_URL/realms/$REALM_ID/account\n\n"
