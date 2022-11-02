@@ -4,7 +4,7 @@
 # https://www.keycloak.org/2022/11/keycloak-2000-released.html
 FROM quay.io/keycloak/keycloak:20.0.0 as builder
 
-EXPOSE 8080
+EXPOSE 4080
 
 ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true

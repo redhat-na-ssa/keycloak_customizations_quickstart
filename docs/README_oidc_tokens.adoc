@@ -31,7 +31,7 @@ TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -d "username=jbrown" \
             -d "password=password" \
             -d "grant_type=password" \
-            -d "client_id=$SSO_CLIENT_ID" \
+            -d "client_id=t-inspect" \
             -d "scope=openid" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 -----
@@ -117,7 +117,7 @@ $ curl -X POST "$OIDC_TOKEN_URL" \
     -d "username=jbrown" \
     -d "password=password" \
     -d "grant_type=password" \
-    -d "client_id=$SSO_CLIENT_ID" \
+    -d "client_id=t-inspect" \
     -d "scope=openid" \
     | jq -r 'keys[]'
 
@@ -144,19 +144,63 @@ Which token is no longer included in the response ?
 image::images/client_scope_picture_disable_access_token.png[]
 
 === roles attributes
+==== Overview
 
-. By setting _fullScopeAllowed=true_ in the SSO client, all roles assocated with an authenticated user will be included in the access token.
-+
-These roles can be visualized as follows:
-+
------
-$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.roles
+Roles are added to an _access_token_ when the following all of the following conditions occur:
 
-[
-  "ldap-user",
-  "ldap-admin"
-]
+* The SSO client is enabled with a `client scope` called `roles`.  ie: 
++
+image::images/client_scope_roles_enabled.png[]
+
+* The SSO client is configured with either `Full scope allowed` or a list of `role scope mappings`.
++
+You'll configure these roles in the next section.
+
+* The authenticated user for which the token is being issued has been enabled with realm and/or client roles that correspond to the configured `role scope mappings`.
+
+When the above conditions are met, an `access_token` will include `realm_access` and/or `resource_access` attributes similar to the following: 
+
 -----
+  "realm_access": {
+    "roles": [
+      "ldap-user"
+    ]
+  },
+  "resource_access": {
+    "account": {
+      "roles": [
+        "manage-account",
+        "manage-account-links"
+      ]
+    }
+  }
+-----
+
+
+==== Role Scope Mappings
+. In the RH-SSO `Admin Console`, navigate to: `Clients -> t-inspect -> Client Scopes -> t-inspect-dedicated -scope`
++
+image::images/t-inspect-scope-roles.png[]
+. Click: `Assign role`
+.  Assign the following realm roles:app-name:
+.. *ldap-admin*
+.. *ldap-user*
+. Assign the following role from the `account` SSO client:  *manage-account*
++
+image::images/t-inspect-add-account-role.png[]
+
+. Your list of `role scope mappings` should now consist of the following: 
+.. *ldap-admin*
+.. *ldap-user*
+.. *manage account*
+
+==== Introspect token
+
+Compare and contrast the role related attributes included in tokens for the following users: 
+
+. `jbrown`
+. `ssoRealmAdmin`
+. `bwilson`
 
 
 == Bearer Token Propogation
@@ -185,7 +229,7 @@ TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -d "username=jbrown" \
             -d "password=password" \
             -d "grant_type=password" \
-            -d "client_id=$SSO_CLIENT_ID" \
+            -d "client_id=t-inspect" \
             -d "scope=openid" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 
@@ -254,14 +298,20 @@ O_TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -d "username=$REALM_ADMIN" \
             -d "password=$REALM_ADMIN_PASSWD" \
             -d "grant_type=password" \
-            -d "client_id=$SSO_CLIENT_ID" \
+            -d "client_id=t-inspect" \
             -d "scope=openid offline_access" \
             | sed 's/.*refresh_token":"//g' | sed 's/".*//g')
 
 $ echo $O_TKN
 -----
 +
-Notice that authentication was required to acquire this _offline_ token.
+Notice the following regarding the above command: 
+
+.. A filter for the `refresh_token` was piped from the response of the `/token` endpoint.
++
+This is your _offline_ token.
+ 
+.. Authentication was required to acquire this _offline_ token.
 From hear on out, subsequent _access_ and _id_ tokens can be acquired with only this _offline_ token.  Authentication will not be needed.
 
 . Notice that the token's type is:  Offline 
@@ -304,7 +354,7 @@ external_client_id      | local
 TKN=$( curl -X POST $OIDC_TOKEN_URL \
        -H "Content-Type: application/x-www-form-urlencoded" \
        -d "grant_type=refresh_token" \
-       -d "client_id=$SSO_CLIENT_ID" \
+       -d "client_id=t-inspect" \
        -d "refresh_token=$O_TKN" \
        | sed 's/.*access_token":"//g' | sed 's/".*//g')
 -----

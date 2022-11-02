@@ -15,8 +15,8 @@ services:
     networks:
       - sso
 
-  psql_sso:
-    container_name: psql_sso
+  psql-sso:
+    container_name: psql-sso
     image: registry.redhat.io/rhel8/postgresql-12:1-72.1626836556
     restart: always
     ports:
@@ -33,8 +33,8 @@ services:
     networks:
       - sso
 
-  sso:
-    container_name: sso
+  kc-sso:
+    container_name: kc-sso
 
     # https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile
     image: quay.io/jbride/keycloak:20.0.0-0-psql
@@ -65,7 +65,7 @@ services:
 
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_DB_URL: 'jdbc:postgresql://psql_sso:4432/sso'
+      KC_DB_URL: 'jdbc:postgresql://psql-sso:4432/sso'
       KC_DB_USERNAME: sso
       KC_DB_PASSWORD: sso
 
@@ -83,12 +83,12 @@ services:
     volumes:
       - ./sso/realm.json:/opt/realm.json:bind
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4080/auth/"]
-      interval: 10s
+      test: ["CMD", "curl", "-f", "http://kc-sso:4080/realms/kc-demo/.well-known/openid-configuration"]
+      interval: 20s
       timeout: 5s
       retries: 5
     depends_on:
-      - psql_sso
+      - psql-sso
       - openldap
     networks:
       - sso
@@ -105,7 +105,7 @@ services:
     volumes:
     - ./backend-service/application.properties:/deployments/config/application.properties:bind
     depends_on:
-      - sso
+      - kc-sso
     networks:
       - sso
 
@@ -139,7 +139,7 @@ services:
       KC_CLIENT_ID: t-inspect
       SERVICE_URL: 'http://localhost:7080/frontend'
     depends_on:
-      - sso
+      - kc-sso
       - frontend-service
     networks:
       - sso
