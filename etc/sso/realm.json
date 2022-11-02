@@ -521,7 +521,6 @@
   },
   "clients": [
     {
-      "id": "29fbf479-e673-409d-9021-a7c649d9b727",
       "clientId": "account",
       "name": "${client_account}",
       "rootUrl": "${authBaseUrl}",
@@ -565,7 +564,6 @@
       ]
     },
     {
-      "id": "3ca84a89-2d29-4152-b6bc-367fe66f0c3e",
       "clientId": "account-console",
       "name": "${client_account-console}",
       "rootUrl": "${authBaseUrl}",
@@ -621,7 +619,6 @@
       ]
     },
     {
-      "id": "93220a7c-7b8c-4c9f-a9e7-24d33e5d584d",
       "clientId": "admin-cli",
       "name": "${client_admin-cli}",
       "surrogateAuthRequired": false,
@@ -659,7 +656,6 @@
       ]
     },
     {
-      "id": "5eceb570-63d2-4827-a690-9351751b8604",
       "clientId": "broker",
       "name": "${client_broker}",
       "surrogateAuthRequired": false,
@@ -726,7 +722,7 @@
         "post.logout.redirect.uris": "+"
       },
       "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
+      "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [],
       "defaultClientScopes": [
@@ -775,7 +771,7 @@
         "post.logout.redirect.uris": "+"
       },
       "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
+      "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [],
       "defaultClientScopes": [
@@ -793,7 +789,6 @@
       ]
     },
     {
-      "id": "8f12494d-bcbb-4d42-b370-bb4460e2d63b",
       "clientId": "realm-management",
       "name": "${client_realm-management}",
       "surrogateAuthRequired": false,
@@ -895,7 +890,6 @@
       ]
     },
     {
-      "id": "3d65e2fe-e1a7-4bba-af15-8f7fb84983d8",
       "clientId": "zyncsso",
       "surrogateAuthRequired": false,
       "enabled": true,
@@ -940,7 +934,7 @@
         "saml.onetimeuse.condition": "false"
       },
       "authenticationFlowBindingOverrides": {},
-      "fullScopeAllowed": true,
+      "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": -1,
       "protocolMappers": [
         {

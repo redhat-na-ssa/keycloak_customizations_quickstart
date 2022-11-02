@@ -95,7 +95,7 @@ export REALM_ID=kc-demo
 export REALM_ADMIN=ssoRealmAdmin
 export REALM_ADMIN_PASSWD=admin
 export SSO_CLIENT_ID=t-inspect
-export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+export OIDC_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 export BACKEND_ROUTE=http://localhost:6080
 export FRONTEND_ROUTE=http://localhost:7080
 -----
@@ -220,7 +220,7 @@ export RHSSO_URL=https://$RHSSO_HOST/auth
 export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
 export REALM_ID=user1-ldap
 export SSO_CLIENT_ID=t-inspect      # preset in realm deployed by project ansible
-export ACCESS_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+export OIDC_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 export FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 -----
 

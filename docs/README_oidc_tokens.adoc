@@ -9,42 +9,24 @@
 
 == Token Introspection
 
-You have a lot of options for introspecting a token.  
+You have a lot of options for introspecting a token.
 
-=== Acquire Tokens
+=== RH-SSO Admin Console
 
-. View keys of a response from RH-SSO when its `/token` endpoint is invoked:
-+
------
-$ curl -X POST "$ACCESS_TOKEN_URL" \
-    -H "Content-Type: application/x-www-form-urlencoded" \
-    -d "username=jbrown" \
-    -d "password=password" \
-    -d "grant_type=password" \
-    -d "client_id=$SSO_CLIENT_ID" \
-    -d "scope=openid" \
-    | jq -r 'keys[]'
+The token `evaluate` functionality of the RH-SSO `Admin Console` is an excellent development & administration tool.
+It allows an administrator to evaluate all token types given the current state of `client scopes` for a specific client.
 
+image::images/evaluate_jbrown_token.png[]
 
+=== Alternatives
+The remaining token introspection options require you to first acquire a token from the `/token` endpoint of RH-SSO and then provide that token to the introspection tool.
 
-access_token
-expires_in
-id_token
-not-before-policy
-refresh_expires_in
-refresh_token
-scope
-session_state
-token_type
------
-
-. From the listing above, what are the 3 different tokens that are included in the response from the `/token` endpoint ?
-
+==== Acquire Tokens
 
 . Using the `jbrown` user, retrieve an OAuth2 access token using OAuth2 Resource Owner Password Credentials flow :
 +
 -----
-TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=jbrown" \
             -d "password=password" \
@@ -58,12 +40,13 @@ You'll use this `access token` (set to the variable: $TKN) in subsequent section
 
 . As per above, invocation of the `/token` endpoint did not necessitate use of a _client_secret_ data field in the request payload.  Why not ?  What would you need to modify in the SSO client such that _client_secret_ would be required in the request payload ?
 
-=== Introspection
-The following discusses several options for introspecting tokens.
 
 ==== jwt.io
 
+Now that you have an _access_token_, you can copy and paste its content in the web app:  https://jwt.io
+
 image::images/jwt_io_option.png[]
+
 
 ==== Command Line
 
@@ -92,12 +75,23 @@ The JWT specification requires that the body of the token be encoded in base64.
 $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .
 -----
 
+==== _/userinfo_ endpoint:
+
+-----
+$ curl -X GET "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -H "Authorization: Bearer $TKN" \
+    | jq -r .
+
+-----
 
 ==== _/token/introspect_ endpoint:
 
-In the previous section, its been quite easy to introspect the header and payloads of tokens from RH-SSO because they are simpley in base64.
+In the previous section, its been quite easy to introspect the header and payloads of tokens from RH-SSO because tokens issued by RH-SSO are encoded in base64.
 
-If a resource server (or any other client) needs to introspect link:https://auth0.com/docs/secure/tokens/access-tokens#opaque-access-tokens[opaque access tokens] (ie: from some other Identity Provider that issues opaque access tokens), then the token introspect endpoint is the answer. 
+Using tokens issued by alternative OIDC providers might not be so easy to work with.
+
+If a resource server (or any other client) needs to introspect link:https://auth0.com/docs/secure/tokens/access-tokens#opaque-access-tokens[opaque access tokens] (ie: from some other Identity Provider that issues opaque access tokens), then the token `/introspect` endpoint is the answer. 
 
 Keycloak does expose a `/token/introspect` endpoint that could be (if ever needed ... normally not) invoked as follows: 
 
@@ -110,20 +104,62 @@ $ curl -X POST "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token/intros
     | jq -r .
 -----
 
-==== _/userinfo_ endpoint:
 
+== Token Types & Attributes
+
+=== `/token` response
+
+. View keys of a response from RH-SSO when its `/token` endpoint is invoked:
++
 -----
-$ curl -X GET "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo" \
+$ curl -X POST "$OIDC_TOKEN_URL" \
     -H "Content-Type: application/x-www-form-urlencoded" \
-    -H "Authorization: Bearer $TKN" \
-    | jq -r .
+    -d "username=jbrown" \
+    -d "password=password" \
+    -d "grant_type=password" \
+    -d "client_id=$SSO_CLIENT_ID" \
+    -d "scope=openid" \
+    | jq -r 'keys[]'
 
+
+
+access_token
+expires_in
+id_token
+not-before-policy
+refresh_expires_in
+refresh_token
+scope
+session_state
+token_type
 -----
 
-== Token Attributes
+. From the listing above, what are the 3 different tokens that are included in the response from the `/token` endpoint ?
+. Re-execute the above command without the request payload data field: "scope=openid" .
++
+Which token is no longer included in the response ?
+
+=== `picture` attribute
+
+image::images/client_scope_picture_disable_access_token.png[]
+
+=== roles attributes
+
+. By setting _fullScopeAllowed=true_ in the SSO client, all roles assocated with an authenticated user will be included in the access token.
++
+These roles can be visualized as follows:
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.roles
+
+[
+  "ldap-user",
+  "ldap-admin"
+]
+-----
 
 
-== Token Propogation
+== Bearer Token Propogation
 This section of the lab is based on the following documentation:  link:https://quarkus.io/guides/security-openid-connect[Quarkus: Using OIDC to Protect Service Apps Using Bearer Token Authorization]
 
 Via the _org.eclipse.microprofile.rest.client.propagateHeaders_ system property, Quarkus provides a convenient approach to specify request headers that should be propogated to downstream RESTful services via the REST client.  In this quickstart, this system property is utilzied to propogate the `Authorization` header between backend services.
@@ -144,7 +180,7 @@ $ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=exampl
 . Retrieve an OAuth2 _access token_ using OAuth2 link:https://tools.ietf.org/html/rfc6749#section-4.3[Resource Owner Password Credentials] flow :
 +
 -----
-TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=jbrown" \
             -d "password=password" \
@@ -154,21 +190,6 @@ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 
 $ echo $TKN
------
-+
-NOTE:  By setting a `scope=openid`, the OIDC _id_token_ is also included in the response.
-
-. By setting _fullScopeAllowed=true_ in the SSO client, all roles assocated with an authenticated user will be included in the access token.
-+
-These roles can be visualized as follows:
-+
------
-$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .realm_access.roles
-
-[
-  "ldap-user",
-  "ldap-admin"
-]
 -----
 
 . Invoke backend-oidc service directly by including access token in request:
@@ -197,7 +218,7 @@ Hello jbrown with roles: ldap-user ldap-admin
 
 === Review Questions
 
-. Regarding the value of $ACCESS_TOKEN_URL, what alternative REST endpoint does RH-SSO provide to authenticate as per the OIDC specification ?
+. Regarding the value of $OIDC_TOKEN_URL, what alternative REST endpoint does RH-SSO provide to authenticate as per the OIDC specification ?
 .. What is included in the response when invoking that alternative OIDC endpoint ?
 .. Under what circumstances should this alternative OIDC endpoint get invoked ?
 
@@ -218,19 +239,9 @@ Answers:
 3) quarkus.oidc.auth-server-url=http://sso:4080/realms/kc-demo
 /////
 
-== Client Scoped Mappers
-
-https://keycloak.discourse.group/t/protocol-mappers-alternative-for-keycloak-19/17973
-https://github.com/keycloak/keycloak-ui/issues/3342
-
-
-. Dedicated `non-scoped` mappers (as per the following) will likely be removed in a future release: 
-+
-image::images/t-inspect-dedicated.png[]
-
 == Offline Tokens
 
-. Enable the `ssoRealmAdmin` user with `offline_access` role:
+. Enable the `ssoRealmAdmin` user with the `offline_access` role:
 +
 image::images/ssoRealmAdmin_add_offline_role.png[]
 
@@ -238,7 +249,7 @@ image::images/ssoRealmAdmin_add_offline_role.png[]
 . Acquire an offline token: 
 +
 -----
-O_TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+O_TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=$REALM_ADMIN" \
             -d "password=$REALM_ADMIN_PASSWD" \
@@ -290,7 +301,7 @@ external_client_id      | local
 .  Using the `offline` token, acquire a new set of tokens using the _grant_type_ of _refresh_token_: 
 +
 -----
-TKN=$( curl -X POST $ACCESS_TOKEN_URL \
+TKN=$( curl -X POST $OIDC_TOKEN_URL \
        -H "Content-Type: application/x-www-form-urlencoded" \
        -d "grant_type=refresh_token" \
        -d "client_id=$SSO_CLIENT_ID" \

@@ -42,7 +42,7 @@ API_GW_URL=https://gw-user1-services.$OCP_DOMAIN
 . Retrieve an OAuth2 token using the Zync-queue created SSO client (in the API GW related SSO Realm) corresponding to the API application Id :
 +
 -----
-TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=jbrown" \
             -d "password=password" \

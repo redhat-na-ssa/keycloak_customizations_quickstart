@@ -88,7 +88,7 @@ The token is built based on the OAuth2 access token previously issued by keycloa
 .. Acquire access token from `bservice` SSO client:
 +
 -----
-$ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+$ TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials" \
             -d "client_id=bservice" \
@@ -100,7 +100,7 @@ $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
 .. Using an access token, obtain RPT:
 +
 -----
-$ RPT=$(curl -X POST "$ACCESS_TOKEN_URL" \
+$ RPT=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Authorization: Bearer ${TKN}" \
             -d "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" \
             -d "audience=bservice" \
@@ -112,7 +112,7 @@ or
 . Using the credentials of your SSO client to initiate BASIC authentication, obtain RPT:
 +
 -----
-$ RPT=$(curl -X POST "$ACCESS_TOKEN_URL" \
+$ RPT=$(curl -X POST "$OIDC_TOKEN_URL" \
             --user "bservice:password" \
             -d "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" \
             -d "audience=bservice" \
@@ -171,7 +171,7 @@ https://www.keycloak.org/docs/latest/authorization_services/index.html#protectio
 . Acquire PAT from `bservice` SSO client:
 +
 -----
-$ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+$ TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials" \
             -d "client_id=bservice" \

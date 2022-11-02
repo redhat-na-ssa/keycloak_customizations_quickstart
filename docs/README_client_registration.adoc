@@ -143,7 +143,7 @@ image::images/zync_assigned_roles.png[]
 . Acquire an access token from the _zyncsso_ client:
 +
 -----
-$ ZYNCSSO_TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+$ ZYNCSSO_TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials" \
             -d "client_id=zyncsso" \
@@ -232,7 +232,7 @@ export INITIAL_ACCESS_TOKEN=<generated access token from RH-SSO>
 . Using _Resource Owner Password Credentials_ flow on the _admin-cli_ SSO client, acquire a OAuth2 Bearer Access Token: 
 +
 -----
-ADMIN_API_TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
+ADMIN_API_TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=$REALM_ADMIN" \
             -d "password=$REALM_ADMIN_PASSWD" \

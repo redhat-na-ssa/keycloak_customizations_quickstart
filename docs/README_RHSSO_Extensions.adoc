@@ -167,7 +167,7 @@ image::images/transient_direct_grants_flow.png[]
 . Acquire tokens via Direct Access Grant flow using the _bservice_ SSO client:
 +
 -----
-curl -X POST "$ACCESS_TOKEN_URL" \
+curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=jbrown" \
             -d "password=password" \
@@ -182,7 +182,7 @@ curl -X POST "$ACCESS_TOKEN_URL" \
 . Acquire tokens via Direct Access Grant flow using the _t-inspect_ SSO client:
 +
 -----
-curl -X POST "$ACCESS_TOKEN_URL" \
+curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "username=jbrown" \
             -d "password=password" \
