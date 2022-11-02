@@ -1,7 +1,8 @@
-# podman build --rm -f etc/sso/Dockerfile -t quay.io/jbride/keycloak:19.0.1.4-psql .
+# podman build --rm -f etc/sso/Dockerfile -t quay.io/jbride/keycloak:20.0.0-0-psql .
 
 # https://www.keycloak.org/2022/07/keycloak-1900-released
-FROM quay.io/keycloak/keycloak:19.0.1 as builder
+# https://www.keycloak.org/2022/11/keycloak-2000-released.html
+FROM quay.io/keycloak/keycloak:20.0.0 as builder
 
 EXPOSE 8080
 

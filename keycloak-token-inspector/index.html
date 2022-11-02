@@ -2,7 +2,17 @@
 <html>
 <head>
     <title>Keycloak Example Application</title>
+
+    <!--
+        Feature guard for hosting the Keycloak JavaScript adapter
+        Applications are able to load keycloak.js directly from the Keycloak server. 
+        As it’s not considered a best-practice to load JavaScript libraries this way there is now a feature guard that allows disabling this ability.
+        In Keycloak 21 we will deprecate this option, and in Keycloak 22 we plan to completely remove the ability to load keycloak.js from the Keycloak server.
+        reference:
+            https://www.keycloak.org/2022/11/keycloak-2000-released.html
+    -->
     <script type="text/javascript" src="KC_URL/js/keycloak.js"></script>
+
     <script type="text/javascript">
         function output(content) {
             if (typeof content === 'object') {

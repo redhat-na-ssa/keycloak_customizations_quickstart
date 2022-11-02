@@ -7,10 +7,6 @@
 
 The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based security where the system of record of user and role data is maintained in external identity providers.
 
-NOTE:  Using keycloak 19.0.1, this lab is currently broken when sso realm admin navigates to `User Federation` tab of realm.  Response from the following seems to be OK:  http://sso.local:4080/admin/realms/kc-demo/components?parentId=kc-demo&type=org.keycloak.storage.UserStorageProvider .  However, there is a javascript error:  Cannot read properties of undefined (reading '0')
-
-link:https://keycloak.discourse.group/t/error-when-configuring-conditional-step/18117/2[Temporary Workaround] until apparent fix in keycloak 20.
-
 :numbered:
 
 == Quickstart Highlights
