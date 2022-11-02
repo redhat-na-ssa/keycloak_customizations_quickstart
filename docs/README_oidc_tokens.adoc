@@ -84,7 +84,7 @@ $ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
 
 . Notice a `typ` of : link:https://datatracker.ietf.org/doc/html/rfc7515[JWT] .
 +
-This specification requires that the body of the token be encoded in base64.
+The JWT specification requires that the body of the token be encoded in base64.
 
 . View the body of the access token
 +

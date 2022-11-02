@@ -54,9 +54,11 @@ This quickstart includes a _docker-compose_ to facilitate development and testin
 
 . *curl*
 
-. *ldapsearch*
+. *ldapsearch / ldapmodify*
 
 . *jq*
+
+. *base64*
 
 
 ==== Startup

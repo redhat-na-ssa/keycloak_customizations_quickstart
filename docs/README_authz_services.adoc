@@ -91,8 +91,6 @@ The token is built based on the OAuth2 access token previously issued by keycloa
 $ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials" \
-            -d "username=jbrown" \
-            -d "password=password" \
             -d "client_id=bservice" \
             -d "client_secret=password" \
             -d "scope=openid" \

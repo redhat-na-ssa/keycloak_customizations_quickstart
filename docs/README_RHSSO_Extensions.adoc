@@ -193,4 +193,4 @@ curl -X POST "$ACCESS_TOKEN_URL" \
 
 . In the RH-SSO Admin Console, return to the `sessions` tab of the _jbrown_ user.  Are there now any sessions associated with that user ?
 
-*Next Lab*:  Proceed to the link:README_federation.adoc[RH-SSO User Federation Lab]
+
