@@ -98,7 +98,7 @@ Keycloak does expose a `/token/introspect` endpoint that could be (if ever neede
 -----
 $ curl -X POST "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token/introspect" \
     -H "Content-Type: application/x-www-form-urlencoded" \
-    -d "client_id=bservice" \
+    -d "client_id=boidc" \
     -d "client_secret=password" \
     -d "token=$TKN" \
     | jq -r .
@@ -196,11 +196,16 @@ image::images/t-inspect-add-account-role.png[]
 
 ==== Introspect token
 
-Compare and contrast the role related attributes included in tokens for the following users: 
+. Compare and contrast the role related attributes included in tokens for the following users: 
 
-. `jbrown`
-. `ssoRealmAdmin`
-. `bwilson`
+.. `jbrown`
+.. `ssoRealmAdmin`
+.. `bwilson`
+
+Given the `access_tokens` for the above users, deduce the answers to the following questions: 
+
+. Which user(s) will *not* be able to manage their accounts in the RH-SSO `Account Console` ?
+. Which user is has only been assigned a realm role of:  _ldap-user_ ?
 
 
 == Bearer Token Propogation
@@ -213,13 +218,12 @@ In this lab, you'll use the _curl_ utility to smoke test as per the following:
 
 image::images/quickstart_data_flow.png[]
 
-=== Procedure
 
-. View all users and roles in openldap:
-+
------
-$ ldapsearch -x -h localhost -p 3389 -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
------
+=== `backend-oidc` service
+Review the source code for the Quarkus based link://../backend-oidc[backend-oidc] service.
+
+
+=== Retrieve Token
 
 . Retrieve an OAuth2 _access token_ using OAuth2 link:https://tools.ietf.org/html/rfc6749#section-4.3[Resource Owner Password Credentials] flow :
 +
@@ -236,18 +240,70 @@ TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
 $ echo $TKN
 -----
 
-. Invoke backend-oidc service directly by including access token in request:
+=== `aud` attribute
+
+. Invoke the `backend-oidc` service directly by including the `access_token` in the request:
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
        -H "Accept: text/plain" \
        -X GET $BACKEND_ROUTE/backend/secured
+-----
+
+. The response status should be:  `401 Unauthorized` .  Why ?
+.  Check the logs of the `backend-oidc` service and notice the following: 
++
+-----
+DEBUG [io.qu.oi.ru.OidcProvider] (vert.x-eventloop-thread-2) Verification of the token issued to client boidc has failed: No Audience (aud) claim present.
+-----
+
+. Check the link:../etc/backend-service/application.properties[application.properties] of the `backend-oidc`.
++
+Notice the following configuration:
++
+-----
+quarkus.oidc.token.audience=${quarkus.oidc.client-id}
+-----
++
+So the Quarkus `backend-oidc` is expecting a token whose `aud` attribute includes a value of: `boidc`.
++
+Does your token include this `aud` attribute ?
+
+.  A discussion about adding the `aud` field to a token can be found link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[here] in the Keycloak documentation.  Specifically, you'll need to configure a link:https://www.keycloak.org/docs/latest/server_admin/#_audience_hardcoded[hard-coded audience mapper].
+
+. In the RH-SSO `Admin Portal`, click the following:  `Client scopes` -> Create client scope.
+. Create a new `client-scope` with the following values: 
+.. Name: *boidc-aud*
+.. Type: *Optional*
+. In the `Mappers` tab of the new `client scope`, click: `Configure a new mapper --> Audience`.
+. Populate the new mapper with the following values: 
+.. Name: *boidc-aud*
+.. Included Client Audience:  *boidc*
+.. Add to access token:  On
+. Add the new `boidc-aud` client scope to the `t-inspect` client: 
+.. Navigate to the `t-inspect` client and click the `Client Scopes` tab.
+.. Click `Add client scope` and select `boidc-aud`
+. Use the `Evaluate` functionality to verify that a new token associated with the `jbrown` user now includes the `aud` attribute: 
++
+image::images/t-inspect-aud-boidc.png[]
+
+
+
+. Using a fresh `access_token`, re-invoke the `backend-oidc` service:
++
+-----
+curl -v -H "Authorization: Bearer $TKN" \
+       -H "Accept: text/plain" \
+       -X GET $BACKEND_ROUTE/backend/secured
+
 
 
 < HTTP/1.1 200 OK
 Hello jbrown with roles: ldap-user ldap-admin
 -----
 
+=== frontend service
+. Review the source code for the Quarkus based link://../frontend[frontend] service.
 . Invoke frontend service (which subsequently invokes the downstream _backend-oidc_ service with _propogated_ request headers): 
 +
 -----
@@ -310,7 +366,7 @@ Notice the following regarding the above command:
 .. A filter for the `refresh_token` was piped from the response of the `/token` endpoint.
 +
 This is your _offline_ token.
- 
+
 .. Authentication was required to acquire this _offline_ token.
 From hear on out, subsequent _access_ and _id_ tokens can be acquired with only this _offline_ token.  Authentication will not be needed.
 

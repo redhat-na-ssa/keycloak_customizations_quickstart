@@ -164,7 +164,7 @@ image::images/transient_direct_grants_flow.png[]
 === Test
 . Navigate to the _jbrown_ user in the RH-SSO Admin Console.  Ensure there are zero active sessions.
 
-. Acquire tokens via Direct Access Grant flow using the _bservice_ SSO client:
+. Acquire tokens via Direct Access Grant flow using the _boidc SSO client:
 +
 -----
 curl -X POST "$OIDC_TOKEN_URL" \
@@ -172,7 +172,7 @@ curl -X POST "$OIDC_TOKEN_URL" \
             -d "username=jbrown" \
             -d "password=password" \
             -d "grant_type=password" \
-            -d "client_id=bservice" \
+            -d "client_id=boidc" \
             -d "client_secret=password" \
             -d "scope=openid"
 -----

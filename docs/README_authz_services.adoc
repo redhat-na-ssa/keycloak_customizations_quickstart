@@ -44,7 +44,7 @@ quarkus.oidc.devui.grant.type=CODE
 # https://quarkus.io/guides/security-openid-connect#quarkus-oidc_quarkus.oidc.credentials.client-secret.method   ?????
 # https://quarkus.io/guides/security-openid-connect#quarkus-oidc_quarkus.oidc.credentials.client-secret.value    ?????
 quarkus.oidc.credentials.secret=password
-#%dev.quarkus.oidc.credentials.client-secret.value=bservice
+#%dev.quarkus.oidc.credentials.client-secret.value=boidc
 #%dev.quarkus.oidc.credentials.client-secret.method=post-jwt
 
 # Allow for injection of AuthZClient
@@ -58,7 +58,7 @@ INFO  [io.qu.oi.de.de.OidcDevConsoleProcessor] (build-57) OIDC Dev Console: disc
 -----
 
 -----
-INFO  [io.qu.oi.de.de.OidcAuthorizationCodePostHandler] (DEV Console action) Using authorization_code grant to get a token from 'http://sso.local:4080/realms/kc-demo/protocol/openid-connect/token' with client id 'bservice'
+INFO  [io.qu.oi.de.de.OidcAuthorizationCodePostHandler] (DEV Console action) Using authorization_code grant to get a token from 'http://sso.local:4080/realms/kc-demo/protocol/openid-connect/token' with client id 'boidc'
 -----
 
 image::images/quarkus_devui_keycloak.png[]
@@ -85,13 +85,13 @@ The token is built based on the OAuth2 access token previously issued by keycloa
 
 . Via Bearer Token:
 
-.. Acquire access token from `bservice` SSO client:
+.. Acquire access token from `boidc` SSO client:
 +
 -----
 $ TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials" \
-            -d "client_id=bservice" \
+            -d "client_id=boidc" \
             -d "client_secret=password" \
             -d "scope=openid" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
@@ -103,7 +103,7 @@ $ TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
 $ RPT=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Authorization: Bearer ${TKN}" \
             -d "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" \
-            -d "audience=bservice" \
+            -d "audience=boidc" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 -----
 
@@ -113,13 +113,13 @@ or
 +
 -----
 $ RPT=$(curl -X POST "$OIDC_TOKEN_URL" \
-            --user "bservice:password" \
+            --user "boidc:password" \
             -d "grant_type=urn:ietf:params:oauth:grant-type:uma-ticket" \
-            -d "audience=bservice" \
+            -d "audience=boidc" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
 -----
 
-. View _Permissions_ associated with _bservice_ protected resource:
+. View _Permissions_ associated with _boidc_ protected resource:
 +
 -----
 $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $RPT | jq .authorization
@@ -134,7 +134,7 @@ $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $RPT | jq .authorization
 }
 -----
 
-. View _realm_access_ roles associated with the _bservice_ protected resource:
+. View _realm_access_ roles associated with the _boidc_ protected resource:
 +
 -----
 $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $RPT | jq .realm_access.roles
@@ -160,7 +160,7 @@ $ curl -v -H "Authorization: Bearer $RPT" \
 GET /realms/kc-demo/authz/protection/resource_set?matchingUri=true&deep=true&max=-1&exactName=false&uri=%2Fbackend%2Fsecured HTTP/1.1
 Authorization: Bearer eyJhbGciOiJSUzI1NiIs
 
-[{"name":"Default Resource","type":"urn:bservice:resources:default","owner":{"id":"2dde291e-8de5-4dc1-8163-2477931bbeee","name":"bservice"},"ownerManagedAccess":false,"attributes":{},"_id":"ed1b6721-79f7-4f19-9216-e55590748df8","uris":["/*"]}]
+[{"name":"Default Resource","type":"urn:boidc:resources:default","owner":{"id":"2dde291e-8de5-4dc1-8163-2477931bbeee","name":"boidc"},"ownerManagedAccess":false,"attributes":{},"_id":"ed1b6721-79f7-4f19-9216-e55590748df8","uris":["/*"]}]
 -----
 
 === Protection API
@@ -168,13 +168,13 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIs
 https://www.keycloak.org/docs/latest/authorization_services/index.html#_service_protection_api
 https://www.keycloak.org/docs/latest/authorization_services/index.html#protection-api
 
-. Acquire PAT from `bservice` SSO client:
+. Acquire PAT from `boidc` SSO client:
 +
 -----
 $ TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
             -H "Content-Type: application/x-www-form-urlencoded" \
             -d "grant_type=client_credentials" \
-            -d "client_id=bservice" \
+            -d "client_id=boidc" \
             -d "client_secret=password" \
             -d "scope=openid email" \
             | sed 's/.*access_token":"//g' | sed 's/".*//g')
@@ -194,7 +194,7 @@ In addition:
 -----
 $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .resource_access
 {
-  "bservice": {
+  "boidc": {
     "roles": [
       "uma_protection"
     ]
