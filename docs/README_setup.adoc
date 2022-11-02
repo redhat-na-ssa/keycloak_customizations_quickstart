@@ -78,7 +78,7 @@ $ podman ps --format "{{.Image}}\t{{.Ports}}\t{{.Names}}"
 registry.redhat.io/rhel8/postgresql-12:1-72.1626836556  0.0.0.0:4432->4432/tcp                          psql_sso
 docker.io/osixia/openldap:1.5.0                         0.0.0.0:3389->389/tcp, 0.0.0.0:6636->636/tcp    openldap
 quay.io/jbride/keycloak:17.0.0-2-psql                   0.0.0.0:4080->4080/tcp, 0.0.0.0:4443->4443/tcp  sso
-quay.io/redhat_naps_da/backend-oidc:0.0.2               0.0.0.0:6080->6080/tcp                          backend-service
+quay.io/redhat_naps_da/backend-oidc:0.0.2               0.0.0.0:6080->6080/tcp                          backend-oidc
 quay.io/redhat_naps_da/frontend-oidc:0.0.4              0.0.0.0:7080->7080/tcp                          frontend-service
 quay.io/jbride/keycloak-token-inspector:0.0.1           0.0.0.0:8000->8000/tcp                          token-inspector
 -----

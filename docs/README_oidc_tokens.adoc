@@ -257,7 +257,7 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 DEBUG [io.qu.oi.ru.OidcProvider] (vert.x-eventloop-thread-2) Verification of the token issued to client boidc has failed: No Audience (aud) claim present.
 -----
 
-. Check the link:../etc/backend-service/application.properties[application.properties] of the `backend-oidc`.
+. Check the link:../etc/backend-oidc/application.properties[application.properties] of the `backend-oidc`.
 +
 Notice the following configuration:
 +
@@ -322,9 +322,9 @@ Hello jbrown with roles: ldap-user ldap-admin
 .. What is included in the response when invoking that alternative OIDC endpoint ?
 .. Under what circumstances should this alternative OIDC endpoint get invoked ?
 
-. What is the configuration used in the _frontend-service_ to instruct it to propagate the _Authorization_ request header to the _backend-service_ ?
+. What is the configuration used in the _frontend-service_ to instruct it to propagate the _Authorization_ request header to the _backend-oidc_ service?
 
-. What URL does the _backend-service_ use to configure its _keycloak adapter_ at deployment time ?
+. What URL does the _backend-oidc_ service use to configure its _keycloak adapter_ at deployment time ?
 
 
 /////
