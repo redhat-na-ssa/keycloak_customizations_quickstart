@@ -24,6 +24,10 @@ In addition, the _WRITABLE_ strategy (provided as part of the integration betwee
 
 . *Broker Federation using RH-SSO and Github*
 
+== User Federation Synch
+
+image::images/periodic_sync_setting.png[]
+
 == Modify and Sync LDAP Data
 
 === Verify Account Console Problem
@@ -129,11 +133,9 @@ image::images/jbrown_add_manage_account.png[]
 +
 You should now see the ability to navigate through all functionality.
 
-== User Federation Synch
 
-image::images/periodic_sync_setting.png[]
 
-== User Federation Strategies
+== Modify Federation Strategy
 
 NOTE:  Change this lab such that jbrown user is given `account` client related roles.
 
@@ -257,6 +259,8 @@ image::images/external-idp-settings.png[]
 image::images/rhsso_github_idp.png[]
 
 . Click `Save`
+
+*Next Lab*:  Proceed to the link:README_RHSSO_Extensions.adoc[RH-SSO Extensions Lab]
 
 
 == Reference

@@ -7,9 +7,11 @@
 
 :numbered:
 
-== OIDC Endpoints
+== Token Introspection
 
-=== `/tokens`
+You have a lot of options for introspecting a token.  
+
+=== Acquire Tokens
 
 . View keys of a response from RH-SSO when its `/token` endpoint is invoked:
 +
@@ -54,7 +56,18 @@ TKN=$(curl -X POST "$ACCESS_TOKEN_URL" \
 +
 You'll use this `access token` (set to the variable: $TKN) in subsequent sections of this lab.
 
-. As per above, invocation of the `/token` endpoint did not necessiate use of a _client_secret_ data field in the request payload.  Why not ?  What would you need to modify in the SSO client such that _client_secret_ would be required in the request payload ?
+. As per above, invocation of the `/token` endpoint did not necessitate use of a _client_secret_ data field in the request payload.  Why not ?  What would you need to modify in the SSO client such that _client_secret_ would be required in the request payload ?
+
+=== Introspection
+The following discusses several options for introspecting tokens.
+
+==== jwt.io
+
+image::images/jwt_io_option.png[]
+
+==== Command Line
+
+Tokens issued by RH-SSO can be introspected at the command line using the `jq` and `base64` utilities.
 
 . View the JWT header:
 +
@@ -70,9 +83,8 @@ $ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
 -----
 
 . Notice a `typ` of : link:https://datatracker.ietf.org/doc/html/rfc7515[JWT] .
-
-.. Because the access token is a JSON Web Token, its header, payload and signature can be viewed in:  https://jwt.io/
-
++
+This specification requires that the body of the token be encoded in base64.
 
 . View the body of the access token
 +
@@ -80,7 +92,8 @@ $ jq -R 'split(".") | .[0] | @base64d | fromjson' <<< $TKN | jq .
 $ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .
 -----
 
-=== _/token/introspect_:
+
+==== _/token/introspect_ endpoint:
 
 In the previous section, its been quite easy to introspect the header and payloads of tokens from RH-SSO because they are simpley in base64.
 
@@ -97,7 +110,7 @@ $ curl -X POST "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token/intros
     | jq -r .
 -----
 
-=== _/userinfo_:
+==== _/userinfo_ endpoint:
 
 -----
 $ curl -X GET "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo" \
@@ -205,6 +218,16 @@ Answers:
 3) quarkus.oidc.auth-server-url=http://sso:4080/realms/kc-demo
 /////
 
+== Client Scoped Mappers
+
+https://keycloak.discourse.group/t/protocol-mappers-alternative-for-keycloak-19/17973
+https://github.com/keycloak/keycloak-ui/issues/3342
+
+
+. Dedicated `non-scoped` mappers (as per the following) will likely be removed in a future release: 
++
+image::images/t-inspect-dedicated.png[]
+
 == Offline Tokens
 
 . Enable the `ssoRealmAdmin` user with `offline_access` role:
@@ -292,4 +315,4 @@ $ curl -v -X GET \
        $RHSSO_URL/admin/realms/$REALM_ID/client-scopes | jq -r .
 -----
 
-*Next Lab*:  Proceed to the link:README_RHSSO_Extensions.adoc[RH-SSO Extensions Lab]
+*Next Lab*:  Proceed to the link:README_federation.adoc[RH-SSO User Federation Lab]
