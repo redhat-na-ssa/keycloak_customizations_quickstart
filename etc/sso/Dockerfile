@@ -2,7 +2,7 @@
 
 # https://www.keycloak.org/2022/07/keycloak-1900-released
 # https://www.keycloak.org/2022/11/keycloak-2000-released.html
-FROM quay.io/keycloak/keycloak:20.0.0 as builder
+FROM quay.io/keycloak/keycloak:20.0.0 
 
 EXPOSE 4080
 
@@ -10,15 +10,11 @@ ENV KC_HEALTH_ENABLED=true
 ENV KC_METRICS_ENABLED=true
 ENV KC_DB=postgres
 
-# https://www.keycloak.org/server/features
-#  NOTE:  Can be over-written at boot with '--features="x,y,z" argument
-ENV KC_FEATURES="token-exchange,scripts"
-
 # https://www.keycloak.org/server/caching#_specify_your_own_cache_configuration_file
 ENV KC_CACHE_CONFIG_FILE=cache-ispn-jdbc-ping.xml
 COPY etc/sso/cache-ispn-jdbc-ping.xml /opt/keycloak/conf/cache-ispn-jdbc-ping.xml
 
-RUN curl -sL https://github.com/aerogear/keycloak-metrics-spi/releases/download/2.5.3/keycloak-metrics-spi-2.5.3.jar -o /opt/keycloak/providers/keycloak-metrics-spi-2.5.3.jar
+# RUN curl -sL https://github.com/aerogear/keycloak-metrics-spi/releases/download/2.5.3/keycloak-metrics-spi-2.5.3.jar -o /opt/keycloak/providers/keycloak-metrics-spi-2.5.3.jar
 
 # Used to demonstrate custom protocol mapper
 COPY etc/sso/providers/org.acme-lucky-number-mapper-0.0.1.jar /opt/keycloak/providers/org.acme-lucky-number-mapper-0.0.1.jar
