@@ -52,7 +52,8 @@ services:
     # over-rides the following:
     #   1)  Sets custom set of features as per:  https://www.keycloak.org/server/features
     #   2)  Explicitly sets distributed infinispan cache (which is set to local with 'start-dev'
-    command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz,scripts" --cache=ispn']
+    #command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz,scripts" --cache=ispn']
+    command: ['start-dev', '--storage=jpa']
 
     environment:
 
@@ -77,10 +78,10 @@ services:
       KC_HTTPS_PORT: 4443
 
       QUARKUS_LOG_LEVEL: INFO
-      QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_AUTHENTICATION__LEVEL: DEBUG
-      QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_AUTHORIZATION__LEVEL: DEBUG
-      QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_PROTOCOL_OIDC_ENDPOINTS__LEVEL: DEBUG
-      QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_PROTOCOL_OIDC_ENDPOINTS__LEVEL: DEBUG
+      #QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_AUTHENTICATION__LEVEL: DEBUG
+      #QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_AUTHORIZATION__LEVEL: DEBUG
+      #QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_PROTOCOL_OIDC_ENDPOINTS__LEVEL: DEBUG
+      #QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_PROTOCOL_OIDC_ENDPOINTS__LEVEL: DEBUG
     volumes:
       - ./sso/realm.json:/opt/realm.json:bind
     healthcheck:

@@ -1,0 +1,53 @@
+. The following is thrown in browser when attempting to manually sync from ldap:
++
+-----
+Request URL: http://sso.local:4080/admin/realms/kc-demo/user-storage/1f0d7c19-1e40-4907-b83a-acb2aa02c5a6/sync?action=triggerFullSync
+Request Method: POST
+Status Code: 404 Not Found
+-----
+
+. Database tables in PostgreSQL:
++
+-----
+ Schema |               Name                | Type  | Access privileges | Column privileges | Policies 
+--------+-----------------------------------+-------+-------------------+-------------------+----------
+ public | databasechangelog                 | table |                   |                   | 
+ public | databasechangeloglock             | table |                   |                   | 
+ public | kc_auth_root_session              | table |                   |                   | 
+ public | kc_auth_session                   | table |                   |                   | 
+ public | kc_authz_permission               | table |                   |                   | 
+ public | kc_authz_policy                   | table |                   |                   | 
+ public | kc_authz_policy_associated_policy | table |                   |                   | 
+ public | kc_authz_policy_config            | table |                   |                   | 
+ public | kc_authz_policy_resource          | table |                   |                   | 
+ public | kc_authz_policy_scope             | table |                   |                   | 
+ public | kc_authz_resource                 | table |                   |                   | 
+ public | kc_authz_resource_attribute       | table |                   |                   | 
+ public | kc_authz_resource_scope           | table |                   |                   | 
+ public | kc_authz_resource_server          | table |                   |                   | 
+ public | kc_authz_resource_uri             | table |                   |                   | 
+ public | kc_authz_scope                    | table |                   |                   | 
+ public | kc_client                         | table |                   |                   | 
+ public | kc_client_attribute               | table |                   |                   | 
+ public | kc_client_scope                   | table |                   |                   | 
+ public | kc_client_scope_attribute         | table |                   |                   | 
+ public | kc_client_session                 | table |                   |                   | 
+ public | kc_client_session_note            | table |                   |                   | 
+ public | kc_component                      | table |                   |                   | 
+ public | kc_realm                          | table |                   |                   | 
+ public | kc_realm_attribute                | table |                   |                   | 
+ public | kc_role                           | table |                   |                   | 
+ public | kc_role_attribute                 | table |                   |                   | 
+ public | kc_role_composite                 | table |                   |                   | 
+ public | kc_single_use_obj                 | table |                   |                   | 
+ public | kc_single_use_obj_note            | table |                   |                   | 
+ public | kc_user                           | table |                   |                   | 
+ public | kc_user_attribute                 | table |                   |                   | 
+ public | kc_user_consent                   | table |                   |                   | 
+ public | kc_user_federated_identity        | table |                   |                   | 
+ public | kc_user_group                     | table |                   |                   | 
+ public | kc_user_role                      | table |                   |                   | 
+ public | kc_user_session                   | table |                   |                   | 
+ public | kc_user_session_note              | table |                   |                   | 
+(38 rows)
+-----
