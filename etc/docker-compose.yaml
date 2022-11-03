@@ -145,6 +145,16 @@ services:
     networks:
       - sso
 
+  mailhog:
+    container_name: mailhog
+    image: docker.io/mailhog/mailhog:v1.0.1
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - sso
+
 networks:
   default:
     driver: bridge

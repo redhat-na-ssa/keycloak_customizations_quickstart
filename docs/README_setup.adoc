@@ -27,14 +27,20 @@ Keycloak 19.0.1 is based on link:https://quarkus.io/[Quarkus].
 +
 Quarkus based app that exposes REST API and invokes _backend_ service (with _Authorization_ header propogated to _backend_ service).
 
-.. *Backend* service
+.. *Backend-oidc* service
 +
 Quarkus based app that exposes REST API secured using RBAC.
 The service is enabled with a _keycloak adapter_.
 At start-up, this _keycloak adapter_ acquires the SSO public key.
 When a request is sent to this service, the _access token_ in the request is validated using this SSO public key. 
 
-.. *Token Inspector* web app
+.. *Token Inspector*
++
+Bare minimum JavaScript based Single Page Application (SPA).
+
+.. *MailHog*
++
+SMTP & web mail simulator for local development and testing. 
 
 == Deployment Environments
 The exercises in this quickstart can be run locally (via `docker-compose`) or in OpenShift.
@@ -81,6 +87,7 @@ quay.io/jbride/keycloak:17.0.0-2-psql                   0.0.0.0:4080->4080/tcp, 
 quay.io/redhat_naps_da/backend-oidc:0.0.2               0.0.0.0:6080->6080/tcp                          backend-oidc
 quay.io/redhat_naps_da/frontend-oidc:0.0.4              0.0.0.0:7080->7080/tcp                          frontend-service
 quay.io/jbride/keycloak-token-inspector:0.0.1           0.0.0.0:8000->8000/tcp                          token-inspector
+docker.io/mailhog/mailhog:v1.0.1                        0.0.0.0:1025->1025/tcp, 0.0.0.0:8025->8025/tcp  mailhog
 -----
 
 ==== Environment Variables
