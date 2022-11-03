@@ -145,8 +145,9 @@ image::images/client_scope_picture_disable_access_token.png[]
 
 === roles attributes
 ==== Overview
+In RH-SSO, you can control what roles are allowed to be included in a token for a given client application. 
 
-Roles are added to an _access_token_ when the following all of the following conditions occur:
+Roles are added to an _access_token_ when all of the following conditions occur:
 
 * The SSO client is enabled with a `client scope` called `roles`.  ie: 
 +
@@ -156,9 +157,9 @@ image::images/client_scope_roles_enabled.png[]
 +
 You'll configure these roles in the next section.
 
-* The authenticated user for which the token is being issued has been enabled with realm and/or client roles that correspond to the configured `role scope mappings`.
+* The authenticated user for which the token is being issued has been enabled with realm and/or client roles that correspond to the configured `role scope mappings` of the client.
 
-When the above conditions are met, an `access_token` will include `realm_access` and/or `resource_access` attributes similar to the following: 
+When the above conditions are met, an `access_token` will include `realm_access` and/or `resource_access` claims similar to the following: 
 
 -----
   "realm_access": {
