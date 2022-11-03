@@ -453,7 +453,7 @@
    {
          "username":"ssoRealmAdmin",
          "enabled":true,
-         "email":"ssoRealmAdmin@openshift.opentlc.com",
+         "email":"ssoRealmAdmin@redhat.com",
          "credentials":[
             {
                "type":"password",
@@ -1553,7 +1553,18 @@
     "xXSSProtection": "1; mode=block",
     "strictTransportSecurity": "max-age=31536000; includeSubDomains"
   },
-  "smtpServer": {},
+  "smtpServer": {
+    "replyToDisplayName": "kcdemorealmadmin@example.org",
+    "starttls": "false",
+    "auth": "",
+    "port": "1025",
+    "host": "mailhog",
+    "replyTo": "kcdemorealmadmin@example.org",
+    "from": "kcdemorealmadmin@example.org",
+    "fromDisplayName": "kcdemorealmadmin@example.org",
+    "envelopeFrom": "",
+    "ssl": "false"
+  },
   "eventsEnabled": false,
   "eventsListeners": [
     "jboss-logging"
