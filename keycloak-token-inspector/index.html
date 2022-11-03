@@ -27,8 +27,8 @@
             } else {
                 document.getElementById('name').textContent = 'Hello ' + kc.idTokenParsed.preferred_username;
             }
-            if (kc.idTokenParsed.picture) {
-                document.getElementById('picture').src = 'data:image/jpeg;base64,'+ kc.idTokenParsed.picture;
+            if (kc.idTokenParsed.avatar_url) {
+                document.getElementById('avatar_url').src = kc.idTokenParsed.avatar_url;
             }
             document.getElementById('user').style.display = 'block';
         }
@@ -71,7 +71,7 @@
     <button onclick="sendRequest()">Invoke Service</button>
     <hr/>
     <h2 id="name"></h2>
-    <img id="picture" width="50px" height="50px"/>
+    <img id="avatar_url" width="50px" height="50px"/>
     <hr/>
     <pre id="output"></pre>
 </div>

@@ -999,6 +999,32 @@
   ],
   "clientScopes": [
     {
+      "name": "picture",
+      "description": "OpenID Connect built-in scope: picture",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "picture"
+      },
+      "protocolMappers": [
+        {
+          "name": "picture",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "picture",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "picture",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
       "id": "6d398502-a447-4f51-8902-382187f932dc",
       "name": "email",
       "description": "OpenID Connect built-in scope: email",
@@ -1245,17 +1271,16 @@
           }
         },
         {
-          "id": "6263e07e-a897-4f89-bbd0-5351001c02bb",
-          "name": "picture",
+          "name": "avatar_url",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
             "userinfo.token.claim": "true",
-            "user.attribute": "picture",
+            "user.attribute": "avatar_url",
             "id.token.claim": "true",
             "access.token.claim": "true",
-            "claim.name": "picture",
+            "claim.name": "avatar_url",
             "jsonType.label": "String"
           }
         }
@@ -1700,7 +1725,31 @@
               }
             },
             {
-              "id": "42cd5d3a-4324-411e-9141-2bc53f81b579",
+              "name": "avatar_url",
+              "providerId": "user-attribute-ldap-mapper",
+              "subComponents": {},
+              "config": {
+                "ldap.attribute": [
+                  "labeledURI"
+                ],
+                "is.mandatory.in.ldap": [
+                  "false"
+                ],
+                "is.binary.attribute": [
+                  "false"
+                ],
+                "read.only": [
+                  "false"
+                ],
+                "always.read.value.from.ldap": [
+                  "true"
+                ],
+                "user.model.attribute": [
+                  "avatar_url"
+                ]
+              }
+            },
+            {
               "name": "picture",
               "providerId": "user-attribute-ldap-mapper",
               "subComponents": {},

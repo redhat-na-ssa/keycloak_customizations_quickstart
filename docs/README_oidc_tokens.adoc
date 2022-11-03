@@ -139,9 +139,6 @@ token_type
 +
 Which token is no longer included in the response ?
 
-=== `picture` attribute
-
-image::images/client_scope_picture_disable_access_token.png[]
 
 === roles attributes
 ==== Overview
