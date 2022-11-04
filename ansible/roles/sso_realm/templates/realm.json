@@ -269,7 +269,7 @@
   ],
   "userFederationProviders": [
     {
-      "displayName": "ldap-apacheds",
+      "displayName": "openldap",
       "providerName": "ldap",
       "priority": 1,
       "fullSyncPeriod": -1,
@@ -298,7 +298,7 @@
     {
       "name" : "username",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "uid",
         "user.model.attribute" : "username",
@@ -310,7 +310,7 @@
     {
       "name" : "first name",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "cn",
         "user.model.attribute" : "firstName",
@@ -322,7 +322,7 @@
     {
       "name" : "last name",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "sn",
         "user.model.attribute" : "lastName",
@@ -334,7 +334,7 @@
     {
       "name" : "email",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "mail",
         "user.model.attribute" : "email",
@@ -346,7 +346,7 @@
     {
       "name" : "creation date",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "createTimestamp",
         "user.model.attribute" : "createTimestamp",
@@ -358,7 +358,7 @@
     {
       "name" : "modify date",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "modifyTimestamp",
         "user.model.attribute" : "modifyTimestamp",
@@ -370,7 +370,7 @@
     {
       "name" : "postal code",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "postalCode",
         "user.model.attribute" : "postal_code",
@@ -382,7 +382,7 @@
     {
       "name" : "street",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "street",
         "user.model.attribute" : "street",
@@ -394,7 +394,7 @@
     {
       "name" : "picture",
       "federationMapperType" : "user-attribute-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "ldap.attribute" : "jpegPhoto",
         "user.model.attribute" : "picture",
@@ -407,7 +407,7 @@
     {
       "name" : "realm roles",
       "federationMapperType" : "role-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "roles.dn" : "ou=RealmRoles,dc=example,dc=org",
         "membership.ldap.attribute" : "member",
@@ -420,7 +420,7 @@
     {
       "name" : "finance roles",
       "federationMapperType" : "role-ldap-mapper",
-      "federationProviderDisplayName" : "ldap-apacheds",
+      "federationProviderDisplayName" : "openldap",
       "config" : {
         "roles.dn" : "ou=FinanceRoles,dc=example,dc=org",
         "membership.ldap.attribute" : "member",

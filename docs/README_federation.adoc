@@ -5,26 +5,28 @@
 
 = Federation & Identity Brokering
 
-The purpose of this quickstart is to demonstrate OpenID Connect (OIDC) based security where the system of record of user and role data is maintained in external identity providers.
+The purpose of this lab is to demonstrate OpenID Connect (OIDC) based security where the system of record of user and role data is maintained in external identity providers.
 
 :numbered:
 
-== Quickstart Highlights
+== User Federation: Periodic Synch
 
-. *User Synch Strategies*
+=== Review `openldap` configs
 
-. *User Federation_ Strategies*
+Scenario: 
+  We don't always want to synchronize the entire ldap directory with keycloak. (we have over 100,000 people).
+In this case we import the users during their first connection. Or when looking for them explicitly in the console.
+
+`Periodic changed users sync` will import all users from LDAP.
+
+. Notice the settings pertaining to `Periodic Sync`:
 +
-The system of record of user identity is maintained in an `openldap` database.
-In addition, the _WRITABLE_ strategy (provided as part of the integration between RH-SSO and ldap) can be used to replicate any changes made to federated user data in RH-SSO back to the LDAP directory.
-
-. *Broker Federation using RH-SSO and Github*
-
-== User Federation Synch
-
 image::images/periodic_sync_setting.png[]
 
-== Modify and Sync LDAP Data
+. Set value of `Changed Users Sync Period` to:  30
+
+
+
 
 === Verify Account Console Problem
 . Authenticate into the `Account Console` of RH-SSO using the `jbrown` user: 
@@ -106,7 +108,7 @@ modifying entry "cn=manage-account,ou=AccountConsoleRoles,dc=example,dc=org"
 -----
 
 . Sync changes to RH-SSO: 
-.. In the `Admin Console` of RH-SSO, navigate to:  `User Federation -> ldap-apacheds`
+.. In the `Admin Console` of RH-SSO, navigate to:  `User Federation -> openldap`
 .. Investigate the `account console roles` ldap mapper:
 +
 Navigate to: `mappers -> account console roles`
@@ -129,9 +131,9 @@ image::images/jbrown_add_manage_account.png[]
 +
 You should now see the ability to navigate through all functionality.
 
+== User Federation: New User Attribute
 
-
-== Modify Federation Strategy
+== User Federation: Sync Strategies
 
 NOTE:  Change this lab such that jbrown user is given `account` client related roles.
 
@@ -144,9 +146,9 @@ Details regarding the various synchronization strategies supported in RH-SSO can
 In this section of the lab, you will modify the synchronization strategy to allow changes of user data in RH-SSO to propogate to LDAP.
 
 
-=== Change synchronization to: Writable
-. Your SSO Realm includes a _User Federation_ config called:  `ldap-apacheds`.
-. In the _kc-demo_ realm of RH-SSO, navigate to: `User Federation -> ldap-apacheds -> edit`
+=== Change synch to: Writable
+. Your SSO Realm includes a _User Federation_ config called:  `openldap`.
+. In the _kc-demo_ realm of RH-SSO, navigate to: `User Federation -> openldap -> edit`
 +
 image::images/edit_user_federation.png[]
 
@@ -154,7 +156,7 @@ image::images/edit_user_federation.png[]
 . Click `Save`
 
 
-=== Test synchronization to LDAP
+=== Test synch to LDAP
 
 . In the _kc-demo_ realm, add a new realm role called:  _new_role_ 
 +
@@ -196,7 +198,7 @@ member: uid=jbrown,ou=People,dc=example,dc=org
 -----
 
 
-== RH-SSO as an Identity Broker
+== Identity Brokering
 Keycloak can integrate w/ 3rd party identity providers using a set of open standard protocols.  In particular, Keycloak can act as an intermediary service for authenticating and replicating users from a targeted identity provider.
 
 In this section of the quickstart, _github_ will be used as that targeted identity provider and the protocol used to facilitate that integration will be OpenID Connect.
@@ -257,8 +259,3 @@ image::images/rhsso_github_idp.png[]
 . Click `Save`
 
 *Next Lab*:  Proceed to the link:README_RHSSO_Extensions.adoc[RH-SSO Extensions Lab]
-
-
-== Reference
-
-. https://github.com/keycloak/keycloak/tree/main/examples/ldap

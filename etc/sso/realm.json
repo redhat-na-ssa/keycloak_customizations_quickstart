@@ -1685,7 +1685,7 @@
     "org.keycloak.storage.UserStorageProvider": [
       {
         "id": "1f0d7c19-1e40-4907-b83a-acb2aa02c5a6",
-        "name": "ldap-apacheds",
+        "name": "openldap",
         "providerId": "ldap",
         "subComponents": {
           "org.keycloak.storage.ldap.mappers.LDAPStorageMapper": [
