@@ -7,6 +7,76 @@
 
 :numbered:
 
+== OAuth2 Device Authorization
+
+. Set the _client_secret_ as an environment variable and invoke the `/auth/device` endpoint:
++
+-----
+$ gtv_pass=<change me>
+
+$ dauthz=$(curl -X POST "$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/auth/device" \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "client_id=gubu.tv" \
+      -d "client_secret=$gtv_pass" \
+      -d "scope=offline_access" ) \
+      && echo $dauthz | jq -r .
+-----
+
+. Enter in the `user_code`: 
++
+image::images/dauthz_user_code.png[]
+
+
+. Authenticate as the `bwilson` user: 
++
+image::images/dauthz_authenticate.png[]
+
+. Grant access privledges.
+
+. Retrieve an _offline_token_: 
++
+-----
+$ O_TKN=$(curl -X POST "$OIDC_TOKEN_URL" \
+      -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "grant_type=urn:ietf:params:oauth:grant-type:device_code" \
+      -d "device_code=$(echo $dauthz | jq -r .device_code)" \
+      -d "client_id=gubu.tv" \
+      -d "client_secret=$gtv_pass" \
+      -d "scope=offline_token" \
+      | sed 's/.*refresh_token":"//g' | sed 's/".*//g')
+-----
+
+.  Using the `offline` token, acquire a new `access_token` using the _grant_type_ of _refresh_token_: 
++
+-----
+TKN=$( curl -X POST $OIDC_TOKEN_URL \
+       -H "Content-Type: application/x-www-form-urlencoded" \
+       -d "grant_type=refresh_token" \
+       -d "client_id=gubu.tv" \
+       -d "client_secret=$gtv_pass" \
+       -d "refresh_token=$O_TKN" \
+       | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+. While this access token remains valid, use it to invoke the `userinfo` endpoint:  
++
+-----
+$ curl -v -X GET \
+       -H "Authorization: Bearer $TKN" \
+       -H "Accept: application/json" \
+       $RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/userinfo | jq -r .
+-----
+
+. error: 
++
+-----
+Bearer realm="kc-demo", error="insufficient_scope", error_description="Missing openid scope"
+
+https://github.com/keycloak/keycloak/discussions/15331
+-----
+
+. Using the details about the end user, your applications would then provide functionality to this user on their device.
+
 == RBAC in the Resource Server
 
 -----
