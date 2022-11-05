@@ -258,4 +258,17 @@ image::images/rhsso_github_idp.png[]
 
 . Click `Save`
 
+== Questions: 
+. What functionality is not possible when `import users` functionality is disabled in LDAP provider?
++
+User search is possible as is user log in to Account Console.
+
+.. When TOTP added: 
++
+-----
+# select * from federated_user;
+
+# select credential_data, type, user_id, user_label from fed_user_credential;
+-----
+
 *Next Lab*:  Proceed to the link:README_RHSSO_Extensions.adoc[RH-SSO Extensions Lab]

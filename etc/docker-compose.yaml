@@ -11,8 +11,8 @@ services:
       - "6636:636"
     command: [--copy-service]
     volumes:
-    - ./openldap/ldap-example-users-2.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-example-users-2.ldif:bind
-    #- ./openldap/ldap-generated.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-generated.ldif:bind
+    #- ./openldap/ldap-example-users-2.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-example-users-2.ldif:bind
+    - ./openldap/ldap-generated.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-generated.ldif:bind
     networks:
       - sso
 
