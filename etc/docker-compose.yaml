@@ -11,8 +11,8 @@ services:
       - "6636:636"
     command: [--copy-service]
     volumes:
-    #- ./openldap/ldap-example-users-2.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-example-users-2.ldif:bind
-    - ./openldap/ldap-generated.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-generated.ldif:bind
+    - ./openldap/ldap-example-users-2.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-example-users-2.ldif:bind
+    #- ./openldap/ldap-generated.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-generated.ldif:bind
     networks:
       - sso
 
@@ -47,13 +47,13 @@ services:
       # jdwp debugger port
       - "5006:5006"
 
-      # Infinispan TCP "start_port"
+      # Infinispan/JGroups TCP "start_port"
       - "7800:7800"
 
     # over-rides the following:
     #   1)  Sets custom set of features as per:  https://www.keycloak.org/server/features
     #   2)  Explicitly sets distributed infinispan cache (which is set to local with 'start-dev'
-    command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz,scripts" --cache=ispn']
+    command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz,scripts,declarative-user-profile" --cache=ispn']
 
     environment:
 
