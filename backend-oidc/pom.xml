@@ -50,14 +50,26 @@
       <artifactId>quarkus-keycloak-authorization</artifactId>
     </dependency -->
 
-    <!-- Deployment -->
-    <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-container-image-docker</artifactId>
-    </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-health</artifactId>
+    </dependency>
+
+    <!--
+            $ mvn clean package \
+                    -Dquarkus.container-image.build=true \
+                    -Dquarkus.container-image.push=true                             :   Build and push container image
+
+            $ helm install backend-oidc ./target/helm/openshift/backend-oidc        :   deploy helm configured artifacts to OCP
+    -->
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-openshift</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.quarkiverse.helm</groupId>
+        <artifactId>quarkus-helm</artifactId>
+        <version>0.1.2</version>
     </dependency>
 
 
