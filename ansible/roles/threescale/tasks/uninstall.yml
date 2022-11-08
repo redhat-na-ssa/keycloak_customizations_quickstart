@@ -1,55 +1,49 @@
 ---
 
 - name: "delete product {{ api_product_name }}"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
+  k8s:
     state: absent
     name: "{{ api_product_name }}"
     namespace: "{{ apimanager_namespace }}"
-    kind: product
+    kind: Product
 
 
-- name: "delete backend {{ backend_name }}"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
+- name: "Delete backend {{ backend_name }}"
+  k8s:
     state: absent
     name: "{{ backend_name }}"
     namespace: "{{ apimanager_namespace }}"
-    kind: backend
+    kind: Backend
 
 
 - name: "delete tenant {{ tenant_name }}"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
+  k8s:
     state: absent
     name: "{{ tenant_name }}"
     namespace: "{{ apimanager_namespace }}"
-    kind: tenant
+    kind: Tenant
   when: delete_tenant|bool == true
 
 - name: "delete tenant secret {{ tenant_name }}-admin-passwd-secret"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
+  k8s:
     state: absent
     name: "{{ tenant_name }}-admin-passwd-secret"
     namespace: "{{ apimanager_namespace }}"
-    kind: secret
+    kind: Secret
   when: delete_tenant|bool == true
 
 - name: "delete tenant secret {{ tenant_name }}-generated-secret"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
+  k8s:
     state: absent
     name: "{{ tenant_name }}-generated-secret"
     namespace: "{{ apimanager_namespace }}"
-    kind: secret
+    kind: Secret
   when: delete_tenant|bool == true
 
 - name: "delete tenant secret {{ tenant_access_token_secret }}"
-  oc_obj:
-    oc_binary: "{{ openshift_cli }}"
+  k8s:
     state: absent
     name: "{{ tenant_access_token_secret }}"
     namespace: "{{ apimanager_namespace }}"
-    kind: secret
+    kind: Secret
   when: delete_tenant|bool == true
