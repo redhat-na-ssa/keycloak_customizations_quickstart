@@ -49,14 +49,12 @@
         "description": "${role_offline-access}",
         "composite": false,
         "clientRole": false,
-        "containerId": "kc-demo",
         "attributes": {}
       },
       {
         "name": "admin",
         "composite": false,
         "clientRole": false,
-        "containerId": "kc-demo",
         "attributes": {}
       },
       {
@@ -64,7 +62,6 @@
         "description": "${role_uma_authorization}",
         "composite": false,
         "clientRole": false,
-        "containerId": "kc-demo",
         "attributes": {}
       },
       {
@@ -84,7 +81,6 @@
           }
         },
         "clientRole": false,
-        "containerId": "kc-demo",
         "attributes": {}
       }
     ],
@@ -376,8 +372,7 @@
     "name": "default-roles-kc-demo",
     "description": "${role_default-roles}",
     "composite": true,
-    "clientRole": false,
-    "containerId": "kc-demo"
+    "clientRole": false
   },
   "requiredCredentials": [
     "password"

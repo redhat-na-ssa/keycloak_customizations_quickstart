@@ -9,6 +9,8 @@
 - name: set env var facts
   set_fact:
     sso_realm_url: "https://{{ sso_route_cmd.stdout }}/auth/realms/{{ sso_realm_id }}"
+- debug:
+    msg: "sso_url = {{ sso_realm_url }}"
 - set_fact:
     aprops: "{{ lookup('template', 'templates/application.properties')  }}"
 

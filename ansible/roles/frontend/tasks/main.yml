@@ -2,8 +2,7 @@
 
 ########    Frontend Service    #############
 
-- name: copy application properties template
-  set_fact:
+- set_fact:
     aprops: "{{ lookup('template', 'templates/application.properties')  }}"
 
 - name: create {{ application_configmap }} application configmap

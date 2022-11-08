@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.acme</groupId>
   <artifactId>frontend-oidc</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.4</version>
   <properties>
     <compiler-plugin.version>3.8.1</compiler-plugin.version>
     <maven.compiler.release>11</maven.compiler.release>
@@ -50,13 +50,20 @@
             $ mvn clean package \
                     -Dquarkus.container-image.build=true \
                     -Dquarkus.container-image.push=true                             :   Build and push container image
-
-            $ helm install frontend-oidc ./target/helm/openshift/frontend-oidc     :   deploy helm configured artifacts to OCP
     -->
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-container-image-docker</artifactId>
+    </dependency>
     <dependency>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-openshift</artifactId>
     </dependency>
+
+
+    <!--
+        $ helm install frontend-oidc ./target/helm/openshift/frontend-oidc          :   deploy helm configured artifacts to OCP
+    -->
     <dependency>
         <groupId>io.quarkiverse.helm</groupId>
         <artifactId>quarkus-helm</artifactId>

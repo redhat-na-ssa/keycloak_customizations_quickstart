@@ -126,8 +126,8 @@
       metadata:
         name: "{{ sso_config_configmap }}"
       data:
-        AUTH_URL: "{{ sso_url }}/auth"
+        AUTH_URL: "{{ sso_url }}"
         KEYCLOAK: "true"
         PUBLIC_KEY: "{{ lookup('file', work_dir + '/sso_public_key.txt') }}"
         REALM: "{{ sso_realm_id }}"
-        CLIENTID: "{{ sso_clientId }}"
+        CLIENTID: "{{ tinspect_sso_clientId }}"

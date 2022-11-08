@@ -10,9 +10,9 @@
 - name: "OpenLDPA container needs to run as root; subsequently provide anyuid privledges"
   shell: "oc adm policy add-scc-to-user anyuid -z {{ application_name }} -n {{ namespace_ldap }}"
 
-- name: "template ldap-example-users.ldif"
+- name: "template {{ users_seed_ldif }}"
   slurp:
-    src: "{{ role_path }}/templates/ldap-example-users.ldif"
+    src: "{{ role_path }}/templates/{{ users_seed_ldif }}"
   register: ldif
 
 - name: create {{ application_name }} configmap
@@ -25,7 +25,7 @@
       metadata:
         name: "{{ application_name }}"
       data:
-        ldap-example-users.ldif: "{{ ldif.content | b64decode }}"
+        ldap-example-users-2.ldif: "{{ ldif.content | b64decode }}"
 
 
 - name: "deploy ldap in {{ namespace_ldap }}"

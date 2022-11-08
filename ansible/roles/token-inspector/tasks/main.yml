@@ -5,7 +5,7 @@
   register: sso_route_cmd
 
 - set_fact:
-    sso_url: "https://{{ sso_route_cmd.stdout }}/auth"
+    sso_url: "https://{{ sso_route_cmd.stdout }}"
     frontend_url: "https://frontend-{{ project_name }}.{{ ocp_domain }}/frontend"
 
 - import_tasks: deploy_from_image.yml

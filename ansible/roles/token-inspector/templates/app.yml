@@ -75,11 +75,11 @@ items:
                   apiVersion: v1
                   fieldPath: metadata.namespace
             - name: KC_URL
-              value: {{ sso_url }}
+              value: {{ sso_url }}/auth
             - name: KC_REALM_ID
               value: {{ sso_realm_id }}
             - name: KC_CLIENT_ID
-              value: {{ sso_clientId }}
+              value: {{ tinspect_sso_clientId }}
             - name: SERVICE_URL
               value: {{ frontend_url }}
             imagePullPolicy: IfNotPresent

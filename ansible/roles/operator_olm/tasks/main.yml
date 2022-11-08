@@ -7,7 +7,7 @@
     name: "{{ packagemanifest }}"
     api_version: packages.operators.coreos.com/v1
   register: r_packagemanifest
-# - debug:
+#- debug:
 #    msg: "{{ r_packagemanifest.resources[0] }}"
 
 - name: "set facts for {{ operator_name }} operator"

@@ -157,13 +157,43 @@ This quickstart includes _ansible_ to deploy to an OpenShift environment.  All o
 +
 The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of this quickstart.
 
-. link:https://mirror.openshift.com/pub/openshift-v4/clients/ocp/?C=M;O=D[oc utility] corresponding to the version of your OpenShift cluster.
-
-. *ansible* installed locally
+. link:https://mirror.openshift.com/pub/openshift-v4/clients/ocp/?C=M;O=D[oc utility]
 +
-ie: dnf install ansible
+Needs to correspond to the version of your OpenShift cluster.
 
-.. On the host machine that will run the ansible, ensure that both `kubernetes` and `jmespath` ansible galaxy collections are installed for the version of python using by ansible:
+. *ansible*
++
+Installed locally with the following collections:
+
+.. link:https://docs.ansible.com/ansible/latest/collections/kubernetes/core/index.html[kubernetes]
+
+... Install: 
++
+-----
+$ ansible-galaxy collection install kubernetes.core
+-----
+
+... Test:
++
+-----
+$ ansible-doc -t module kubernetes.core.helm
+-----
++
+You should see output similar to the following: 
++
+-----
+> KUBERNETES.CORE.HELM    (/usr/lib/python3.8/site-packages/ansible_collections/kubernetes/core/plugins/modules/helm.py)
+
+        Install, upgrade, delete packages with the Helm package
+        manager.
+
+ADDED IN: version 0.11.0 of kubernetes.core
+...
+-----
+
+.. link:https://docs.ansible.com/ansible/5/collections/community/general/docsite/filter_guide_selecting_json_data.html[jmespath]
++
+ie: On Linux systems, the following steps tend to work: 
 
 ... Check version of python used by ansible:
 +
@@ -179,15 +209,17 @@ ansible [core 2.12.2]
   ...
 
 -----
-... Install dependencies as root user:
+... Using the version of python leveraged by ansible, install dependency as root user:
 +
 -----
-# python3.8 -m pip install kubernetes jmespath
+# python3.8 -m pip install jmespath
 -----
 
 
 
-==== Startup
+
+
+==== Ansible based provisioning
 
 
 . Change directory into the _ansible_ directory of this project: 
@@ -315,3 +347,8 @@ image::images/browser_network_tools.png[]
 In the request to the _/token_ endpoint, what are the request parameters and what is included in the response ?
 
 *Next Lab*:  Proceed to the link:README_oidc_tokens.adoc[RH-SSO Token Deep Dive Lab]
+
+== Appendix
+
+[Troubelshoot_Ansible]
+=== Troubleshoot ansible install

@@ -1,6 +1,6 @@
 ---
 
 application_name: "{{ ldap_app_name }}"
-users_seed_ldif: ldap-example-users.ldif
+users_seed_ldif: ldap-example-users-2.ldif
 
 undeploy_idm: false

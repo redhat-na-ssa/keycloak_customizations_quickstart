@@ -42,9 +42,9 @@ sso_siteadmin_password: r3dh4t1!
 # If set to True, then every user that creates an account in demo will automatically be a realm-admin
 set_realm_admin_as_default: false
 
-sso_realm_id: "{{ project_admin }}-ldap"
+sso_realm_id: "{{ project_admin }}-kc-demo"
 
-sso_clientId: t-inspect
+tinspect_sso_clientId: t-inspect
 
 zync_sso_client_secret: 21b503a3-0b50-4e17-8ef7-167ab973c171
 #################################################
@@ -56,7 +56,7 @@ zync_sso_client_secret: 21b503a3-0b50-4e17-8ef7-167ab973c171
 # Name of the OCP project to deploy this application to
 project_name: "{{ project_admin }}-services"
 
-frontend_app_name: frontend
+frontend_app_name: frontend-oidc
 frontend_url: "http://{{ frontend_app_name }}.{{ project_name }}:8080"
 
 backend_app_name: backend-oidc
