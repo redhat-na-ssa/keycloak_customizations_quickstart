@@ -153,13 +153,16 @@ This quickstart includes _ansible_ to deploy to an OpenShift environment.  All o
 
 
 ==== Pre-reqs:
-. _OpenShift_ cluster ( >= v 4.6 )
+. _OpenShift_ cluster ( >= v 4.10 )
 +
-The cluster should have about 4 GBs and 2 CPUs to allocate to the resources of this quickstart.
+The cluster should have about 6 GBs and 6 CPUs to allocate to the resources of this quickstart.
 
 . link:https://mirror.openshift.com/pub/openshift-v4/clients/ocp/?C=M;O=D[oc utility]
 +
 Needs to correspond to the version of your OpenShift cluster.
++
+You should be authenticated into your OpenShift cluster at the command line as a `cluster-admin` user.
+
 
 . *ansible*
 +
@@ -248,17 +251,18 @@ $ ansible-playbook playbooks/install.yml
 
 ==== Environment Variables
 
-
 . Set the following environment variables with values similar to the following:
 +
 -----
+export RHSSO_NS=rhi-idm
 export OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
-export RHSSO_HOST=sso-rhi-idm.$OCP_DOMAIN
+export RHSSO_HOST=sso-$RHSSO_NS.$OCP_DOMAIN
 export RHSSO_URL=https://$RHSSO_HOST/auth
-export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n rhi-idm | jq -r .data.ADMIN_PASSWORD | base64 -d)
-export REALM_ID=user1-ldap
+export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n $RHSSO_NS | jq -r .data.ADMIN_PASSWORD | base64 -d)
+
+export USER_ID=user1
+export REALM_ID=$USER_ID-daybreak
 export OIDC_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
-export FRONTEND_ROUTE=https://frontend-user1-services.$OCP_DOMAIN
 -----
 
 

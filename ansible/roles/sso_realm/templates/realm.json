@@ -851,7 +851,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "zyncsso",
+      "secret": "{{ zync_sso_client_secret }}",
       "redirectUris": [],
       "webOrigins": [],
       "notBefore": 0,

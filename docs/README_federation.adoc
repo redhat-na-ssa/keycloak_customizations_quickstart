@@ -214,7 +214,7 @@ In this section, you will create a new OAuth client in github.
 
 . Authenticate into github and navigate to:  `Settings -> Developer settings`.
 . Click the `New OAuth App` button.
-. Populate the form with the following values:app-name:
+. Populate the form with the following values:
 .. *Application name* : `external-idp-test`
 .. *Homepage URL*: `https://github.com/redhat-na-ssa/keycloak_ldap_quickstart`
 .. *Authorization callback URL*:  `http://sso.local:4080`

@@ -37,7 +37,7 @@
     sso_admin_password: "{{ sso_admin_credentials.resources[0].data.ADMIN_PASSWORD | b64decode }}"
     sso_url: "https://{{ sso_route_cmd.stdout }}"
 - debug:
-    msg: "sso_admin_user = {{ sso_admin_user }}  ;  sso_admin_password = {{ sso_admin_password }}"
+    msg: "sso_admin_user = {{ sso_admin_user }}  ;  sso_admin_password = {{ sso_admin_password }} ; sso_url = {{ sso_url }}"
 
 - name: get admin token
   uri:
