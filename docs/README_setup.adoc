@@ -276,7 +276,7 @@ export REALM_ADMIN=ssoRealmAdmin
 export REALM_ADMIN_PASSWD=admin
 export OIDC_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 
-export BACKEND_ROUTE=http://frontend-$USER_ID-services.$OCP_DOMAIN
+export FRONTEND_ROUTE=http://frontend-oidc-$USER_ID-services.$OCP_DOMAIN
 -----
 
 

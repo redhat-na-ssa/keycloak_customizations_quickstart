@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    sso_hostname: "https://{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
+    sso_hostname: "{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
 
 - set_fact:
     sso_url: "https://{{ sso_hostname }}"

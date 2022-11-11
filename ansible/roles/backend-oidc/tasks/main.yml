@@ -3,7 +3,7 @@
 ########    Backend-OIDC Service    #############
 
 - set_fact:
-    sso_hostname: "https://{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
+    sso_hostname: "{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
 
 - name: set env var facts
   set_fact:

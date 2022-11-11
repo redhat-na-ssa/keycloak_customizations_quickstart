@@ -23,12 +23,12 @@
     msg: "sso_admin_user = {{ sso_admin_credentials.resources[0].data.username }}"
 
 - set_fact:
-    sso_hostname: "https://{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
+    sso_hostname: "{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
 
 - set_fact:
     sso_admin_user: "{{ sso_admin_credentials.resources[0].data.username  | b64decode }}"
     sso_admin_password: "{{ sso_admin_credentials.resources[0].data.password | b64decode }}"
-    sso_url: "{{ sso_hostname }}"
+    sso_url: "https://{{ sso_hostname }}"
 
 - debug:
     msg: "sso_admin_user = {{ sso_admin_user }}  ;  sso_admin_password = {{ sso_admin_password }} ; sso_url = {{ sso_url }}"
