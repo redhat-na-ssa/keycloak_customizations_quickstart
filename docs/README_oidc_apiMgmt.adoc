@@ -59,7 +59,7 @@ $ echo $TKN
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
-       -X GET $API_GW_URL/frontend-oidc/frontend
+       -X GET $API_GW_URL/roles-required
 
 
 

@@ -97,7 +97,7 @@ services:
 
   backend-oidc:
     container_name: backend-oidc
-    image: quay.io/redhat_naps_da/backend-oidc:0.0.2
+    image: quay.io/redhat_naps_da/backend-oidc:0.0.5
     restart: always
     ports:
       - "6080:6080"
@@ -111,9 +111,9 @@ services:
     networks:
       - sso
 
-  frontend-service:
-    container_name: frontend-service
-    image: quay.io/redhat_naps_da/frontend-oidc:0.0.4
+  frontend-oidc:
+    container_name: frontend-oidc
+    image: quay.io/redhat_naps_da/frontend-oidc:0.0.5
     restart: always
     ports:
       - "7080:7080"
@@ -121,7 +121,7 @@ services:
       QUARKUS_HTTP_PORT: 7080
       QUARKUS_HTTP_SSL-PORT: 7443  
     volumes:
-    - ./frontend-service/application.properties:/deployments/config/application.properties:bind
+    - ./frontend-oidc/application.properties:/deployments/config/application.properties:bind
     depends_on:
       - backend-oidc
     networks:
@@ -142,7 +142,7 @@ services:
       SERVICE_URL: 'http://localhost:7080/frontend'
     depends_on:
       - kc-sso
-      - frontend-service
+      - frontend-oidc
     networks:
       - sso
 

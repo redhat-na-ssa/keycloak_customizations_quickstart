@@ -3,7 +3,7 @@
 application_name: "{{ frontend_app_name }}"
 
 service_image: quay.io/redhat_naps_da/frontend-oidc
-service_image_tag: 0.0.4
+service_image_tag: 0.0.5
 
 application_configmap: "{{ application_name }}"
 

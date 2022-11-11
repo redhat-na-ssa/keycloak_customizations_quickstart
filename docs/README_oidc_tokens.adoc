@@ -245,7 +245,7 @@ $ echo $TKN
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
        -H "Accept: text/plain" \
-       -X GET $BACKEND_ROUTE/backend/secured
+       -X GET $BACKEND_ROUTE/authNonly
 -----
 
 . The response status should be:  `401 Unauthorized` .  Why ?
@@ -267,7 +267,9 @@ So the Quarkus `backend-oidc` is expecting a token whose `aud` attribute include
 +
 Does your token include this `aud` attribute ?
 
-.  A discussion about adding the `aud` field to a token can be found link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[here] in the Keycloak documentation.  Specifically, you'll need to configure a link:https://www.keycloak.org/docs/latest/server_admin/#_audience_hardcoded[hard-coded audience mapper].
+.  A discussion about adding the `aud` field to a token can be found link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[here] in the Keycloak documentation.  
++
+Specifically, you'll need to configure a link:https://www.keycloak.org/docs/latest/server_admin/#_audience_hardcoded[hard-coded audience mapper].
 
 . In the RH-SSO `Admin Portal`, click the following:  `Client scopes` -> Create client scope.
 . Create a new `client-scope` with the following values: 
@@ -292,7 +294,7 @@ image::images/t-inspect-aud-boidc.png[]
 -----
 curl -v -H "Authorization: Bearer $TKN" \
        -H "Accept: text/plain" \
-       -X GET $BACKEND_ROUTE/backend/secured
+       -X GET $BACKEND_ROUTE/backend/authNonly
 
 
 
@@ -306,7 +308,7 @@ Hello jbrown with roles: ldap-user ldap-admin
 +
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
-       -X GET $FRONTEND_ROUTE/frontend
+       -X GET $FRONTEND_ROUTE/frontend/authNonly
 
 
 

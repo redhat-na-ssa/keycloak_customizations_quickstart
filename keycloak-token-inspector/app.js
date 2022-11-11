@@ -3,7 +3,7 @@ var app = express();
 var stringReplace = require('string-replace-middleware');
 
 var KC_URL = process.env.KC_URL || "http://sso.local:4080/";
-var SERVICE_URL = process.env.SERVICE_URL || "http://localhost:3000/secured";
+var SERVICE_URL = process.env.SERVICE_URL || "http://localhost:3000/frontend-oidc/roles-required";
 var KC_REALM_ID = process.env.KC_REALM_ID || "kc-demo";
 var KC_CLIENT_ID = process.env.KC_CLIENT_ID || "t-inspect";
 
