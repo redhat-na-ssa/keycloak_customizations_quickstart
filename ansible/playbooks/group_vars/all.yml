@@ -17,8 +17,6 @@ project_annotations:
 #################################################
 
 
-
-
 #############    LDAP    #######################
 
 ldap_service_name: ldap-service
@@ -34,10 +32,10 @@ ldap_bind_credential: admin
 
 ##############      SSO   #######################
 
+sso_name: rhsso
+
 # Namespace where SSO will be installed
 namespace_sso: rhi-idm
-
-sso_siteadmin_password: r3dh4t1!
 
 # If set to True, then every user that creates an account in demo will automatically be a realm-admin
 set_realm_admin_as_default: false

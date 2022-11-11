@@ -75,7 +75,7 @@ items:
                   apiVersion: v1
                   fieldPath: metadata.namespace
             - name: KC_URL
-              value: {{ sso_url }}/auth
+              value: {{ sso_url }}
             - name: KC_REALM_ID
               value: {{ sso_realm_id }}
             - name: KC_CLIENT_ID

@@ -1,13 +1,31 @@
-apiVersion: keycloak.org/v1alpha1
+apiVersion: k8s.keycloak.org/v2alpha1
 kind: Keycloak
 metadata:
-  name: rhsso
+  name: {{ sso_name }}
   labels:
-    app: rhsso
+    app: {{ sso_name }}
 spec:
+  command: |
+    start-dev
+  hostname: 
+    hostname: {{ sso_hostname }}
+  additionalOptions:
+    - name: features
+      value: 'token-exchange,admin-fine-grained-authz,scripts,declarative-user-profile'
+    - name: cache
+      value: ispn
+  db:
+    usernameSecret:
+      key: database-user
+      name: {{ sso_db_service_name }}
+    passwordSecret:
+      key: database-password
+      name: {{ sso_db_service_name }}
+    vendor: postgres
+    host: {{ sso_db_service_name }}
+    database: {{ sso_db_name }}
+    port: 5432
   instances: 1
-  extensions:
-    - https://github.com/aerogear/keycloak-metrics-spi/releases/download/2.5.0/keycloak-metrics-spi-2.5.0.jar
-  externalAccess:
-    enabled: False
-  profile: RHSSO
+  http:
+    tlsSecret: {{ sso_keycloak_tls_secret }}
+  image: 'quay.io/jbride/keycloak:20.0.0-0-psql'

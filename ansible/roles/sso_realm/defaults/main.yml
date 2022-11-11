@@ -1,6 +1,6 @@
 ---
 
-sso_admin_credentials_secret: credential-rhsso
+sso_admin_credentials_secret: "{{ sso_name }}-initial-admin"
 
 siteadmin_template: "siteadmin-user.json"
 siteadmin_add_role: "add-role-to-siteadmin.json"

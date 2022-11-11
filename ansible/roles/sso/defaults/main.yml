@@ -2,12 +2,31 @@
 
 # rhsso operator
 sso_operator_subscription_template: subscription.yml
-sso_operator_packagemanifest: rhsso-operator
-sso_operator_subscription_name: rhsso-operator
-sso_operator_subscription_channel: alpha
+sso_operator_packagemanifest: keycloak-operator
+sso_operator_subscription_name: keycloak-operator
+sso_operator_subscription_channel: fast
 sso_operator_subscription_automatic_installplan_approval: false
 sso_operator_subscription_starting_csv: ""
-sso_operator_csv_prefix: rhsso-operator
+sso_operator_csv_prefix: keycloak-operator
+
+sso_db_userid: sso
+sso_db_passwd: sso
+sso_db_name: sso
+sso_db_service_name: "{{ sso_db_name }}-psql"
+postgresql_pv_capacity: 5Gi
+postgresql_version: 12-el8
+postgresql_is_namespace: openshift
+postgresql_max_prepared_transactions: 100
+postgresql_max_connections: 100
+postgresql_memory_limit: 512Mi
+postgresql_cpu_limit: 500m
+postgresql_memory_request: 256Mi
+postgresql_cpu_request: 100m
+psql_init_scripts:
+sso_psql_conf_file: sso-psql-conf.conf
+sso_psql_conf_cm: sso-psql-conf-cm
+
+sso_keycloak_tls_secret: keycloak-tls
 
 keycloak_cr_template: keycloak-cr.yml
 keycloak_route_template: keycloak-route.yml

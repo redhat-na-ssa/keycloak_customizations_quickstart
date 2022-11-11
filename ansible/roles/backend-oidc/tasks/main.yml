@@ -2,13 +2,12 @@
 
 ########    Backend-OIDC Service    #############
 
-- name: retrieve sso route
-  shell: "{{ openshift_cli }} get route sso -o jsonpath='{.spec.host}' -n {{ namespace_sso }}"
-  register: sso_route_cmd
+- set_fact:
+    sso_hostname: "https://{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
 
 - name: set env var facts
   set_fact:
-    sso_realm_url: "https://{{ sso_route_cmd.stdout }}/auth/realms/{{ sso_realm_id }}"
+    sso_realm_url: "https://{{ sso_hostname }}/realms/{{ sso_realm_id }}"
 - debug:
     msg: "sso_url = {{ sso_realm_url }}"
 - set_fact:

@@ -231,6 +231,16 @@ ansible [core 2.12.2]
 $ cd ansible
 -----
 
+. Create a secret with certs for your RH-SSO endpoint:
++
+-----
+$ oc new-project rhi-idm
+$ oc create secret tls keycloak-tls \
+        --cert /path/to/fullchain.cert \
+        --key /path/to/cert.key \
+        -n rhi-idm
+-----
+
 . Execute _ansible_playbook_
 +
 -----
@@ -256,13 +266,17 @@ $ ansible-playbook playbooks/install.yml
 -----
 export RHSSO_NS=rhi-idm
 export OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
-export RHSSO_HOST=sso-$RHSSO_NS.$OCP_DOMAIN
-export RHSSO_URL=https://$RHSSO_HOST/auth
-export RHSSO_MASTER_PASSWD=$(oc get secret credential-rhsso -o json -n $RHSSO_NS | jq -r .data.ADMIN_PASSWORD | base64 -d)
+export RHSSO_HOST=rhsso-$RHSSO_NS.$OCP_DOMAIN
+export RHSSO_URL=https://$RHSSO_HOST
+export RHSSO_MASTER_PASSWD=$(oc get secret rhsso-initial-admin -o json -n $RHSSO_NS | jq -r .data.password | base64 -d)
 
 export USER_ID=user1
-export REALM_ID=$USER_ID-daybreak
+export REALM_ID=$USER_ID-kc-demo
+export REALM_ADMIN=ssoRealmAdmin
+export REALM_ADMIN_PASSWD=admin
 export OIDC_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
+
+export BACKEND_ROUTE=http://frontend-$USER_ID-services.$OCP_DOMAIN
 -----
 
 

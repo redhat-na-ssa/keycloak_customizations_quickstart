@@ -1,5 +1,96 @@
 ---
 
+- set_fact:
+    sso_hostname: "{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
+- debug:
+    msg: "sso hostname set to {{ sso_hostname }}"
+
+#############       SSO Database      ################
+- name: "create {{ sso_db_service_name }} service account in {{ namespace_sso }}"
+  k8s:
+    state: present
+    name: "{{ sso_db_service_name }}"
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: "{{ sso_db_service_name }}"
+        namespace: "{{ namespace_sso }}"
+
+- name: "create sso db secret {{ sso_db_service_name }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      type: Opaque
+      metadata:
+        name: "{{ sso_db_service_name }}"
+        namespace: "{{ namespace_sso }}"
+      data:
+        database-user: "{{ sso_db_userid | b64encode }}"
+        database-password: "{{ sso_db_passwd | b64encode }}"
+        database-name: "{{ sso_db_name | b64encode }}"
+
+- set_fact:
+    create_db_file: "{{ lookup('template', 'templates/sql/create_database.sh' )  }}"
+    wait_for_psql_file: "{{ lookup('template', 'templates/sql/wait_for_postgresql.sh' )  }}"
+    s_conf_file: "{{ lookup('template', 'templates/sql/' + sso_psql_conf_file )  }}"
+
+- name: "create {{ sso_db_service_name }} configmap"
+  k8s:
+    state: present
+    name: "{{ sso_db_service_name }}"
+    namespace: "{{ namespace_sso }}"
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ sso_db_service_name }}"
+        namespace: "{{ namespace_sso }}"
+      data:
+        create_database.sh: "{{ create_db_file }}"
+        wait_for_postgresql.sh: "{{ wait_for_psql_file }}"
+
+- name: "create {{ sso_psql_conf_cm }} configmap"
+  k8s:
+    state: present
+    name: "{{ sso_psql_conf_cm }}"
+    namespace: "{{ namespace_sso }}"
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ sso_psql_conf_cm }}"
+        namespace: "{{ namespace_sso }}"
+      data:
+        sso-psql-conf.conf: "{{ s_conf_file }}"
+
+
+- name: "deploy {{ sso_db_service_name }} in {{ namespace_sso }}"
+  k8s:
+    state: present
+    kind: DeploymentConfig
+    definition: "{{ lookup('template', 'templates/postgresql.yml') | from_yaml }}"
+    namespace: "{{ namespace_sso }}"
+
+- name: "wait until {{ sso_db_service_name }} database is up and running in {{ namespace_sso }}"
+  shell: "{{ openshift_cli }} get dc {{ sso_db_service_name }} -o template --template={{ json_template }} -n {{ namespace_sso }}"
+  vars:
+    json_template: '\{\{.status.readyReplicas\}\}'
+  register: result
+  until: result.stdout == "1"
+  retries: 10
+  delay: 30
+  changed_when: false
+
+
+######################################################
+
+
+
+#############   SSO Operator    ################
+
 - name: "create operatorgroup in {{ namespace_sso }}"
   import_role:
     name: ../roles/operatorgroup
@@ -20,6 +111,12 @@
     automatic_installplan_approval: "{{ sso_operator_subscription_automatic_installplan_approval }}"
     subscription_starting_csv: "{{ sso_operator_subscription_starting_csv  }}"
     csv_prefix: "{{ sso_operator_csv_prefix }}"
+################################################
+
+
+
+
+#############       SSO      ################
 
 - name: "create keycloak custom resource"
   k8s:
@@ -28,20 +125,11 @@
     namespace: "{{ namespace_sso }}"
     definition: "{{ lookup('template', 'templates/'+ keycloak_cr_template) | from_yaml }} "
 
-- name: "create keycloak route"
-  k8s:
-    state: present
-    kind: Route
-    name: sso
-    namespace: "{{ namespace_sso }}"
-    definition: "{{ lookup('template', 'templates/'+ keycloak_route_template) | from_yaml }} "
-
-- name: "wait until keycloak-postgresql is active in {{ namespace_sso }}"
-  kubernetes.core.k8s_info:
-    kind: Deployment
-    name: "keycloak-postgresql"
-    namespace: "{{ namespace_sso }}"
-    wait: yes
-    wait_sleep: 10
-    wait_timeout: 90
-
+- name: "wait until {{ sso_name }} is active in {{ namespace_sso }}"
+  shell: |
+    {{ openshift_cli }} get keycloak.k8s.keycloak.org/{{ sso_name }} -o jsonpath='{.status.conditions[?(@.type == "Ready")].status}' -n {{ namespace_sso }}
+  register: result
+  until: result.stdout == 'true'
+  retries: 50
+  delay: 10
+  changed_when: False

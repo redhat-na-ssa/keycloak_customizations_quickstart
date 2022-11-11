@@ -1,29 +1,17 @@
 ---
 
-- name: wait for sso to be ready
-  kubernetes.core.k8s_info:
-    kind: Statefulset
-    name: keycloak
-    namespace: "{{ namespace_sso }}"
-    wait_sleep: 10
-    wait_timeout: 90
-
 # https://github.com/Emergency-Response-Demo/install/issues/71
 - name: "Define random value for variable siteadmin_role_id "
   set_fact:
     siteadmin_role_id: "{{ lookup('password', '/dev/null chars=ascii_letters length=32') }}"
 
-- name: "wait for sso statefulset to be ready in {{ namespace_sso }}"
-  shell: "{{ openshift_cli }} get statefulset/keycloak -o jsonpath='{.status.readyReplicas}' -n {{ namespace_sso }}"
+- name: "wait for {{ sso_name }} statefulset to be ready in {{ namespace_sso }}"
+  shell: "{{ openshift_cli }} get statefulset/{{ sso_name }} -o jsonpath='{.status.readyReplicas}' -n {{ namespace_sso }}"
   register: result
   until: result.stdout == '1'
   retries: 50
   delay: 10
   changed_when: False
-
-- name: retrieve sso route
-  shell: "{{ openshift_cli }} get route sso -o jsonpath='{.spec.host}' -n {{ namespace_sso }}"
-  register: sso_route_cmd
 
 - name: get sso admin credentials secret
   kubernetes.core.k8s_info:
@@ -31,17 +19,23 @@
     namespace: "{{ namespace_sso }}"
     name: "{{ sso_admin_credentials_secret }}"
   register: sso_admin_credentials
+- debug:
+    msg: "sso_admin_user = {{ sso_admin_credentials.resources[0].data.username }}"
 
 - set_fact:
-    sso_admin_user: "{{ sso_admin_credentials.resources[0].data.ADMIN_USERNAME  | b64decode }}"
-    sso_admin_password: "{{ sso_admin_credentials.resources[0].data.ADMIN_PASSWORD | b64decode }}"
-    sso_url: "https://{{ sso_route_cmd.stdout }}"
+    sso_hostname: "https://{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
+
+- set_fact:
+    sso_admin_user: "{{ sso_admin_credentials.resources[0].data.username  | b64decode }}"
+    sso_admin_password: "{{ sso_admin_credentials.resources[0].data.password | b64decode }}"
+    sso_url: "{{ sso_hostname }}"
+
 - debug:
     msg: "sso_admin_user = {{ sso_admin_user }}  ;  sso_admin_password = {{ sso_admin_password }} ; sso_url = {{ sso_url }}"
 
 - name: get admin token
   uri:
-    url: "{{ sso_url }}/auth/realms/master/protocol/openid-connect/token"
+    url: "{{ sso_url }}/realms/master/protocol/openid-connect/token"
     method: POST
     headers:
       Content-Type: application/x-www-form-urlencoded
@@ -56,7 +50,7 @@
 
 - name: check if {{ sso_realm_id }} exists
   uri:
-    url: "{{ sso_url }}/auth/admin/realms/{{ sso_realm_id }}"
+    url: "{{ sso_url }}/admin/realms/{{ sso_realm_id }}"
     method: GET
     headers:
       Authorization: Bearer {{ admin_token }}
@@ -67,7 +61,7 @@
 
 - name: create {{ sso_realm_id }} realm
   uri:
-    url: "{{ sso_url }}/auth/admin/realms"
+    url: "{{ sso_url }}/admin/realms"
     method: POST
     headers:
       Authorization: Bearer {{ admin_token }}
@@ -80,7 +74,7 @@
 
 - name: get rhsso realm certs
   uri:
-    url: "{{ sso_url }}/auth/realms/{{ sso_realm_id }}/protocol/openid-connect/certs"
+    url: "{{ sso_url }}/realms/{{ sso_realm_id }}/protocol/openid-connect/certs"
     validate_certs: false
     return_content: true
   register: sso_realm_certs
@@ -130,4 +124,3 @@
         KEYCLOAK: "true"
         PUBLIC_KEY: "{{ lookup('file', work_dir + '/sso_public_key.txt') }}"
         REALM: "{{ sso_realm_id }}"
-        CLIENTID: "{{ tinspect_sso_clientId }}"
