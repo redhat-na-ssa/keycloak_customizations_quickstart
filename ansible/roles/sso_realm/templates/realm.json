@@ -710,7 +710,7 @@
       "secret": "**********",
       "redirectUris": [
         "https://www.keycloak.org/app/*",
-        "https://token-inspector-{{ project_name }}.{{ ocp_domain }}/*"
+        "http://token-inspector-{{ project_name }}.{{ ocp_domain }}/*"
       ],
       "webOrigins": [
         "+"

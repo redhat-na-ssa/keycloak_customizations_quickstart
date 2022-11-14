@@ -1,29 +1,15 @@
 ---
 
-- name: delete route
-  k8s:
-    state: absent
+- name: helm deployed resources
+  kubernetes.core.helm:
     name: "{{ application_name }}"
-    namespace: "{{ namespace }}"
-    kind: Route
+    state: absent
+    release_namespace: "{{ namespace }}"
+    wait: true
 
-- name: delete service
+- name: "delete configmap {{ application_name }}"
   k8s:
     state: absent
     name: "{{ application_name }}"
     namespace: "{{ namespace }}"
-    kind: Service
-
-- name: delete deployment config
-  k8s:
-    state: absent
-    name: "{{ application_name }}"
-    namespace: "{{ namespace }}"
-    kind: DeploymentConfig
-
-- name: delete imagestream in the {{ namespace }} project
-  k8s:
-    state: absent
-    name: "{{ application_name }}"
-    namespace: "{{ namespace }}"
-    kind: ImageStream
+    kind: ConfigMap

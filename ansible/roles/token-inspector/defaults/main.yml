@@ -1,9 +1,9 @@
 ---
 
 application_name: token-inspector
-application_template: app.yml
 
-service_image: quay.io/jbride/keycloak-token-inspector
-service_image_tag: 0.0.2
+service_image: quay.io/redhat_naps_da/token-inspector
+service_image_tag: 0.0.1
 
-binary_imagestream_template: binary-imagestream.yml
+helm_tar_url: "/u01/labs/mw/redhat-na-ssa/keycloak_customizations_quickstart/{{ application_name }}/target/helm/openshift/{{ application_name }}"
+#helm_tar_url: "https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/raw/main/{{ application_name }}/helm/{{ application_name }}-{{ service_image_tag }}.tar.gz"

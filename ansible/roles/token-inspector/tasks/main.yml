@@ -5,6 +5,26 @@
 
 - set_fact:
     sso_url: "https://{{ sso_hostname }}"
-    frontend_url: "https://frontend-{{ project_name }}.{{ ocp_domain }}/frontend"
+    frontend_url: "https://frontend-{{ project_name }}.{{ ocp_domain }}"
+
+- set_fact:
+    env: "{{ lookup('template', 'templates/env.production')  }}"
+    build: "{{ lookup('template', 'templates/build_and_start.sh')  }}"
+    settings: "{{ lookup('template', 'templates/settings.xml')  }}"
+
+- name: create {{ application_name }} configmap
+  k8s:
+    state: present
+    name: "{{ application_name }}"
+    namespace: "{{ namespace }}"
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: "{{ application_name }}"
+      data:
+        env.production: "{{ env }}"
+        build_and_start.sh: "{{ build }}"
+        settings.xml: "{{ settings }}"
 
 - import_tasks: deploy_from_image.yml

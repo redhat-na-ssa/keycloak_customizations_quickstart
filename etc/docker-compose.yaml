@@ -128,18 +128,19 @@ services:
       - sso
 
 
-
   token-inspector:
     container_name: token-inspector
-    image: quay.io/jbride/keycloak-token-inspector:0.0.2
+    image: quay.io/redhat_naps_da/token-inspector:0.0.1
     restart: always
     ports:
-      - "8000:8000"
+      - "5080:5080"
     environment:
-      KC_URL: 'http://sso.local:4080'
-      KC_REALM_ID: kc-demo
-      KC_CLIENT_ID: t-inspect
-      SERVICE_URL: 'http://localhost:7080/frontend'
+      QUARKUS_HTTP_PORT: 5080
+      QUARKUS_HTTP_SSL-PORT: 5443  
+    volumes:
+    - ./token-inspector/env.production:/opt/token-inspector/src/main/webui/.env:bind
+    - ./token-inspector/build_and_start.sh:/opt/token-inspector/build_and_start.sh:bind
+    - ./token-inspector/settings.xml:/home/jboss/.m2/settings.xml:bind
     depends_on:
       - kc-sso
       - frontend-oidc

@@ -1,0 +1,24 @@
+FROM registry.access.redhat.com/ubi8/openjdk-11:1.11
+
+ENV LANGUAGE='en_US:en'
+
+
+# Copy the source code so as to allow for execution of webpack executable
+#    Doing so allows (at container startup) for building of a javascript frontend configured with a runtime .env file
+RUN mkdir -p /opt/token-inspector
+COPY --chown=185 ./pom.xml /opt/token-inspector/
+COPY --chown=185 ./src/ /opt/token-inspector/src
+COPY --chown=185 ./m2/repository /home/jboss/.m2/repository
+
+# Allow for writing to /home/jboss/.m2, /opt/token-inspector and /deployments directories
+RUN chmod -R 777 /home/jboss/.m2/repository && chmod -R 777 /opt/token-inspector && chmod -R 777 /deployments
+
+EXPOSE 8080
+USER 185
+ENV AB_JOLOKIA_OFF=""
+ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
+
+# Make sure the following is mounted to your container: /opt/token-inspector/build_and_start.sh
+CMD [ "sh", "/opt/token-inspector/build_and_start.sh" ]
+

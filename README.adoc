@@ -7,7 +7,7 @@
 
 :numbered:
 
-=== Overview
+== Overview
 The purpose of this project is to demonstrate customizations to Red Hat SSO and integrations with other Red Hat products.
 
 This project includes the following labs:
@@ -23,7 +23,7 @@ This project includes the following labs:
 
 It's recommended that the above labs be executed in the order as listed.
 
-=== Pre-Req Questions/Knowledge
+== Pre-Req Questions/Knowledge
 
 . Given a RH-SSO instance, what is the URL to the `.well-known` RESTful endpoint ?
 +

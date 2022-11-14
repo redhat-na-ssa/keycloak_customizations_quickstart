@@ -1,20 +1,11 @@
 ---
 
-- name: create imagestream in the {{ namespace }} project
-  k8s:
-    state: present
-    namespace: "{{ namespace }}"
-    kind: imagestream
-    definition: "{{ lookup('template', 'templates/' + binary_imagestream_template ) | from_yaml }}"
-
-- set_fact:
-    application_image_tag: "{{ service_image_tag }}"
-
-- name: deploy {{ application_name }} application
-  k8s:
-    state: present
-    namespace: "{{ namespace }}"
-    definition: "{{ lookup('template', 'templates/' + application_template ) | from_yaml }}"
+- name: "deploy {{ application_name }} application using following helm chart {{ helm_tar_url }}"
+  kubernetes.core.helm:
+    name: "{{ application_name }}"
+    release_namespace: "{{ namespace }}"
+    chart_ref: "{{ helm_tar_url }}"
+    wait: True
 
 - name: "wait until {{ application_name }} application is up and running"
   shell: "{{ openshift_cli }} get dc {{ application_name }} -o template --template={{ json_template }} -n {{ namespace }}"

@@ -710,8 +710,9 @@
       "secret": "**********",
       "redirectUris": [
         "https://www.keycloak.org/app/*",
-        "http://localhost:8000/*",
-        "http://localhost:8080/q/dev/io.quarkus.quarkus-oidc/provider/*"
+        "http://localhost:3000/*",
+        "http://localhost:5080/*",
+        "http://localhost:8080/*"
       ],
       "webOrigins": [
         "+"
