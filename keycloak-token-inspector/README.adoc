@@ -1,4 +1,0 @@
-== Dev
-
-. npm install
-. npm start
