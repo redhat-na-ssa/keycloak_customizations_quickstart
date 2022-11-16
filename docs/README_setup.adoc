@@ -280,7 +280,48 @@ export BACKEND_ROUTE=http://backend-oidc-$USER_ID-services.$OCP_DOMAIN
 export FRONTEND_ROUTE=http://frontend-oidc-$USER_ID-services.$OCP_DOMAIN
 -----
 
+=== CORS
+
+. Ensure that `frontend-service` is enabled with CORS:
++
+-----
+$ curl -i -X OPTIONS \
+    -H "Origin: http://some-different-host:8080" \
+    -H 'Access-Control-Request-Method: POST,GET,DELETE' \
+    -H 'Access-Control-Request-Headers: Content-Type, Authorization' \
+    $FRONTEND_ROUTE
+
+
+
+HTTP/1.1 200 OK
+access-control-allow-methods: POST,GET,DELETE
+access-control-allow-headers: Content-Type, Authorization
+access-control-allow-origin: http://some-different-host:8080
+access-control-allow-credentials: false
+-----
+
+. Ensure that `rhsso` endpoints are enabled with CORS:
++
+-----
+$ curl -i -X OPTIONS \
+    -H "Origin: http://some-different-host:8080" \
+    $RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration
+-----
+
+-----
+$ curl -i -X OPTIONS \
+    -H "Origin: http://some-different-host:8080" \
+    $RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token
+-----
+
+-----
+$ curl -i -X OPTIONS \
+    -H "Origin: http://some-different-host:8080" \
+    $RHSSO_URL/realms/$REALM_ID/account
+-----
+
 === Sanity Check
+
 
 -----
 $ curl -v -H "Accept: text/plain" \

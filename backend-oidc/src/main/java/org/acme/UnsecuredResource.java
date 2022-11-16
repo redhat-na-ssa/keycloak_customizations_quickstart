@@ -24,11 +24,12 @@ public class UnsecuredResource {
         StringBuilder sBuilder = new StringBuilder();
         sBuilder.append("Good to go !");
 
-        sBuilder.append("\nRequest Headers: ");
+        sBuilder.append("\nRequest headers sent to backend: ");
         MultiMap headers = request.headers();
         for(Entry<String, String> entry : headers.entries()){
             sBuilder.append("\n\t"+entry.getKey()+"\t"+entry.getValue());
         }
+        sBuilder.append("\n");
 
         return sBuilder.toString();
     }

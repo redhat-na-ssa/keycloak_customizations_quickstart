@@ -245,7 +245,7 @@ $ echo $TKN
 -----
 $ curl -v -H "Authorization: Bearer $TKN" \
        -H "Accept: text/plain" \
-       -X GET $BACKEND_ROUTE/authNonly
+       -X GET $BACKEND_ROUTE/secured/authNonly
 -----
 
 . The response status should be:  `401 Unauthorized` .  Why ?
@@ -275,7 +275,7 @@ Specifically, you'll need to configure a link:https://www.keycloak.org/docs/late
 . Create a new `client-scope` with the following values: 
 .. Name: *boidc-aud*
 .. Type: *Optional*
-. In the `Mappers` tab of the new `client scope`, click: `Configure a new mapper --> Audience`.
+. Save the new `client-scope` and in the subseqeunt `Mappers` tab of the new `client scope`, click: `Configure a new mapper --> Audience`.
 . Populate the new mapper with the following values: 
 .. Name: *boidc-aud*
 .. Included Client Audience:  *boidc*
@@ -294,12 +294,12 @@ image::images/t-inspect-aud-boidc.png[]
 -----
 curl -v -H "Authorization: Bearer $TKN" \
        -H "Accept: text/plain" \
-       -X GET $BACKEND_ROUTE/backend/authNonly
+       -X GET $BACKEND_ROUTE/secured/authNonly
 
 
 
 < HTTP/1.1 200 OK
-Hello jbrown with roles: ldap-user ldap-admin
+Hello jbrown
 -----
 
 === frontend service
@@ -313,7 +313,7 @@ $ curl -v -H "Authorization: Bearer $TKN" \
 
 
 < HTTP/1.1 200 OK
-Hello jbrown with roles: ldap-user ldap-admin
+Hello jbrown
 -----
 
 === Review Questions
@@ -336,7 +336,7 @@ Answers:
 
 2) org.eclipse.microprofile.rest.client.propagateHeaders=Authorization
 
-3) quarkus.oidc.auth-server-url=http://sso:4080/realms/kc-demo
+3) quarkus.oidc.auth-server-url=http://kc-sso:4080/realms/kc-demo
 /////
 
 == Offline Tokens
