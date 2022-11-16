@@ -55,8 +55,16 @@ function profile() {
         document.getElementById('avatar_url').src = kc.idTokenParsed.avatar_url;
     }
     document.getElementById('logout').onclick = function(){ kc.logout()};
-    document.getElementById('showId').onclick = function() { output(kc.idTokenParsed)};
     document.getElementById('showAccess').onclick = function() { output(kc.tokenParsed)};
+    document.getElementById('showId').onclick = function() { output(kc.idTokenParsed)};
+    document.getElementById('showUserInfo').onclick = function() { 
+        kc.loadUserInfo()
+            .then(function(profile) {
+                output(profile);
+            }).catch(function() {
+                output('{"error": "Failed to load user profile"}');
+            });
+    };
     document.getElementById('refresh').onclick = function(){ kc.updateToken(-1).then(function() { output(kc.idTokenParsed); profile() })};
     document.getElementById('invokeService').onclick = function(){ sendRequest()};
 }
