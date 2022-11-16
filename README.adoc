@@ -18,7 +18,6 @@ This project includes the following labs:
 . link:docs/README_RHSSO_Extensions.adoc[RH-SSO Extensions Lab]
 . link:docs/README_client_registration.adoc[RH-SSO Dynamic Client Registration Lab]
 . link:docs/README_authz_services.adoc[RH-SSO Advanced Authorization Services Lab]
-. link:docs/README_oidc_apiMgmt.adoc[RH-SSO / API Mgmt Integrations Lab]
 . link:docs/README_ossm.adoc[RH-SSO / OSSM / API Mgmt Integrations Lab]
 
 It's recommended that the above labs be executed in the order as listed.
