@@ -17,6 +17,16 @@ services:
     networks:
       - sso
 
+  vault-client:
+    container_name: vault-client
+    image: quay.io/jbride/vault-client:1.12.1-0
+    volumes:
+    - ./vault/load_vault.sh:/opt/vault/load_vault.sh:bind
+    networks:
+      - sso
+    depends_on:
+      - vault-dev
+
   openldap:
     container_name: openldap
     image: docker.io/osixia/openldap:1.5.0
