@@ -2,6 +2,21 @@ version: '3.7'
 
 services:
 
+  vault-dev:
+    container_name: vault-dev
+    image: docker.io/library/vault:1.12.1
+    restart: always
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: vault
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      VAULT_ADDR: http://127.0.0.1:8200
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+    networks:
+      - sso
+
   openldap:
     container_name: openldap
     image: docker.io/osixia/openldap:1.5.0
