@@ -6,16 +6,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.inject.Inject;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 
 import java.util.Set;
-import java.util.Map.Entry;
 
 import javax.annotation.security.RolesAllowed;
-import org.jboss.resteasy.annotations.cache.NoCache;
 
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
-import io.vertx.core.MultiMap;
+import io.smallrye.mutiny.Uni;
 import io.vertx.core.http.HttpServerRequest;
 
 @Authenticated
@@ -31,7 +30,7 @@ public class SecuredResource {
     @GET
     @Path("/authNonly")
     @Produces(MediaType.TEXT_PLAIN)
-    public String authNonly() {
+    public Uni<Response> authNonly() {
         StringBuilder sBuilder = new StringBuilder();
         String userName = securityIdentity.getPrincipal().getName();
         sBuilder.append("Hello ");
@@ -44,16 +43,16 @@ public class SecuredResource {
             sBuilder.append("\n\t"+entry.getKey()+"\t"+entry.getValue());
         }*/
 
-        return sBuilder.toString();
+        Response eRes = Response.status(Response.Status.OK).entity(sBuilder.toString()).build();
+        return Uni.createFrom().item(eRes);
     }
 
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @RolesAllowed("ldap-user")          // App based RBAC (as opposed to centralized UMA based Authorization Services provided by Keycloak)
-    @NoCache
     @Path("/roles-required")
-    public String rolesRequired() {
+    public Uni<Response> rolesRequired() {
         String userName = securityIdentity.getPrincipal().getName();
         Set<String> roles = securityIdentity.getRoles();
         StringBuilder sBuilder = new StringBuilder();
@@ -64,7 +63,8 @@ public class SecuredResource {
             sBuilder.append(role);
             sBuilder.append(" ");
         }
-        
-        return sBuilder.toString();
+
+        Response eRes = Response.status(Response.Status.OK).entity(sBuilder.toString()).build();
+        return Uni.createFrom().item(eRes);
     }
 }

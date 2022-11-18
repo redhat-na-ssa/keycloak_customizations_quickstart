@@ -1,0 +1,7 @@
+= backend-oidc
+
+== vault
+
+-----
+$ vault kv get -format=json /rhsso/siteadmin/psql/ | jq -r .data.data.database_name
+-----

@@ -324,8 +324,8 @@ $ curl -i -X OPTIONS \
 
 
 -----
-$ curl -v -H "Accept: text/plain" \
-       -X GET $FRONTEND_ROUTE/sanityCheck
+$ curl -v -H "Accept: application/json" \
+        -X GET $FRONTEND_ROUTE/sanityCheck | jq -r .
 -----
 
 

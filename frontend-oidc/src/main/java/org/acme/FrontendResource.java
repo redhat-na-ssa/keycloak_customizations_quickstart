@@ -30,10 +30,14 @@ public class FrontendResource {
 
     @GET
     @Path("/sanityCheck")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     public Uni<Response> sanityCheck() {
         log.info("sanityCheck()");
-        return backend.sanityCheck();
+        return backend.sanityCheck()
+        .onFailure().recoverWithItem(f -> {
+          Response eRes = Response.status(Status.INTERNAL_SERVER_ERROR.getStatusCode()).entity(f.getMessage()).build();
+          return eRes;
+        });
     }
 
 

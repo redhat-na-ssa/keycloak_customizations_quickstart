@@ -19,7 +19,7 @@ public interface IBackend {
 
     @GET
     @Path("/unsecured/sanityCheck")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     Uni<Response> sanityCheck();
 
     @GET
