@@ -1,0 +1,28 @@
+. wireshark _capture filter_:
++
+-----
+tcp port 8200
+-----
+
+-----
+export BACKEND_ROUTE=http://localhost:6080
+export VAULT_URL=http://localhost:8200
+export VAULT_SSO_SITE_ADMIN_ID=sso-site-admin
+export VAULT_SSO_SITE_ADMIN_PASSWD=admin
+-----
+
+-----
+$ TKN=$(curl -X POST $VAULT_URL/v1/auth/userpass/login/$VAULT_SSO_SITE_ADMIN_ID \
+        -d "password=$VAULT_SSO_SITE_ADMIN_PASSWD" \
+        | jq -r .auth.client_token )
+-----
+
+-----
+$ curl -X GET $VAULT_URL/v1/rhsso/data/siteadmin/psql \
+    -H "X-Vault-Token: $TKN" \
+    | jq -r .data.data
+-----
+
+-----
+$ curl -X GET $BACKEND_ROUTE/vault/database-name
+-----
