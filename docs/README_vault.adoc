@@ -1,28 +1,47 @@
+== Reference
+. link:https://quarkiverse.github.io/quarkiverse-docs/quarkus-vault/dev/index.html[Quarkus: Using HashiCorp Vault]
+
+== Vault secrets as Microprofile config source
+
+-----
+export BACKEND_ROUTE=http://localhost:6080
+
+$ curl -X GET $BACKEND_ROUTE/configs/vault/database-name
+
+$ curl -X GET $BACKEND_ROUTE/configs/vault/user-name
+
+$ curl -X GET $BACKEND_ROUTE/configs/sso-db-table-count
+-----
+
+
+== Vault Testing
+
 . wireshark _capture filter_:
 +
 -----
 tcp port 8200
 -----
 
+. Set environment variables:
++
 -----
-export BACKEND_ROUTE=http://localhost:6080
 export VAULT_URL=http://localhost:8200
 export VAULT_SSO_SITE_ADMIN_ID=sso-site-admin
 export VAULT_SSO_SITE_ADMIN_PASSWD=admin
 -----
 
+. Obtain a _client_token_ from  Vault :
++
 -----
 $ TKN=$(curl -X POST $VAULT_URL/v1/auth/userpass/login/$VAULT_SSO_SITE_ADMIN_ID \
         -d "password=$VAULT_SSO_SITE_ADMIN_PASSWD" \
         | jq -r .auth.client_token )
 -----
 
+. Using _client_token_, invoke REST API of Vault:
++
 -----
 $ curl -X GET $VAULT_URL/v1/rhsso/data/siteadmin/psql \
     -H "X-Vault-Token: $TKN" \
     | jq -r .data.data
------
-
------
-$ curl -X GET $BACKEND_ROUTE/vault/database-name
 -----

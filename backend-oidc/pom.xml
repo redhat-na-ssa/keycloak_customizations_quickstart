@@ -59,6 +59,12 @@
       <artifactId>quarkus-keycloak-authorization</artifactId>
     </dependency -->
 
+    <!-- Reactive PostgreSQL -->
+    <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-reactive-pg-client</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-smallrye-health</artifactId>

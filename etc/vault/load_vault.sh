@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Reference:
+#   https://quarkiverse.github.io/quarkiverse-docs/quarkus-vault/dev/index.html#_starting_vault
+
 echo -en "OS user is: $( id ) \n"
 
 VAULT_RETRIES=5
@@ -13,7 +16,7 @@ echo -en "\nAdding entries to vault\n"
 
 vault login token=vault-plaintext-root-token
 vault secrets enable -version=2 -path=rhsso kv
-vault kv put -mount=rhsso siteadmin/psql user_name=sso user_password=sso database_name=sso
+vault kv put -mount=rhsso siteadmin/sso/psql username=sso password=sso database_name=sso
 vault kv put -mount=rhsso kc-demo/client/boidc client_name=boidc client_password=password
 
 # When using a kv secret engine version 2, secrets are written and fetched at path <mount>/data/<secret-path> as opposed to <mount>/<secret-path> in a kv secret engine version 1
