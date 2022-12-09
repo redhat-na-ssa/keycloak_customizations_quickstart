@@ -1,0 +1,29 @@
+---
+
+- name: "delete service {{ application_name }}"
+  k8s:
+    state: absent
+    name: "{{ application_name }}"
+    namespace: "{{ namespace_ldap }}"
+    kind: Service
+
+- name: "delete Deployment {{ application_name }}"
+  k8s:
+    state: absent
+    name: "{{ application_name }}"
+    namespace: "{{ namespace_ldap }}"
+    kind: Deployment
+
+- name: delete {{ application_name }} service account
+  k8s:
+    state: absent
+    name: "{{ application_name }}"
+    namespace: "{{ namespace_ldap }}"
+    kind: ServiceAccount
+
+- name: delete {{ application_name }} configmap 
+  k8s:
+    state: absent
+    name: "{{ application_name }}"
+    namespace: "{{ namespace_ldap }}"
+    kind: ConfigMap

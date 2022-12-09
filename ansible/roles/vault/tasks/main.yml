@@ -1,0 +1,13 @@
+---
+
+
+# TO-DO: 
+#   https://github.com/hashicorp/vault-helm
+#   https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-openshift
+- name: "deploy {{ application_name }} application using following helm chart {{ helm_tar_url }}"
+  kubernetes.core.helm:
+    name: "{{ application_name }}"
+    release_namespace: "{{ namespace }}"
+    chart_ref: "{{ helm_tar_url }}"
+    wait: True
+

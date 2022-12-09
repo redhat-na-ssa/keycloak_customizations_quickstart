@@ -1,0 +1,3 @@
+---
+
+application_name: "{{ vault_app_name }}"
