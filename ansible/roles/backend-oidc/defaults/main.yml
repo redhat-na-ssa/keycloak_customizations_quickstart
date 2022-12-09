@@ -3,7 +3,7 @@
 application_name: "{{ backend_app_name }}"
 
 service_image: "quay.io/redhat_naps_da/{{ application_name }}"
-service_image_tag: 0.0.5
+service_image_tag: 0.0.6
 
 application_configmap: "{{ application_name }}"
 
