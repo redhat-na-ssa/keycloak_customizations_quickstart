@@ -266,6 +266,7 @@ $ ansible-playbook playbooks/install.yml
 -----
 export RHSSO_NS=rhi-idm
 export OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
+export OCP_GWAPI_DOMAIN=gwapi$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
 export RHSSO_HOST=rhsso-$RHSSO_NS.$OCP_DOMAIN
 export RHSSO_URL=https://$RHSSO_HOST
 export RHSSO_MASTER_PASSWD=$(oc get secret rhsso-initial-admin -o json -n $RHSSO_NS | jq -r .data.password | base64 -d)
@@ -277,6 +278,7 @@ export REALM_ADMIN_PASSWD=admin
 export OIDC_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 
 export BACKEND_ROUTE=http://backend-oidc-$USER_ID-services.$OCP_DOMAIN
+export BACKEND_GWAPI=http://backend-oidc.$OCP_GWAPI_DOMAIN
 export FRONTEND_ROUTE=http://frontend-oidc-$USER_ID-services.$OCP_DOMAIN
 -----
 
@@ -326,6 +328,11 @@ $ curl -i -X OPTIONS \
 -----
 $ curl -v -H "Accept: application/json" \
         -X GET $FRONTEND_ROUTE/sanityCheck | jq -r .
+-----
+
+-----
+$ curl -v -H "Accept: application/json" \
+        -X GET $BACKEND_GWAPI/unsecured/sanityCheck | jq -r .
 -----
 
 
