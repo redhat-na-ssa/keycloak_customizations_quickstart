@@ -1,0 +1,48 @@
+---
+
+#############   ArgoCD Operator    ################
+
+- name: "create operatorgroup in {{ namespace_argocd }}"
+  import_role:
+    name: ../roles/operatorgroup
+  vars:
+    operatorgroup_name: "{{ namespace_argocd }}"
+    operatorgroup_namespace: "{{ namespace_argocd }}"
+    operatorgroup_target_namespace: "{{ namespace_argocd }}"
+
+- name: "deploy argocd operator in {{ namespace_argocd }}"
+  import_role:
+    name: ../roles/operator_olm
+  vars:
+    operator_name: "{{ argocd_operator_packagemanifest }}"
+    packagemanifest: "{{ argocd_operator_packagemanifest }}"
+    subscription_channel: "{{ argocd_operator_subscription_channel }}"
+    subscription_namespace: "{{ namespace_argocd }}"
+    subscription_name: "{{ argocd_operator_subscription_name }}"
+    automatic_installplan_approval: "{{ argocd_operator_subscription_automatic_installplan_approval }}"
+    subscription_starting_csv: "{{ argocd_operator_subscription_starting_csv  }}"
+    csv_prefix: "{{ argocd_operator_csv_prefix }}"
+################################################
+
+
+
+
+#############       ArgoCD CR      ################
+
+- name: "create ArgoCD custom resource"
+  k8s:
+    state: present
+    name: "{{ argocd_name }}"
+    namespace: "{{ namespace_argocd }}"
+    definition: "{{ lookup('template', 'templates/'+ argocd_cr_template) | from_yaml }} "
+
+- name: "wait until {{ argocd_name }} is active in {{ namespace_argocd }}"
+  shell: |
+    {{ openshift_cli }} get argoproj.io/{{ argocd_name }} -o jsonpath='{.status.conditions[?(@.type == "Ready")].status}' -n {{ namespace_argocd }}
+  register: result
+  until: result.stdout == 'true'
+  retries: 50
+  delay: 10
+  changed_when: False
+
+######################################################

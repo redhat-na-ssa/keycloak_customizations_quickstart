@@ -1,0 +1,13 @@
+---
+
+# argocd operator
+argocd_operator_packagemanifest: argocd-operator
+argocd_operator_csv_prefix: argocd-operator
+argocd_operator_subscription_name: argocd-operator
+argocd_operator_subscription_template: subscription.yml
+argocd_operator_subscription_channel: fast
+argocd_operator_subscription_automatic_installplan_approval: false
+argocd_operator_subscription_starting_csv: ""
+
+# argocd name
+argocd_name: appsec-argocd

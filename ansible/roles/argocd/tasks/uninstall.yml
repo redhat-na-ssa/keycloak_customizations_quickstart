@@ -1,0 +1,38 @@
+---
+
+- name: "delete keycloak custom resource"
+  k8s:
+    state: absent
+    kind: Keycloak
+    api_version: keycloak.org/v1alpha1
+    name: rhsso
+    namespace: "{{ namespace }}"
+  when: undeploy_sso is defined and undeploy_sso == "true"
+
+- name: "delete sso operator in {{ namespace_sso }}"
+  import_role:
+    name: ../roles/operator_olm
+    tasks_from: uninstall
+  vars:
+    operator_name: sso-operator
+    subscription_namespace: "{{ namespace_sso }}"
+    subscription_name: "{{ sso_operator_subscription_name }}"
+    csv_prefix: "{{ sso_operator_csv_prefix }}"
+  when: undeploy_sso is defined and undeploy_sso == "true"
+
+- name: "delete operatorgroup from {{ namespace_sso }} namespace"
+  import_role:
+    name: ../roles/operatorgroup
+    tasks_from: uninstall
+  vars:
+    operatorgroup_name: "{{ namespace_sso }}"
+    operatorgroup_namespace: "{{ namespace_sso }}"
+  when: undeploy_sso is defined and undeploy_sso == "true"
+
+- name: "delete namespace {{ namespace_sso }}"
+  k8s:
+    state: absent
+    name: "{{ namespace_sso }}"
+    kind: Project
+    api_version: project.openshift.io/v1
+  when: undeploy_sso is defined and undeploy_sso == "true"
