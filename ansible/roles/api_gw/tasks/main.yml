@@ -1,0 +1,67 @@
+---
+
+- kubernetes.core.k8s_info:
+    kind: Secret
+    namespace: "{{ apimanager_namespace }}"
+    name: "{{ tenant_name }}-generated-secret"
+  register: tenant_generated_secret
+
+- set_fact:
+    tenant_admin_hostname: "{{ tenant_generated_secret.resources[0].data.adminURL | b64decode }}"
+    tenant_admin_token: "{{ tenant_generated_secret.resources[0].data.token | b64decode }}"
+
+- shell: |
+    echo {{ tenant_admin_hostname }} | sed 's/https:\/\///'
+  register: tenant_admin_hostname_filtered
+
+- debug:
+    msg: "tenant_admin_hostname_filtered = {{ tenant_admin_hostname_filtered.stdout }}    tenant_admin_token = {{ tenant_admin_token }}"
+
+- set_fact:
+    tenant_admin_endpoint: "https://{{ tenant_admin_token }}@{{ tenant_admin_hostname_filtered.stdout }}"
+
+- name: "create secret {{ apicast_secret }}"
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      type: Opaque
+      metadata:
+        namespace: "{{ apigw_namespace }}"
+        name: "{{ apicast_secret }}"
+      data:
+        AdminPortalURL: "{{ tenant_admin_endpoint | b64encode }}"
+
+- name: "deploy apigw operator in {{ apigw_namespace }}"
+  import_role:
+    name: ../roles/operator_olm
+  vars:
+    operator_name: "{{ apicast_operator_packagemanifest }}"
+    packagemanifest: "{{ apicast_operator_packagemanifest }}"
+    subscription_channel: "{{ apicast_operator_subscription_channel }}"
+    subscription_namespace: "{{ apigw_namespace }}"
+    subscription_name: "{{ apicast_operator_subscription_name }}"
+    automatic_installplan_approval: "{{ apicast_operator_subscription_automatic_installplan_approval }}"
+    subscription_starting_csv: "{{ apicast_operator_subscription_starting_csv  }}"
+    csv_prefix: "{{ apicast_operator_csv_prefix }}"
+
+- set_fact:
+    apicast_route_hostname: "{{ apigw_hostname_subcontext }}.{{ ocp_domain }}"
+
+- name: "Create {{ prod_apicast_name }}; {{ tenant_admin_endpoint }}"
+  k8s:
+    state: present
+    name: "{{ prod_apicast_name }}"
+    namespace: "{{ apigw_namespace }}"
+    definition: "{{ lookup('template', 'templates/apicast.yml') | from_yaml }} "
+
+- name: "wait until {{ prod_apicast_name }} is active in {{ apigw_namespace }}"
+  shell: |
+    {{ openshift_cli }} get deployment/apicast-{{ prod_apicast_name }} -o jsonpath='{.status.conditions[?(@.type == "Available")].status}' -n {{ apigw_namespace }}
+  register: result
+  until: result.stdout == 'True'
+  retries: 30
+  delay: 10
+  changed_when: False
+

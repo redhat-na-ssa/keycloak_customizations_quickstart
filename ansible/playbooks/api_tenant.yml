@@ -1,0 +1,12 @@
+---
+
+- name: Deploy 3scale API Tenant
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - group_vars/all.yml
+
+  tasks:
+    - include: tasks/api_tenant.yml

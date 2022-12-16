@@ -2,11 +2,8 @@
 
 
 # #######     tenant    #############
-tenant_name: adprod2
 use_custom_tenant: true
 delete_tenant: false
-
-tenant_admin_email:
 
 tenant_access_token_secret: "{{ tenant_name }}-generated-secret"
 
@@ -15,7 +12,7 @@ tenant_id: 0
 
 
 
-backend_name: "{{ tenant_name }}-quarkus-backend"
+backend_name: "{{ tenant_name }}-quarkus-frontend"
 
 api_product_name: "{{ tenant_name }}-quarkus-product"
 app_plan_name: "{{ tenant_name }}-quarkus-app-plan"

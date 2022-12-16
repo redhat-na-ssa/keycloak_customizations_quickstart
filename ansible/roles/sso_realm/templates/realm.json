@@ -278,7 +278,7 @@
           "attributes": {}
         }
       ],
-      "zyncsso": [],
+      "{{ zync_sso_client_name }}": [],
       "security-admin-console": [],
       "admin-cli": [],
       "account-console": [],
@@ -442,12 +442,11 @@
          ]
     },
     {
-      "createdTimestamp": 1664406383026,
-      "username": "service-account-zyncsso",
+      "username": "service-account-{{ zync_sso_client_name }}",
       "enabled": true,
       "totp": false,
       "emailVerified": false,
-      "serviceAccountClientId": "zyncsso",
+      "serviceAccountClientId": "{{ zync_sso_client_name }}",
       "disableableCredentialTypes": [],
       "requiredActions": [],
       "realmRoles": [
@@ -471,6 +470,14 @@
     }
   ],
   "clientScopeMappings": {
+    "realm-management": [
+      {
+        "client": "{{ zync_sso_client_name }}",
+        "roles": [
+          "manage-clients"
+        ]
+      }
+    ],
     "account": [
       {
         "client": "account-console",
@@ -848,7 +855,7 @@
       ]
     },
     {
-      "clientId": "zyncsso",
+      "clientId": "{{ zync_sso_client_name }}",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,

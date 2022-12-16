@@ -1,6 +1,6 @@
 ---
 
-- name: Deploy threescale
+- name: Deploy 3scale API GW
   hosts: localhost
   connection: local
   gather_facts: false
@@ -9,4 +9,4 @@
     - group_vars/all.yml
 
   tasks:
-    - include: tasks/threescale.yml
+    - include: tasks/api_gw.yml

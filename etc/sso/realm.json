@@ -471,6 +471,14 @@
     }
   ],
   "clientScopeMappings": {
+    "realm-management": [
+      {
+        "client": "zyncsso",
+        "roles": [
+          "manage-clients"
+        ]
+      }
+    ],
     "account": [
       {
         "client": "account-console",

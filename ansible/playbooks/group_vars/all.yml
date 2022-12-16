@@ -44,7 +44,8 @@ sso_realm_id: "{{ project_admin }}-kc-demo"
 
 tinspect_sso_clientId: t-inspect
 
-zync_sso_client_secret: 21b503a3-0b50-4e17-8ef7-167ab973c171
+zync_sso_client_name: zyncsso
+zync_sso_client_secret: zyncsso
 #################################################
 
 
@@ -65,6 +66,9 @@ backend_url: "http://{{ backend_app_name }}.{{ project_name }}:8080"
 
 #########     3scale      ##############
 apimanager_namespace: rhi-apimgmt
+api_usecase_name: kc
+tenant_name: "{{ project_admin }}-{{ api_usecase_name }}"
+
 apigw_namespace: "{{ project_name }}"
 apigw_hostname_subcontext: "gw-{{ apigw_namespace }}"
 

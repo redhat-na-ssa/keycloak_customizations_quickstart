@@ -267,9 +267,13 @@ So the Quarkus `backend-oidc` is expecting a token whose `aud` attribute include
 +
 Does your token include this `aud` attribute ?
 
-.  A discussion about adding the `aud` field to a token can be found link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[here] in the Keycloak documentation.  
-+
-Specifically, you'll need to configure a link:https://www.keycloak.org/docs/latest/server_admin/#_audience_hardcoded[hard-coded audience mapper].
+A discussion about adding the `aud` field to a token can be found link:https://www.keycloak.org/docs/latest/server_admin/#audience-support[here] in the Keycloak documentation.
+
+In addition, please refer to chapter 5 of link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] for more details and background regarding the _audience_ claim of a Keycloak generated _access token_.
+
+==== Hard-coded _audience_ mapper 
+
+One approach you can take to include the _aud_ claim in an access token, is to configure a link:https://www.keycloak.org/docs/latest/server_admin/#_audience_hardcoded[hard-coded audience mapper].
 
 . In the RH-SSO `Admin Portal`, click the following:  `Client scopes` -> Create client scope.
 . Create a new `client-scope` with the following values: 
@@ -301,6 +305,19 @@ curl -v -H "Authorization: Bearer $TKN" \
 < HTTP/1.1 200 OK
 Hello jbrown
 -----
+
+==== _aud_ claim via User Client Roles
+
+Another approach to include an _aud_ claim in the access token is to configure appropriate _client roles_ for a specfic user: 
+
+. Navigate to: `Users -> View all users -> <link to user> -> Role Mappings -> Client Roles`
+. From the drop-down, select and add all _Available Roles_ from the following SSO clients:
+
+.. _account_
+.. _broker_
+.. _realm-management_
+
+
 
 === frontend service
 . Review the source code for the Quarkus based link://../frontend[frontend] service.
