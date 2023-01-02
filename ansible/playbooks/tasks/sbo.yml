@@ -1,0 +1,21 @@
+---
+
+- set_fact:
+    namespace: "{{ project_name }}"
+    resources_dir: "{{ resources_base_dir }}/sbo"
+    work_dir_name: sbo
+- include_role:
+    name: ../roles/sbo
+  when: >
+    ACTION is not defined or
+    ACTION is none or
+    ACTION|trim() == "" or
+    ACTION|trim() == "install"
+
+
+- include_role:
+    name: ../roles/sbo
+    tasks_from: uninstall
+  when: >
+    ACTION is defined and
+    ACTION|trim() == "uninstall"

@@ -1,0 +1,9 @@
+---
+
+- name: "delete {{ prod_apicast_name }} in {{ sbo_operator_namespace }}"
+  k8s:
+    state: absent
+    kind: apicast
+    api_version: apps.3scale.net/v1alpha1
+    name: "{{ prod_apicast_name }}"
+    namespace: "{{ sbo_operator_namespace }}"

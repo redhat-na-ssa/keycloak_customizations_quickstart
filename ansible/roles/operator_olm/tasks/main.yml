@@ -32,7 +32,7 @@
     name: "{{ subscription_name }}"
     definition: "{{ lookup('template', 'templates/subscription.yml') | from_yaml }}"
 
-- name: wait until installplan is created
+- name: "wait until installplan is created in {{ subscription_namespace }}"
   kubernetes.core.k8s_info:
     kind: InstallPlan
     namespace: "{{ subscription_namespace }}"
