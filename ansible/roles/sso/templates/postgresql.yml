@@ -108,12 +108,12 @@ items:
             valueFrom:
               secretKeyRef:
                 name: {{ sso_db_service_name }}
-                key: database-user
+                key: username
           - name: POSTGRESQL_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: {{ sso_db_service_name }}
-                key: database-password
+                key: password
           - name: POSTGRESQL_DATABASE
             valueFrom:
               secretKeyRef:

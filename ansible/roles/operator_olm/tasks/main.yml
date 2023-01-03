@@ -1,5 +1,8 @@
 ---
 
+# Purpose of this ansible role is to automate the installation of an operator in Openshift
+# The equivalent could be done manually by selecting an operator from https://operatorhub.io and following the directions to install (on Kubernetes)
+
 - name: "get packagemanifest for {{ operator_name }} operator"
   kubernetes.core.k8s_info:
     kind: packagemanifest
@@ -32,7 +35,7 @@
     name: "{{ subscription_name }}"
     definition: "{{ lookup('template', 'templates/subscription.yml') | from_yaml }}"
 
-- name: wait until installplan is created
+- name: "wait until installplan is created in {{ subscription_namespace }}"
   kubernetes.core.k8s_info:
     kind: InstallPlan
     namespace: "{{ subscription_namespace }}"

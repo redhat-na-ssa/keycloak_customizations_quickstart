@@ -5,6 +5,20 @@ metadata:
 spec:
   name: {{ api_product_name }}
   systemName: {{ api_product_name }}
+  methods:
+    get:
+      friendlyName: GET
+    post:
+      friendlyName: POST
+    delete:
+      friendlyName: DELETE
+    put:
+      friendlyName: PUT
+  mappingRules:
+    - httpMethod: GET
+      pattern: "/frontend"
+      increment: 1
+      metricMethodRef: get
   deployment:
     apicastSelfManaged:
       stagingPublicBaseURL: {{ api_gw_url }}
@@ -24,7 +38,24 @@ spec:
   applicationPlans:
     {{ app_plan_name }}:
       appsRequireApproval: false
+      published: true
   policies:
+  - configuration:
+      allow_headers:
+      - authorization
+      - content-type
+      - x-requested-with
+      allow_credentials: true
+      allow_methods:
+      - GET
+      - OPTIONS
+      - POST
+      - DELETE
+      - PUT
+      allow_origin: "*"
+    enabled: true
+    name: cors
+    version: builtin
   - configuration: {}
     enabled: true
     name: apicast

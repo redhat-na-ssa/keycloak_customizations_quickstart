@@ -1,0 +1,11 @@
+kind: APIcast
+apiVersion: apps.3scale.net/v1alpha1
+metadata:
+  name: {{ prod_apicast_name }}
+  namespace: {{ apigw_namespace }}
+spec:
+  adminPortalCredentialsRef:
+    name: {{ apicast_secret }}
+  exposedHost:
+    host: {{ apicast_route_hostname }}
+  logLevel: {{ gw_log_level }}

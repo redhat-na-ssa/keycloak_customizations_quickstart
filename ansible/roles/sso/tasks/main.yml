@@ -1,5 +1,16 @@
 ---
 
+- name: "check if {{ sso_keycloak_tls_secret }} secret exists in {{ namespace_sso }}"
+  kubernetes.core.k8s_info:
+    kind: Secret 
+    name: "{{ sso_keycloak_tls_secret }}"
+    namespace: "{{ namespace_sso }}"
+  register: tls_secret
+- ansible.builtin.fail:
+    msg: "No secret {{ sso_keycloak_tls_secret }} found in namespace {{ namespace_sso }}.  Please create this secret as per the project docs"
+  when: tls_secret.resources | length == 0
+
+
 - set_fact:
     sso_hostname: "{{ sso_name }}-{{ namespace_sso }}.{{ ocp_domain }}"
 - debug:
@@ -28,8 +39,12 @@
         name: "{{ sso_db_service_name }}"
         namespace: "{{ namespace_sso }}"
       data:
-        database-user: "{{ sso_db_userid | b64encode }}"
-        database-password: "{{ sso_db_passwd | b64encode }}"
+        # Attempt to keep with Service Binding Operator conventions:
+        #   - https://github.com/servicebinding/spec#well-known-secret-entries
+        host: "{{ sso_db_service_name | b64encode }}"
+        port: "{{ sso_db_service_port | b64encode }}"
+        username: "{{ sso_db_userid | b64encode }}"
+        password: "{{ sso_db_passwd | b64encode }}"
         database-name: "{{ sso_db_name | b64encode }}"
 
 - set_fact:
@@ -83,7 +98,6 @@
   retries: 10
   delay: 30
   changed_when: false
-
 
 ######################################################
 

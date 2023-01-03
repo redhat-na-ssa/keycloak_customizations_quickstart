@@ -13,6 +13,7 @@ sso_db_userid: sso
 sso_db_passwd: sso
 sso_db_name: sso
 sso_db_service_name: "{{ sso_db_name }}-psql"
+sso_db_service_port: "5432"
 postgresql_pv_capacity: 5Gi
 postgresql_version: 12-el8
 postgresql_is_namespace: openshift

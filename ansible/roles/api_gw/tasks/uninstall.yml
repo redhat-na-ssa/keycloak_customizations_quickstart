@@ -1,0 +1,16 @@
+---
+
+- name: "delete {{ prod_apicast_name }} in {{ apigw_namespace }}"
+  k8s:
+    state: absent
+    kind: apicast
+    api_version: apps.3scale.net/v1alpha1
+    name: "{{ prod_apicast_name }}"
+    namespace: "{{ apigw_namespace }}"
+
+- name: delete {{ apicast_secret }}
+  k8s:
+    state: absent
+    kind: secret
+    name: "{{ apicast_secret }}"
+    namespace: "{{ apicast_secret }}"

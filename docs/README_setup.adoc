@@ -232,6 +232,10 @@ $ cd ansible
 -----
 
 . Create a secret with certs for your RH-SSO endpoint:
+
+.. Ensure that tls certs exist for the following URL:   `rhsso-rhi-idm.$OCP_WILDCARD_DOMAIN`
+
+.. Create secret:
 +
 -----
 $ oc new-project rhi-idm

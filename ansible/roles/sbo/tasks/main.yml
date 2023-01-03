@@ -1,0 +1,14 @@
+---
+
+- name: "deploy sbo operator in {{ sbo_operator_namespace }}"
+  import_role:
+    name: ../roles/operator_olm
+  vars:
+    operator_name: "{{ sbo_operator_packagemanifest }}"
+    packagemanifest: "{{ sbo_operator_packagemanifest }}"
+    subscription_channel: "{{ sbo_operator_subscription_channel }}"
+    subscription_namespace: "{{ sbo_operator_namespace }}"
+    subscription_name: "{{ sbo_operator_subscription_name }}"
+    automatic_installplan_approval: "{{ sbo_operator_subscription_automatic_installplan_approval }}"
+    subscription_starting_csv: "{{ sbo_operator_subscription_starting_csv  }}"
+    csv_prefix: "{{ sbo_operator_csv_prefix }}"
