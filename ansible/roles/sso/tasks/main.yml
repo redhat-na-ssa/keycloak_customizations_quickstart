@@ -39,8 +39,12 @@
         name: "{{ sso_db_service_name }}"
         namespace: "{{ namespace_sso }}"
       data:
-        database-user: "{{ sso_db_userid | b64encode }}"
-        database-password: "{{ sso_db_passwd | b64encode }}"
+        # Attempt to keep with Service Binding Operator conventions:
+        #   - https://github.com/servicebinding/spec#well-known-secret-entries
+        host: "{{ sso_db_service_name | b64encode }}"
+        port: "{{ sso_db_service_port | b64encode }}"
+        username: "{{ sso_db_userid | b64encode }}"
+        password: "{{ sso_db_passwd | b64encode }}"
         database-name: "{{ sso_db_name | b64encode }}"
 
 - set_fact:
@@ -94,7 +98,6 @@
   retries: 10
   delay: 30
   changed_when: false
-
 
 ######################################################
 

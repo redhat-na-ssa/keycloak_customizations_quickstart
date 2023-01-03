@@ -14,12 +14,15 @@ spec:
       value: 'token-exchange,admin-fine-grained-authz,scripts,declarative-user-profile'
     - name: cache
       value: ispn
+
+  # Attempt to keep with Service Binding Operator conventions:
+  #   - https://github.com/servicebinding/spec#well-known-secret-entries
   db:
     usernameSecret:
-      key: database-user
+      key: username
       name: {{ sso_db_service_name }}
     passwordSecret:
-      key: database-password
+      key: password
       name: {{ sso_db_service_name }}
     vendor: postgres
     host: {{ sso_db_service_name }}
