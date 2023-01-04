@@ -45,7 +45,7 @@
         port: "{{ sso_db_service_port | b64encode }}"
         username: "{{ sso_db_userid | b64encode }}"
         password: "{{ sso_db_passwd | b64encode }}"
-        database-name: "{{ sso_db_name | b64encode }}"
+        database_name: "{{ sso_db_name | b64encode }}"
 
 - set_fact:
     create_db_file: "{{ lookup('template', 'templates/sql/create_database.sh' )  }}"

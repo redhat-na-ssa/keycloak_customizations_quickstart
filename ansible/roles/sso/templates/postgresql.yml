@@ -118,7 +118,7 @@ items:
             valueFrom:
               secretKeyRef:
                 name: {{ sso_db_service_name }}
-                key: database-name
+                key: database_name
           - name: POSTGRESQL_SERVICE
             value: {{ sso_db_service_name }}
           - name: POSTGRESQL_MAX_PREPARED_TRANSACTIONS

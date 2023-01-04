@@ -4,7 +4,7 @@
   k8s:
     state: absent
     kind: Keycloak
-    api_version: keycloak.org/v1alpha1
+    api_version: k8s.keycloak.org/v2alpha1
     name: rhsso
     namespace: "{{ namespace }}"
   when: undeploy_sso is defined and undeploy_sso == "true"

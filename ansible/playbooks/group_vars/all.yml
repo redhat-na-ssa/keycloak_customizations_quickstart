@@ -37,6 +37,10 @@ sso_name: rhsso
 # Namespace where SSO will be installed
 namespace_sso: rhi-idm
 
+# Name of Postgresql resources that support keycloak
+sso_db_name: sso
+sso_db_service_name: "{{ sso_db_name }}-psql"
+
 # If set to True, then every user that creates an account in demo will automatically be a realm-admin
 set_realm_admin_as_default: false
 

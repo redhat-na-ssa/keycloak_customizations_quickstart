@@ -3,9 +3,9 @@
 application_name: "{{ backend_app_name }}"
 
 service_image: "quay.io/redhat_naps_da/{{ application_name }}"
-service_image_tag: 0.0.6
+service_image_tag: 0.0.7
 
 application_configmap: "{{ application_name }}"
 
-# helm_tar_url: "/u01/labs/mw/redhat-na-ssa/keycloak_customizations_quickstart/{{ application_name }}/target/helm/openshift/{{ application_name }}"
-helm_tar_url: "https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/raw/main/{{ application_name }}/helm/{{ application_name }}-{{ service_image_tag }}.tar.gz"
+helm_tar_url: "/u01/labs/mw/redhat-na-ssa/keycloak_customizations_quickstart/{{ application_name }}/target/helm/openshift/{{ application_name }}"
+# helm_tar_url: "https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/raw/main/{{ application_name }}/helm/{{ application_name }}-{{ service_image_tag }}.tar.gz"

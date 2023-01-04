@@ -122,7 +122,7 @@ services:
 
   backend-oidc:
     container_name: backend-oidc
-    image: quay.io/redhat_naps_da/backend-oidc:0.0.6
+    image: quay.io/redhat_naps_da/backend-oidc:0.0.7
     restart: always
     ports:
       - "6080:6080"

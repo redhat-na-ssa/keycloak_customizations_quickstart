@@ -1,5 +1,16 @@
 ---
 
+# Backend-OIDC makes use of kubernetes-config plugin to obtain properties to SSO Postgresql
+# These properties are contained in a secret located at: {{ namespace_sso }}/{{ sso_db_service_name }}
+# Because secret from one namespace can be read from a pod in a different namespace, the secret needs to be copied over
+#   https://stackoverflow.com/questions/46297949/sharing-secret-across-namespaces
+- name: "Copy {{ namespace_sso }}/{{ sso_db_service_name }} secret to this namespace"
+  shell: |
+    {{ openshift_cli }} get secret {{ sso_db_service_name }} -n {{ namespace_sso }} -o yaml \
+    | grep -v '^\s*namespace:\s' \
+    | {{ openshift_cli }} apply --namespace={{ namespace }} -f -
+  ignore_errors: true
+
 ########    Backend-OIDC Service    #############
 
 - set_fact:
@@ -26,6 +37,6 @@
       data:
         application.properties: "{{ aprops }}"
 
-- import_tasks: deploy_from_image.yml
+# - import_tasks: deploy_from_image.yml
 
 ###########################################################
