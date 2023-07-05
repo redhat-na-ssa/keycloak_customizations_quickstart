@@ -1,0 +1,21 @@
+# oc apply -k /u01/data/crunchydata/postgres-operator-examples/kustomize/postgres/kustomization.yaml
+# oc apply -f config/sb.yml
+
+apiVersion: binding.operators.coreos.com/v1alpha1
+kind: ServiceBinding
+metadata:
+ name: crunchy-backend-oidc
+ namespace: user1-services
+spec:
+  application:
+    name: backend-oidc
+    group: apps.openshift.io
+    version: v1
+    kind: DeploymentConfig
+  services:
+    - group: postgres-operator.crunchydata.com
+      version: v1beta1
+      kind: PostgresCluster
+      name: hippo
+  detectBindingResources: false
+  bindAsFiles: true

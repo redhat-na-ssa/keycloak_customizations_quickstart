@@ -35,7 +35,7 @@ ldap_bind_credential: admin
 sso_name: rhsso
 
 # Namespace where SSO will be installed
-namespace_sso: rhi-idm
+namespace_sso: "{{ project_admin }}-sso"
 
 # Name of Postgresql resources that support keycloak
 sso_db_name: sso

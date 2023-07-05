@@ -1,0 +1,39 @@
+. Invoke Okta _Discovery Endpoint_ to view details of OIDC related REST APIs:
++
+-----
+$ curl -v -X GET https://dev-03856250.okta.com/oauth2/default/.well-known/oauth-authorization-server | jq .
+-----
+
+
+. Acquire access token via _Client Credentials_:
++
+-----
+TKN=$(curl -X POST "$OKTA_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "grant_type=client_credentials" \
+            -d "client_id=$OKTA_QUARKUS_APIS_CLIENT_ID" \
+            -d "client_secret=$OKTA_QUARKUS_APIS_CLIENT_SECRET" \
+            -d "scope=testscope" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+. Acquire access token via _Resource Owner Password Credentials_:
++
+-----
+TKN=$(curl -X POST "$OKTA_TOKEN_URL" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -H "accept: application/json" \
+            -u "$OKTA_QUARKUS_APIS_CLIENT_ID:$OKTA_QUARKUS_APIS_CLIENT_SECRET" \
+            -d "grant_type=password" \
+            -d "username=$OKTA_DEV_USERNAME" \
+            -d "password=$OKTA_DEV_PASSWORD" \
+            -d "scope=openid" \
+            | sed 's/.*access_token":"//g' | sed 's/".*//g')
+-----
+
+. View the body of the access token
++
+-----
+$ jq -R 'split(".") | .[1] | @base64d | fromjson' <<< $TKN | jq .
+-----
+

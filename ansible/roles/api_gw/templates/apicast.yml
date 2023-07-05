@@ -8,4 +8,8 @@ spec:
     name: {{ apicast_secret }}
   exposedHost:
     host: {{ apicast_route_hostname }}
+
+    # https://issues.redhat.com/browse/THREESCALE-5485?focusedId=15513205&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-15513205
+    tls:
+    - {}
   logLevel: {{ gw_log_level }}
