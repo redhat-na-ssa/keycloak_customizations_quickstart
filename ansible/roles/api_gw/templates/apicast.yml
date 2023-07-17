@@ -13,3 +13,10 @@ spec:
     tls:
     - {}
   logLevel: {{ gw_log_level }}
+  resources:
+    requests:
+      cpu: '250m'
+      memory: '250M'
+    limits:
+      cpu: '500m'
+      memory: '500M'
