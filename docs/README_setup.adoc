@@ -104,6 +104,7 @@ export REALM_ADMIN_PASSWD=admin
 export OIDC_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 export BACKEND_ROUTE=http://localhost:6080
 export FRONTEND_ROUTE=http://localhost:7080
+export TOKEN_INSPECTOR_ROUTE=http://localhost:5080
 -----
 
 . Add the following entry to your `/etc/hosts`:
@@ -270,7 +271,7 @@ $ ansible-playbook playbooks/install.yml
 -----
 export RHSSO_NS=rhi-idm
 export OCP_DOMAIN=apps$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
-export OCP_GWAPI_DOMAIN=gwapi$(oc whoami --show-console | awk 'BEGIN{FS="apps"}{print $2}')
+export OCP_GWAPI_DOMAIN=gwapi$OCP_DOMAIN
 export RHSSO_HOST=rhsso-$RHSSO_NS.$OCP_DOMAIN
 export RHSSO_URL=https://$RHSSO_HOST
 export RHSSO_MASTER_PASSWD=$(oc get secret rhsso-initial-admin -o json -n $RHSSO_NS | jq -r .data.password | base64 -d)
@@ -282,8 +283,8 @@ export REALM_ADMIN_PASSWD=admin
 export OIDC_TOKEN_URL="$RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token"
 
 export BACKEND_ROUTE=http://backend-oidc-$USER_ID-services.$OCP_DOMAIN
-export BACKEND_GWAPI=http://backend-oidc.$OCP_GWAPI_DOMAIN
 export FRONTEND_ROUTE=http://frontend-oidc-$USER_ID-services.$OCP_DOMAIN
+export TOKEN_INSPECTOR_ROUTE=http://token-inspector-$USER_ID-services.$OCP_DOMAIN
 -----
 
 == Initial Tests
@@ -338,7 +339,7 @@ $ curl -v -H "Accept: application/json" \
 
 -----
 $ curl -v -H "Accept: application/json" \
-        -X GET $BACKEND_GWAPI/unsecured/sanityCheck | jq -r .
+        -X GET $BACKEND_ROUTE/unsecured/sanityCheck | jq -r .
 -----
 
 
@@ -412,7 +413,7 @@ For more secure architectures involving an SPA, please read the section entitled
 This web app was plagarized from the lab assets provided by the link:https://smile.amazon.com/Keycloak-Management-Applications-protocols-applications/dp/1800562497[Keycloak - Identity & Access Management for Modern Apps] book.
 Subsequently, all credit for the _token inspector_ web app goes to the author of that book.  Thank you!
 
-. Open a private web browser and navigate to:  http://localhost:8000
+. Open a private web browser and navigate to the output of: $TOKEN_INSPECTOR_ROUTE
 . Switch to the _Network_ tab of your _Web Developer Tools_ on that page.
 +
 image::images/browser_network_tools.png[]

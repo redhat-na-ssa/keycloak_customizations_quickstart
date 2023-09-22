@@ -110,11 +110,6 @@ services:
       QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_PROTOCOL_OIDC_ENDPOINTS__LEVEL: DEBUG
     volumes:
       - ./sso/realm.json:/opt/keycloak/data/import/realm.json:bind
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://kc:4080/realms/kc-demo/.well-known/openid-configuration"]
-      interval: 20s
-      timeout: 5s
-      retries: 5
     depends_on:
       - psql-rhbk
       - openldap
