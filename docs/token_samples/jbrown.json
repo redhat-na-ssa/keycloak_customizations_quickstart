@@ -2,7 +2,7 @@
   "exp": 1667311919,
   "iat": 1667311619,
   "jti": "f5e654cf-8d1f-407c-9972-ac2fd9685015",
-  "iss": "http://sso.local:4080/realms/kc-demo",
+  "iss": "http://rht:4080/realms/kc-demo",
   "sub": "887e9d0e-f240-4cd9-836e-a514218e7d4a",
   "typ": "Bearer",
   "azp": "t-inspect",

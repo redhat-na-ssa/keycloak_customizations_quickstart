@@ -217,7 +217,7 @@ In this section, you will create a new OAuth client in github.
 . Populate the form with the following values:
 .. *Application name* : `external-idp-test`
 .. *Homepage URL*: `https://github.com/redhat-na-ssa/keycloak_ldap_quickstart`
-.. *Authorization callback URL*:  `http://sso.local:4080`
+.. *Authorization callback URL*:  `http://rht:4080`
 . Click `Register application`
 . In the details page of the new github OAuth App, copy both the `Client ID` as well as the `client secret`
 +
@@ -243,7 +243,7 @@ In this section, you will create a new OAuth client in github.
 . Populate the form with the following values:app-name:
 .. *Application name* : `external-idp-test`
 .. *Homepage URL*: `https://github.com/redhat-na-ssa/keycloak_ldap_quickstart`
-.. *Authorization callback URL*:  `http://sso.local:4080`
+.. *Authorization callback URL*:  `http://rht:4080`
 . Click `Register application`
 . In the details page of the new github OAuth App, copy both the `Client ID` as well as the `client secret`
 +

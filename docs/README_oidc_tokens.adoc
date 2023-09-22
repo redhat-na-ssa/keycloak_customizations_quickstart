@@ -353,7 +353,7 @@ Answers:
 
 2) org.eclipse.microprofile.rest.client.propagateHeaders=Authorization
 
-3) quarkus.oidc.auth-server-url=http://kc-sso:4080/realms/kc-demo
+3) quarkus.oidc.auth-server-url=http://kc:4080/realms/kc-demo
 /////
 
 == Offline Tokens
@@ -416,7 +416,7 @@ user_session_id         | 3b067a4e-7d4d-4c11-9a4a-913f698b5244
 client_id               | 846f5d7b-6be9-4319-800a-b0a1cc9410a2
 offline_flag            | 1
 timestamp               | 1667315616
-data                    | {"authMethod":"openid-connect","notes":{"iss":"http://sso.local:4080/realms/kc-demo","startedAt":"1667315616","level-of-authentication":"-1","scope":"openid offline_access"}}
+data                    | {"authMethod":"openid-connect","notes":{"iss":"http://rht:4080/realms/kc-demo","startedAt":"1667315616","level-of-authentication":"-1","scope":"openid offline_access"}}
 client_storage_provider | local
 external_client_id      | local
 -----

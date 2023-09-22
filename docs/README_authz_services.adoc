@@ -124,11 +124,11 @@ quarkus.oidc.credentials.secret=password
 -----
 
 -----
-INFO  [io.qu.oi.de.de.OidcDevConsoleProcessor] (build-57) OIDC Dev Console: discovering the provider metadata at http://sso.local:4080/realms/kc-demo/.well-known/openid-configuration
+INFO  [io.qu.oi.de.de.OidcDevConsoleProcessor] (build-57) OIDC Dev Console: discovering the provider metadata at http://rht:4080/realms/kc-demo/.well-known/openid-configuration
 -----
 
 -----
-INFO  [io.qu.oi.de.de.OidcAuthorizationCodePostHandler] (DEV Console action) Using authorization_code grant to get a token from 'http://sso.local:4080/realms/kc-demo/protocol/openid-connect/token' with client id 'boidc'
+INFO  [io.qu.oi.de.de.OidcAuthorizationCodePostHandler] (DEV Console action) Using authorization_code grant to get a token from 'http://rht:4080/realms/kc-demo/protocol/openid-connect/token' with client id 'boidc'
 -----
 
 image::images/quarkus_devui_keycloak.png[]
@@ -309,7 +309,7 @@ POST /realms/kc-demo/protocol/openid-connect/token HTTP/1.1
 Authorization: Basic YnNlcnZpY2U6YnNlcnZpY2U
 Content-Length: 29
 Content-Type: application/x-www-form-urlencoded; charset=UTF-8
-Host: sso.local:4080
+Host: rht:4080
 Connection: Keep-Alive
 User-Agent: Apache-HttpClient/4.5.13 (Java/11.0.13)
 Accept-Encoding: gzip,deflate
@@ -354,7 +354,7 @@ https://quarkus.io/guides/security-keycloak-authorization#injecting-the-authoriz
 POST /realms/photoz/protocol/openid-connect/token HTTP/1.1
 Authorization: Basic cGhvdG96LXJlc3RmdWwtYXBpOnNlY3JldA==
 Content-Type: application/x-www-form-urlencoded; charset=UTF-8
-Host: sso.local:4080
+Host: rht:4080
 grant_type=client_credentials
 -----
 

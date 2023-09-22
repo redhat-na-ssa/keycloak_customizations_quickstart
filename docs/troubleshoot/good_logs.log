@@ -5,7 +5,7 @@ Updating the configuration and installing your custom providers, if any. Please 
 2022-04-28 22:06:03,789 INFO  [io.quarkus.deployment.QuarkusAugmentor] (main) Quarkus augmentation completed in 5460ms
 2022-04-28 22:06:06,382 INFO  [org.keycloak.common.Profile] (main) Preview feature enabled: admin_fine_grained_authz
 2022-04-28 22:06:06,383 INFO  [org.keycloak.common.Profile] (main) Preview feature enabled: token_exchange
-2022-04-28 22:06:06,390 INFO  [org.keycloak.quarkus.runtime.hostname.DefaultHostnameProvider] (main) Hostname settings: FrontEnd: sso.local:4080, Strict HTTPS: false, Path: <request>, Strict BackChannel: false, Admin: <request>
+2022-04-28 22:06:06,390 INFO  [org.keycloak.quarkus.runtime.hostname.DefaultHostnameProvider] (main) Hostname settings: FrontEnd: rht:4080, Strict HTTPS: false, Path: <request>, Strict BackChannel: false, Admin: <request>
 2022-04-28 22:06:07,047 WARN  [org.infinispan.PERSISTENCE] (keycloak-cache-init) ISPN000554: jboss-marshalling is deprecated and planned for removal
 2022-04-28 22:06:07,074 WARN  [org.infinispan.CONFIG] (keycloak-cache-init) ISPN000569: Unable to persist Infinispan internal caches as no global state enabled
 2022-04-28 22:06:07,089 INFO  [org.infinispan.CONTAINER] (keycloak-cache-init) ISPN000556: Starting user marshaller 'org.infinispan.jboss.marshalling.core.JBossUserMarshaller'

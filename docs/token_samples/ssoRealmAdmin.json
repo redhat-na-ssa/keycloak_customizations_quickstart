@@ -2,7 +2,7 @@
   "exp": 1667311825,
   "iat": 1667311525,
   "jti": "d2cdf7d1-cabd-4b1a-b4e0-10dc6adfc937",
-  "iss": "http://sso.local:4080/realms/kc-demo",
+  "iss": "http://rht:4080/realms/kc-demo",
   "aud": [
     "realm-management",
     "broker",

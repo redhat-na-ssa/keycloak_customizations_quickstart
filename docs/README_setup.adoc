@@ -286,6 +286,8 @@ export BACKEND_GWAPI=http://backend-oidc.$OCP_GWAPI_DOMAIN
 export FRONTEND_ROUTE=http://frontend-oidc-$USER_ID-services.$OCP_DOMAIN
 -----
 
+== Initial Tests
+
 === CORS
 
 . Ensure that `frontend-service` is enabled with CORS:
@@ -313,13 +315,13 @@ $ curl -i -X OPTIONS \
     -H "Origin: http://some-different-host:8080" \
     $RHSSO_URL/realms/$REALM_ID/.well-known/openid-configuration
 -----
-
++
 -----
 $ curl -i -X OPTIONS \
     -H "Origin: http://some-different-host:8080" \
     $RHSSO_URL/realms/$REALM_ID/protocol/openid-connect/token
 -----
-
++
 -----
 $ curl -i -X OPTIONS \
     -H "Origin: http://some-different-host:8080" \

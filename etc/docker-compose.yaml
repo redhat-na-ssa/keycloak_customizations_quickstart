@@ -2,30 +2,30 @@ version: '3.7'
 
 services:
 
-  vault-dev:
-    container_name: vault-dev
-    image: docker.io/library/vault:1.12.1
-    restart: always
-    environment:
-      VAULT_DEV_ROOT_TOKEN_ID: vault
-      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
-      VAULT_ADDR: http://127.0.0.1:8200
-    cap_add:
-      - IPC_LOCK
-    ports:
-      - "8200:8200"
-    networks:
-      - sso
+#  vault-dev:
+#    container_name: vault-dev
+#    image: docker.io/library/vault:1.12.1
+#    restart: always
+#    environment:
+#      VAULT_DEV_ROOT_TOKEN_ID: vault
+#      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+#      VAULT_ADDR: http://127.0.0.1:8200
+#    cap_add:
+#      - IPC_LOCK
+#    ports:
+#      - "8200:8200"
+#    networks:
+#      - rhbk
 
-  vault-client:
-    container_name: vault-client
-    image: quay.io/jbride/vault-client:1.12.1-0
-    volumes:
-    - ./vault/load_vault.sh:/opt/vault/load_vault.sh:bind
-    networks:
-      - sso
-    depends_on:
-      - vault-dev
+#  vault-client:
+#    container_name: vault-client
+#    image: quay.io/jbride/vault-client:1.12.1-0
+#    volumes:
+#    - ./vault/load_vault.sh:/opt/vault/load_vault.sh:bind
+#    networks:
+#      - rhbk
+#    depends_on:
+#      - vault-dev
 
   openldap:
     container_name: openldap
@@ -39,31 +39,31 @@ services:
     - ./openldap/ldap-example-users-2.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-example-users-2.ldif:bind
     #- ./openldap/ldap-generated.ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom/ldap-generated.ldif:bind
     networks:
-      - sso
+      - rhbk
 
-  psql-sso:
-    container_name: psql-sso
+  psql-rhbk:
+    container_name: psql-rhbk
     image: registry.redhat.io/rhel8/postgresql-12:1-72.1626836556
     restart: always
     ports:
       - "4432:4432"
     environment:
       PGPORT: 4432
-      POSTGRESQL_USER: sso
-      POSTGRESQL_PASSWORD: sso
-      POSTGRESQL_DATABASE: sso
+      POSTGRESQL_USER: rhbk
+      POSTGRESQL_PASSWORD: rhbk
+      POSTGRESQL_DATABASE: rhbk
       POSTGRESQL_MAX_PREPARED_TRANSACTIONS: 10
       SCRIPT_DIR: /opt/sql
     volumes:
       - ./sso/db/sso-psql.conf:/opt/app-root/src/postgresql-cfg/sso-psql.conf:bind
     networks:
-      - sso
+      - rhbk
 
-  kc-sso:
-    container_name: kc-sso
+  kc:
+    container_name: kc
 
     # https://github.com/redhat-na-ssa/keycloak_customizations_quickstart/blob/main/etc/sso/Dockerfile
-    image: quay.io/jbride/keycloak:20.0.0-0-psql
+    image: quay.io/jbride/keycloak:22.0.3-0-psql
 
     restart: always
     ports:
@@ -78,7 +78,7 @@ services:
     # over-rides the following:
     #   1)  Sets custom set of features as per:  https://www.keycloak.org/server/features
     #   2)  Explicitly sets distributed infinispan cache (which is set to local with 'start-dev'
-    command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz,scripts,declarative-user-profile" --cache=ispn']
+    command: ['start-dev', '--features="token-exchange,admin-fine-grained-authz,scripts,declarative-user-profile" --import-realm --cache=ispn']
 
     environment:
 
@@ -87,42 +87,43 @@ services:
       KC_HOSTNAME_URL: http://sso.local:4080
       KC_HOSTNAME_ADMIN_URL: http://sso.local:4080
 
-      # Setting this to `false` because the backend-oidc service connects to kc-sso via its docker-compose name:  kc-sso   (not sso.local)
+      # Setting this to `false` because the backend-oidc service connects to kc via its docker-compose name:  kc   (not sso.local)
       KC_HOSTNAME_STRICT_BACKCHANNEL: 'false'
 
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_DB_URL: 'jdbc:postgresql://psql-sso:4432/sso'
-      KC_DB_USERNAME: sso
-      KC_DB_PASSWORD: sso
+      KC_DB_URL: 'jdbc:postgresql://psql-rhbk:4432/rhbk'
+      KC_DB_USERNAME: rhbk
+      KC_DB_PASSWORD: rhbk
 
       # Alternative approach to import a realm:  https://github.com/keycloak/kc-sig-fapi/blob/main/docker-compose-keycloak.yml#L41-L57
-      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -Dkeycloak.import=/opt/realm.json -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
+      JAVA_OPTS_APPEND: -Dkeycloak.migration.strategy=IGNORE_EXISTING -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
 
       KC_HTTP_PORT: 4080
       KC_HTTPS_PORT: 4443
 
+      QUARKUS_HTTP_HOST: 0.0.0.0
       QUARKUS_LOG_LEVEL: INFO
       QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_AUTHENTICATION__LEVEL: DEBUG
       QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_AUTHORIZATION__LEVEL: DEBUG
       QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_PROTOCOL_OIDC_ENDPOINTS__LEVEL: DEBUG
       QUARKUS_LOG_CATEGORY__ORG_KEYCLOAK_PROTOCOL_OIDC_ENDPOINTS__LEVEL: DEBUG
     volumes:
-      - ./sso/realm.json:/opt/realm.json:bind
+      - ./sso/realm.json:/opt/keycloak/data/import/realm.json:bind
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://kc-sso:4080/realms/kc-demo/.well-known/openid-configuration"]
+      test: ["CMD", "curl", "-f", "http://kc:4080/realms/kc-demo/.well-known/openid-configuration"]
       interval: 20s
       timeout: 5s
       retries: 5
     depends_on:
-      - psql-sso
+      - psql-rhbk
       - openldap
     networks:
-      - sso
+      - rhbk
 
   backend-oidc:
     container_name: backend-oidc
-    image: quay.io/redhat_naps_da/backend-oidc:0.0.7
+    image: quay.io/redhat_naps_da/backend-oidc:0.0.8
     restart: always
     ports:
       - "6080:6080"
@@ -132,13 +133,13 @@ services:
     volumes:
     - ./backend-oidc/application.properties:/deployments/config/application.properties:bind
     depends_on:
-      - kc-sso
+      - kc
     networks:
-      - sso
+      - rhbk
 
   frontend-oidc:
     container_name: frontend-oidc
-    image: quay.io/redhat_naps_da/frontend-oidc:0.0.5
+    image: quay.io/redhat_naps_da/frontend-oidc:0.0.6
     restart: always
     ports:
       - "7080:7080"
@@ -150,7 +151,7 @@ services:
     depends_on:
       - backend-oidc
     networks:
-      - sso
+      - rhbk
 
 
   token-inspector:
@@ -167,10 +168,10 @@ services:
     - ./token-inspector/build_and_start.sh:/opt/token-inspector/build_and_start.sh:bind
     - ./token-inspector/settings.xml:/home/jboss/.m2/settings.xml:bind
     depends_on:
-      - kc-sso
+      - kc
       - frontend-oidc
     networks:
-      - sso
+      - rhbk
 
   mailhog:
     container_name: mailhog
@@ -180,10 +181,10 @@ services:
       - "1025:1025"
       - "8025:8025"
     networks:
-      - sso
+      - rhbk
 
 networks:
   default:
     driver: bridge
-  sso:
+  rhbk:
     driver: bridge
